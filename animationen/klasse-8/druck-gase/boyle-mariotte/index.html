@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{
+  --bg:#eaf0f6; --panel:#ffffff; --ink:#0f2440; --muted:#52657d; --line:#cdd8e4;
+  --gas:#f08c00; --accent:#c92a2a; --accent2:#0c8599; --metal:#7b8794; --glass:#dde8f3; --grid:#e6edf4;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1622; --panel:#162131; --ink:#e6edf5; --muted:#93a4b8; --line:#2a3a50;
+    --gas:#ffa94d; --accent:#ff6b6b; --accent2:#3bc9db; --metal:#5c6b7d; --glass:#1c2a3c; --grid:#1f2d40;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1622; --panel:#162131; --ink:#e6edf5; --muted:#93a4b8; --line:#2a3a50;
+  --gas:#ffa94d; --accent:#ff6b6b; --accent2:#3bc9db; --metal:#5c6b7d; --glass:#1c2a3c; --grid:#1f2d40;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size:17px; line-height:1.5; font-variant-numeric:tabular-nums;
+}
+main{max-width:1120px; margin:0 auto; padding:20px 16px 40px}
+header{margin:8px 0 18px}
+h1{font-size:clamp(1.6rem,4vw,2.3rem); line-height:1.15; margin:0 0 6px; letter-spacing:-0.01em}
+.lead{margin:0; color:var(--muted); max-width:62ch}
+.formula{display:inline-block; margin-top:10px; padding:4px 12px; border:2px solid var(--ink); border-radius:999px; font-weight:700}
+.grid{display:grid; gap:16px; grid-template-columns:1fr}
+@media (min-width:860px){ .grid{grid-template-columns:1.05fr 1fr} }
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:16px}
+.panel h2{font-size:1.1rem; margin:0 0 10px}
+canvas{display:block; width:100%}
+#cyl{height:clamp(330px,52vh,470px); touch-action:none; cursor:ns-resize}
+#plot{height:clamp(290px,46vh,420px)}
+.slider{margin:12px 0 4px}
+.slider label{display:flex; justify-content:space-between; font-weight:700}
+.slider label span{color:var(--muted); font-weight:400; font-size:.9rem}
+input[type=range]{width:100%; accent-color:var(--accent); height:28px}
+.readouts{display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-top:10px}
+@media (min-width:520px){ .readouts{grid-template-columns:repeat(4,1fr)} }
+.ro{border:1px solid var(--line); border-radius:10px; padding:6px 10px}
+.ro span{display:block; font-size:.85rem; color:var(--muted)}
+.ro b{font-size:1.15rem}
+.ro.pv{border-color:var(--accent2)}
+.hits{margin-top:10px; font-size:.92rem; color:var(--muted)}
+.hits b{color:var(--ink)}
+.seg{display:inline-flex; border:1px solid var(--line); border-radius:10px; overflow:hidden; margin-bottom:10px}
+.seg button{border:0; background:transparent; color:var(--ink); padding:7px 12px; font:inherit; font-size:.92rem; cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink); color:var(--panel); font-weight:700}
+.chk{display:flex; gap:8px; align-items:center; margin-top:8px; font-size:.95rem}
+.actions{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px}
+.btn{font:inherit; font-size:.95rem; padding:9px 14px; border-radius:10px; border:2px solid var(--ink); background:var(--panel); color:var(--ink); cursor:pointer}
+.btn.primary{background:var(--ink); color:var(--panel); font-weight:700}
+.btn:focus-visible,.seg button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--accent2); outline-offset:2px}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse; width:100%; min-width:420px}
+th,td{text-align:right; padding:7px 10px; border-bottom:1px solid var(--line)}
+th{font-size:.9rem; color:var(--muted); font-weight:700}
+th:first-child,td:first-child{text-align:left}
+tfoot td{font-weight:700; border-bottom:0}
+td.empty{text-align:left; color:var(--muted)}
+.bottom{display:grid; gap:16px; grid-template-columns:1fr; margin-top:16px}
+@media (min-width:860px){ .bottom{grid-template-columns:1.05fr 1fr} }
+details summary{cursor:pointer; font-weight:700; font-size:1.05rem}
+details p{margin:10px 0 0; max-width:62ch}
+.legend{display:flex; flex-wrap:wrap; gap:14px; font-size:.88rem; color:var(--muted); margin-top:6px}
+.legend i{display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle}
+@media (prefers-reduced-motion: reduce){ .btn,.seg button{transition:none} }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Gesetz von Boyle-Mariotte</h1>
+    <p class="lead">Ein eingeschlossenes Gas wird zusammengedrückt oder entspannt. Temperatur und Gasmenge bleiben dabei gleich. Wie hängen Druck und Volumen zusammen?</p>
+    <span class="formula">T = konstant</span>
+  </header>
+
+  <section class="grid">
+    <div class="panel">
+      <h2>Versuch: Kolben im Zylinder</h2>
+      <canvas id="cyl" aria-label="Zylinder mit Kolben, Gasteilchen und Manometer"></canvas>
+      <div class="slider">
+        <label for="vol">Volumen einstellen <span>oder am Kolben ziehen</span></label>
+        <input type="range" id="vol" min="20" max="100" step="1" value="50">
+      </div>
+      <div class="readouts">
+        <div class="ro"><span>Volumen V</span><b id="rV">50 ml</b></div>
+        <div class="ro"><span>Druck p</span><b id="rP">1000 hPa</b></div>
+        <div class="ro pv"><span>p · V</span><b id="rPV">50 000</b></div>
+        <div class="ro"><span>Temperatur T</span><b>20 °C</b></div>
+      </div>
+      <p class="hits">Stöße der Teilchen auf den Kolben: <b id="rHits">–</b> pro Sekunde</p>
+    </div>
+
+    <div class="panel">
+      <h2>Diagramm</h2>
+      <div class="seg" role="group" aria-label="Diagrammart">
+        <button id="mPV" aria-pressed="true">p über V</button>
+        <button id="mInv" aria-pressed="false">p über 1/V</button>
+      </div>
+      <canvas id="plot" aria-label="Diagramm Druck gegen Volumen"></canvas>
+      <div class="legend">
+        <span><i style="background:var(--accent)"></i>aktueller Zustand</span>
+        <span><i style="background:var(--accent2)"></i>Messwerte</span>
+      </div>
+      <label class="chk"><input type="checkbox" id="theory"> Theoriekurve einblenden</label>
+    </div>
+  </section>
+
+  <section class="bottom">
+    <div class="panel">
+      <h2>Messtabelle</h2>
+      <div class="actions">
+        <button class="btn primary" id="rec">Messwert aufnehmen</button>
+        <button class="btn" id="auto">Automatisch bewegen</button>
+        <button class="btn" id="clr">Tabelle leeren</button>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Nr.</th><th>V in ml</th><th>p in hPa</th><th>p · V in hPa·ml</th></tr></thead>
+          <tbody id="tb"></tbody>
+          <tfoot id="tf"></tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Auswertung</h2>
+      <details>
+        <summary>Ergebnis anzeigen</summary>
+        <p><b>Gesetz von Boyle-Mariotte:</b> Bei gleichbleibender Temperatur und Gasmenge ist das Produkt aus Druck und Volumen konstant: p · V = konstant, also p₁ · V₁ = p₂ · V₂. Druck und Volumen sind antiproportional. Halbes Volumen bedeutet doppelten Druck.</p>
+        <p>Im p-V-Diagramm ergibt sich eine Hyperbel. Trägt man p über 1/V auf, liegen die Punkte auf einer Ursprungsgeraden.</p>
+      </details>
+      <details style="margin-top:12px">
+        <summary>Erklärung im Teilchenmodell</summary>
+        <p>Die Gasteilchen fliegen ungeordnet umher und prallen gegen die Wände. Jeder Aufprall drückt ein wenig gegen den Kolben. Wird das Volumen halbiert, ist der Weg bis zum nächsten Aufprall nur noch halb so lang. Die Teilchen treffen doppelt so oft auf den Kolben, der Druck verdoppelt sich.</p>
+        <p>Weil die Temperatur gleich bleibt, fliegen die Teilchen nicht schneller. Nur die Anzahl der Stöße pro Sekunde ändert sich.</p>
+      </details>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const K = 50000;            // p·V in hPa·ml (1000 hPa bei 50 ml)
+  const VMIN = 20, VMAX = 100, VSCALE = 110;
+  const PMAX = 3000;
+  const N = 70, R = 1.6;      // Teilchenzahl, Radius in Welteinheiten
+  const fmt = n => Math.round(n).toLocaleString('de-DE');
+
+  let C = {};
+  function readColors(){
+    const s = getComputedStyle(document.documentElement);
+    ['bg','panel','ink','muted','line','gas','accent','accent2','metal','glass','grid']
+      .forEach(k => C[k] = s.getPropertyValue('--'+k).trim());
+  }
+  readColors();
+  try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readColors); } catch(e){}
+
+  const cyl = $('cyl'), plot = $('plot');
+  const cc = cyl.getContext('2d'), pc = plot.getContext('2d');
+  let dpr = 1, cw = 0, ch = 0, pw = 0, ph = 0, geo = {};
+
+  let target = 50, Vcur = 50, auto = false, autoT = 0, mode = 'pv';
+  let P = [], hits = [], flashes = [], trail = [], data = [];
+  let hitRate = 0;
+
+  function resize(){
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cw = cyl.clientWidth; ch = cyl.clientHeight;
+    cyl.width = Math.round(cw*dpr); cyl.height = Math.round(ch*dpr);
+    pw = plot.clientWidth; ph = plot.clientHeight;
+    plot.width = Math.round(pw*dpr); plot.height = Math.round(ph*dpr);
+
+    const oldW = geo.worldW;
+    const yTop = 30, yBot = ch - 20, Hin = yBot - yTop;
+    const cylX = Math.max(44, cw*0.1);
+    const cylW = Math.min(cw*0.46, Hin*0.62);
+    const ppu = Hin / VSCALE;
+    const right = cw - (cylX + cylW);
+    const gr = Math.max(28, Math.min(right/2 - 12, 66));
+    geo = { yTop, yBot, Hin, cylX, cylW, ppu, worldW: cylW/ppu,
+            gx: cylX + cylW + right/2, gr, gy: yBot - gr - 46 };
+    if (oldW && P.length){ const f = geo.worldW/oldW; P.forEach(p => p.x *= f); }
+  }
+
+  function initParticles(){
+    P = [];
+    for (let i=0;i<N;i++){
+      const s = 45 + Math.random()*40, a = Math.random()*Math.PI*2;
+      P.push({ x: R + Math.random()*(geo.worldW-2*R), y: R + Math.random()*(Vcur-2*R),
+               vx: Math.cos(a)*s, vy: Math.sin(a)*s });
+    }
+  }
+
+  function Vd(){ return Math.round(Vcur); }
+  function pd(v){ return Math.round(K/v/10)*10; }
+
+  // --- Simulation ---
+  function step(dt, now){
+    if (auto){
+      autoT += dt;
+      target = 60 + 38*Math.sin(autoT*0.55);
+      slider.value = Math.round(target);
+    }
+    const prev = Vcur;
+    Vcur += (target - Vcur)*Math.min(1, dt*6);
+    if (Math.abs(Vcur - prev) > 0.01 || trail.length === 0){
+      const last = trail[trail.length-1];
+      if (!last || Math.abs(last - Vcur) > 0.25){ trail.push(Vcur); if (trail.length > 500) trail.shift(); }
+    }
+    const W = geo.worldW;
+    for (const p of P){
+      p.x += p.vx*dt; p.y += p.vy*dt;
+      if (p.x < R){ p.x = R + (R - p.x); p.vx = Math.abs(p.vx); }
+      else if (p.x > W-R){ p.x = W - R - (p.x - (W-R)); p.vx = -Math.abs(p.vx); }
+      p.x = Math.min(Math.max(p.x, R), W-R);
+      if (p.y < R){ p.y = R + (R - p.y); p.vy = Math.abs(p.vy); }
+      if (p.y > Vcur - R){
+        if (p.vy > 0){ hits.push(now); flashes.push({ x:p.x, t:now }); }
+        p.y = Vcur - R; p.vy = -Math.abs(p.vy);
+      }
+    }
+    while (hits.length && now - hits[0] > 1.5) hits.shift();
+    while (flashes.length && now - flashes[0].t > 0.18) flashes.shift();
+    hitRate += (hits.length/1.5 - hitRate)*Math.min(1, dt*3);
+  }
+
+  // --- Zeichnen: Zylinder ---
+  function drawCyl(now){
+    const c = cc; c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,cw,ch);
+    const { yTop, yBot, Hin, cylX, cylW, ppu, gx, gy, gr } = geo;
+    const py = yBot - Vcur*ppu;
+    const p = K/Vcur;
+
+    // Glas
+    c.fillStyle = C.glass; c.fillRect(cylX, yTop, cylW, Hin);
+    // Gas-Tönung nach Druck
+    c.globalAlpha = Math.min(0.32, 0.04 + p/PMAX*0.28);
+    c.fillStyle = C.gas; c.fillRect(cylX, py, cylW, yBot-py);
+    c.globalAlpha = 1;
+
+    // Skala
+    c.strokeStyle = C.muted; c.fillStyle = C.muted; c.lineWidth = 1;
+    c.font = '11px "Atkinson Hyperlegible", system-ui, sans-serif';
+    c.textAlign = 'right'; c.textBaseline = 'middle';
+    for (let v=0; v<=VSCALE; v+=10){
+      const y = yBot - v*ppu, major = v%20===0;
+      c.beginPath(); c.moveTo(cylX-(major?10:5), y); c.lineTo(cylX-2, y); c.stroke();
+      if (major && v>0 && v<=100) c.fillText(v, cylX-13, y);
+    }
+    c.textAlign = 'left'; c.fillText('ml', 6, yTop + 2);
+
+    // Leitung zum Manometer
+    c.strokeStyle = C.metal; c.lineWidth = 5; c.lineJoin = 'round';
+    c.beginPath(); c.moveTo(cylX+cylW, yBot-10); c.lineTo(gx, yBot-10); c.lineTo(gx, gy+gr); c.stroke();
+
+    // Teilchen
+    c.fillStyle = C.gas;
+    const rr = Math.max(2.5, Math.min(5, R*ppu));
+    for (const q of P){
+      c.beginPath(); c.arc(cylX + q.x*ppu, yBot - q.y*ppu, rr, 0, Math.PI*2); c.fill();
+    }
+
+    // Wände
+    c.strokeStyle = C.ink; c.lineWidth = 3; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(cylX, yTop-8); c.lineTo(cylX, yBot); c.lineTo(cylX+cylW, yBot); c.lineTo(cylX+cylW, yTop-8); c.stroke();
+
+    // Kolbenstange und Kolben
+    c.fillStyle = C.metal;
+    c.fillRect(cylX + cylW/2 - 6, 0, 12, py - 16);
+    c.fillRect(cylX + 2, py - 16, cylW - 4, 16);
+    c.strokeStyle = C.ink; c.lineWidth = 1.5;
+    c.strokeRect(cylX + 2, py - 16, cylW - 4, 16);
+
+    // Stoß-Blitze am Kolben
+    c.strokeStyle = C.accent; c.lineWidth = 2;
+    for (const f of flashes){
+      const a = 1 - (now - f.t)/0.18; if (a <= 0) continue;
+      c.globalAlpha = a;
+      const x = cylX + f.x*ppu;
+      c.beginPath(); c.moveTo(x-5, py+1); c.lineTo(x+5, py+1); c.stroke();
+    }
+    c.globalAlpha = 1;
+
+    // Manometer
+    c.fillStyle = C.panel; c.strokeStyle = C.ink; c.lineWidth = 2.5;
+    c.beginPath(); c.arc(gx, gy, gr, 0, Math.PI*2); c.fill(); c.stroke();
+    const a0 = 0.75*Math.PI, span = 1.5*Math.PI;
+    c.lineWidth = 1; c.strokeStyle = C.ink; c.fillStyle = C.ink;
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.font = `700 ${Math.max(10, gr*0.2)}px "Atkinson Hyperlegible", system-ui, sans-serif`;
+    for (let v=0; v<=PMAX; v+=250){
+      const a = a0 + v/PMAX*span, major = v%1000===0, mid = v%500===0;
+      const r1 = gr*(major?0.72:mid?0.8:0.86), r2 = gr*0.93;
+      c.lineWidth = major?2:1;
+      c.beginPath(); c.moveTo(gx+Math.cos(a)*r1, gy+Math.sin(a)*r1); c.lineTo(gx+Math.cos(a)*r2, gy+Math.sin(a)*r2); c.stroke();
+      if (major) c.fillText(v/1000, gx+Math.cos(a)*gr*0.55, gy+Math.sin(a)*gr*0.55);
+    }
+    c.font = `${Math.max(9, gr*0.16)}px "Atkinson Hyperlegible", system-ui, sans-serif`;
+    c.fillStyle = C.muted; c.fillText('bar', gx, gy + gr*0.45);
+    const an = a0 + Math.min(p, PMAX)/PMAX*span;
+    c.strokeStyle = C.accent; c.lineWidth = 3;
+    c.beginPath(); c.moveTo(gx - Math.cos(an)*gr*0.12, gy - Math.sin(an)*gr*0.12);
+    c.lineTo(gx + Math.cos(an)*gr*0.8, gy + Math.sin(an)*gr*0.8); c.stroke();
+    c.fillStyle = C.ink; c.beginPath(); c.arc(gx, gy, 4, 0, Math.PI*2); c.fill();
+    c.fillStyle = C.ink; c.font = '700 13px "Atkinson Hyperlegible", system-ui, sans-serif';
+    c.fillText('Manometer', gx, gy - gr - 12);
+  }
+
+  // --- Zeichnen: Diagramm ---
+  function drawPlot(){
+    const c = pc; c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,pw,ph);
+    const m = { l:58, r:14, t:14, b:44 };
+    const W = pw - m.l - m.r, H = ph - m.t - m.b;
+    const inv = mode === 'inv';
+    const xMax = inv ? 55 : 110, xStep = inv ? 10 : 20, yStep = 500;
+    const xOf = V => inv ? 1000/V : V;
+    const X = x => m.l + x/xMax*W, Y = p => m.t + H - p/PMAX*H;
+    const font = '12px "Atkinson Hyperlegible", system-ui, sans-serif';
+
+    // Gitter
+    c.strokeStyle = C.grid; c.lineWidth = 1;
+    for (let x=xStep; x<=xMax; x+=xStep){ c.beginPath(); c.moveTo(X(x), m.t); c.lineTo(X(x), m.t+H); c.stroke(); }
+    for (let y=yStep; y<=PMAX; y+=yStep){ c.beginPath(); c.moveTo(m.l, Y(y)); c.lineTo(m.l+W, Y(y)); c.stroke(); }
+
+    // Achsen
+    c.strokeStyle = C.ink; c.lineWidth = 1.5;
+    c.beginPath(); c.moveTo(m.l, m.t); c.lineTo(m.l, m.t+H); c.lineTo(m.l+W, m.t+H); c.stroke();
+    c.fillStyle = C.muted; c.font = font;
+    c.textAlign = 'center'; c.textBaseline = 'top';
+    for (let x=0; x<=xMax; x+=xStep) c.fillText(x, X(x), m.t+H+6);
+    c.textAlign = 'right'; c.textBaseline = 'middle';
+    for (let y=0; y<=PMAX; y+=yStep) c.fillText(y.toLocaleString('de-DE'), m.l-6, Y(y));
+    c.fillStyle = C.ink; c.font = '700 13px "Atkinson Hyperlegible", system-ui, sans-serif';
+    c.textAlign = 'right'; c.textBaseline = 'bottom';
+    c.fillText(inv ? '1/V in 1/l' : 'V in ml', m.l+W, ph-4);
+    c.save(); c.translate(14, m.t + H/2); c.rotate(-Math.PI/2);
+    c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('p in hPa', 0, 0); c.restore();
+
+    c.save(); c.beginPath(); c.rect(m.l, m.t, W, H); c.clip();
+
+    // Theorie
+    if ($('theory').checked){
+      c.strokeStyle = C.muted; c.lineWidth = 2; c.setLineDash([6,5]);
+      c.beginPath();
+      if (inv){ c.moveTo(X(0), Y(0)); c.lineTo(X(55), Y(50*55)); }
+      else { let first = true; for (let V=K/PMAX; V<=110; V+=0.5){ const x=X(V), y=Y(K/V); first ? c.moveTo(x,y) : c.lineTo(x,y); first=false; } }
+      c.stroke(); c.setLineDash([]);
+    }
+
+    // Spur
+    c.fillStyle = C.accent; c.globalAlpha = 0.18;
+    for (const V of trail){ c.beginPath(); c.arc(X(xOf(V)), Y(K/V), 2, 0, Math.PI*2); c.fill(); }
+    c.globalAlpha = 1;
+
+    // Messwerte
+    for (const d of data){
+      c.fillStyle = C.accent2; c.strokeStyle = C.panel; c.lineWidth = 2;
+      c.beginPath(); c.arc(X(xOf(d.V)), Y(d.p), 6, 0, Math.PI*2); c.fill(); c.stroke();
+    }
+
+    // Aktueller Zustand
+    const cx = X(xOf(Vcur)), cy = Y(K/Vcur);
+    c.strokeStyle = C.accent; c.globalAlpha = 0.55; c.lineWidth = 1.2; c.setLineDash([4,4]);
+    c.beginPath(); c.moveTo(cx, m.t+H); c.lineTo(cx, cy); c.lineTo(m.l, cy); c.stroke();
+    c.setLineDash([]); c.globalAlpha = 1;
+    c.fillStyle = C.accent; c.strokeStyle = C.panel; c.lineWidth = 2.5;
+    c.beginPath(); c.arc(cx, cy, 7.5, 0, Math.PI*2); c.fill(); c.stroke();
+    c.restore();
+  }
+
+  // --- Anzeigen ---
+  let lastTxt = '';
+  function updateReadouts(){
+    const v = Vd(), p = pd(v);
+    const txt = v + '|' + p + '|' + Math.round(hitRate);
+    if (txt === lastTxt) return; lastTxt = txt;
+    $('rV').textContent = v + ' ml';
+    $('rP').textContent = fmt(p) + ' hPa';
+    $('rPV').textContent = fmt(p*v) + ' hPa·ml';
+    $('rHits').textContent = hitRate > 0.5 ? '≈ ' + Math.round(hitRate) : '–';
+  }
+
+  function renderTable(){
+    const tb = $('tb'), tf = $('tf');
+    if (!data.length){
+      tb.innerHTML = '<tr><td class="empty" colspan="4">Noch keine Messwerte. Stelle ein Volumen ein und nimm den Wert auf.</td></tr>';
+      tf.innerHTML = ''; return;
+    }
+    tb.innerHTML = data.map((d,i) =>
+      `<tr><td>${i+1}</td><td>${d.V}</td><td>${fmt(d.p)}</td><td>${fmt(d.p*d.V)}</td></tr>`).join('');
+    if (data.length >= 2){
+      const mean = data.reduce((s,d) => s + d.p*d.V, 0)/data.length;
+      tf.innerHTML = `<tr><td colspan="3">Mittelwert p · V</td><td>${fmt(mean)}</td></tr>`;
+    } else tf.innerHTML = '';
+  }
+
+  // --- Bedienung ---
+  const slider = $('vol');
+  function setAuto(on){
+    auto = on;
+    $('auto').textContent = on ? 'Anhalten' : 'Automatisch bewegen';
+    if (on){ const s = Math.max(-1, Math.min(1, (Vcur-60)/38)); autoT = Math.asin(s)/0.55; }
+  }
+  slider.addEventListener('input', () => { setAuto(false); target = +slider.value; });
+  $('auto').addEventListener('click', () => setAuto(!auto));
+  $('rec').addEventListener('click', () => {
+    const v = Vd(); data.push({ V:v, p:pd(v) });
+    if (data.length > 15) data.shift();
+    renderTable();
+  });
+  $('clr').addEventListener('click', () => { data = []; trail = []; renderTable(); });
+  function setMode(m){
+    mode = m;
+    $('mPV').setAttribute('aria-pressed', m==='pv');
+    $('mInv').setAttribute('aria-pressed', m==='inv');
+  }
+  $('mPV').addEventListener('click', () => setMode('pv'));
+  $('mInv').addEventListener('click', () => setMode('inv'));
+
+  let drag = false;
+  function dragTo(e){
+    const r = cyl.getBoundingClientRect();
+    const V = Math.max(VMIN, Math.min(VMAX, (geo.yBot - (e.clientY - r.top))/geo.ppu));
+    target = V; slider.value = Math.round(V);
+  }
+  cyl.addEventListener('pointerdown', e => {
+    const r = cyl.getBoundingClientRect(), x = e.clientX - r.left;
+    if (x > geo.cylX - 24 && x < geo.cylX + geo.cylW + 24){
+      drag = true; setAuto(false);
+      try { cyl.setPointerCapture(e.pointerId); } catch(err){}
+      dragTo(e);
+    }
+  });
+  cyl.addEventListener('pointermove', e => { if (drag) dragTo(e); });
+  ['pointerup','pointercancel'].forEach(t => cyl.addEventListener(t, () => drag = false));
+
+  // --- Start ---
+  resize(); initParticles(); renderTable();
+  if ('ResizeObserver' in window){ new ResizeObserver(resize).observe(document.body); }
+  else window.addEventListener('resize', resize);
+
+  let tPrev = performance.now(), colorTick = 0;
+  function frame(tNow){
+    const dt = Math.min(0.033, (tNow - tPrev)/1000); tPrev = tNow;
+    const now = tNow/1000;
+    if ((colorTick += dt) > 1){ colorTick = 0; readColors(); }
+    step(dt, now);
+    drawCyl(now); drawPlot(); updateReadouts();
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+<a href="../../../../index.html#klasse-8" style="position:fixed;left:10px;bottom:10px;z-index:50;font:600 14px/1 Arial,Helvetica,sans-serif;color:#fff;background:rgba(27,42,74,.88);text-decoration:none;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.35)">&larr; Übersicht</a>
+</body>
+</html>

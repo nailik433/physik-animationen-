@@ -12,9 +12,16 @@ Reines HTML/CSS/JavaScript – kein Build, keine Installation, keine Internetver
 
 | Klasse | Thema | Animation |
 |---|---|---|
+| 7 | Magnetismus | Elementarmagnete: Nagel magnetisieren |
+| 8 | Druck und Gase | Gesetz von Boyle-Mariotte |
+| 9 | Elektrizität | Leiter und Nichtleiter |
+| 9 | Elektrizität | Der Weg durch das Lämpchen |
+| 9 | Elektrizität | Stromstärke im Modell |
 | 9 | Elektrizität | Rollenspiel: Wir sind der Stromkreis |
+| 9 | Induktion und Transformator | Transformator-Labor |
+| 9 | Induktion und Transformator | Transformator: Gleich- vs. Wechselstrom |
 
-Klasse 7, 8 und 10 sind angelegt und warten auf Inhalte.
+Klasse 10 ist angelegt und wartet auf Inhalte. Die Klassenzuordnung steht in `daten/animationen.js` und lässt sich dort jederzeit ändern (Eintrag `klasse`/`thema` anpassen, Ordner bei Bedarf verschieben).
 
 ## Neue Animation hinzufügen
 

@@ -1,0 +1,234 @@
+<!doctype html><html lang="de"><head><title>Stromstärke im Modell – Physik-Animationen</title><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<style>
+  /* Layout: Stromkreis mit drei Zählstellen links, Bedienung und Zählstand rechts. Gleiche Bildsprache wie die Animationen aus DS 1 und DS 3. */
+  :root {
+    color-scheme: dark;
+    --ground: #16213E;
+    --panel: #1B2A4A;
+    --panel-2: #22345A;
+    --line: #34497A;
+    --text: #F4F7FB;
+    --muted: #B9C6DE;
+    --accent: #FFC145;
+    --accent-soft: rgba(255, 193, 69, 0.18);
+    --electron: #7FD3FF;
+    --count: #FF8A7A;
+    --display: "Source Serif 4", Cambria, Georgia, serif;
+    --body: "Source Sans 3", Calibri, "Segoe UI", Arial, sans-serif;
+  }
+  html, body { height: 100%; }
+  body { background: var(--ground); color: var(--text); font-family: var(--body); font-size: 17px; line-height: 1.5; padding-inline: 16px; padding-block: 20px 28px; }
+  .wrap { max-width: 1240px; margin: 0 auto; display: grid; gap: 16px; }
+  header { display: grid; gap: 4px; }
+  h1 { font-family: var(--display); font-size: clamp(26px, 3.4vw, 40px); line-height: 1.15; margin: 0; text-wrap: balance; }
+  .lead { color: var(--muted); margin: 0; max-width: 70ch; }
+  .main { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 16px; align-items: start; }
+  @media (max-width: 960px) { .main { grid-template-columns: 1fr; } }
+  .stage { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; min-width: 0; }
+  canvas { display: block; width: 100%; aspect-ratio: 1000 / 600; max-width: 100%; }
+  aside { display: grid; gap: 12px; min-width: 0; }
+  .group { display: grid; gap: 8px; }
+  .group h2 { font-size: 13px; font-weight: 700; letter-spacing: .06em; color: var(--muted); margin: 0; }
+  .chips, .toggles { display: flex; flex-wrap: wrap; gap: 8px; }
+  button { font: 600 15px/1.1 var(--body); color: var(--text); background: transparent; border: 1.5px solid var(--line); border-radius: 999px; padding: 9px 14px; cursor: pointer; }
+  button:hover { border-color: var(--muted); }
+  button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
+  button.primary { background: var(--accent); color: #16213E; border-color: var(--accent); font-size: 17px; padding: 12px 18px; width: 100%; }
+  button.primary[aria-pressed="true"] { background: transparent; color: var(--accent); }
+  button:disabled { opacity: .5; cursor: default; }
+  .counts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .cnt { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px; text-align: center; display: grid; gap: 2px; }
+  .cnt b { font-size: 15px; color: var(--count); }
+  .cnt span { font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .cnt small { font-size: 12px; color: var(--muted); }
+  .tally { font-size: 15px; color: var(--muted); min-height: 1.5em; }
+  .fact { padding: 14px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); display: grid; gap: 6px; }
+  .fact h3 { font-family: var(--display); font-size: 19px; margin: 0; color: var(--accent); }
+  .fact p { margin: 0; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Stromstärke im Modell</h1>
+    <p class="lead">Die Zählstellen A, B und C zählen, wie viele Elektronen pro Sekunde vorbeikommen. Das ist die Stromstärke.</p>
+  </header>
+  <div class="main">
+    <section class="stage" aria-label="Animation: Stromkreis mit drei Zählstellen">
+      <canvas id="cv" role="img" aria-label="Stromkreis aus Batterie, Schalter und Lämpchen oder Motor mit den Zählstellen A, B und C. Punkte stellen Elektronen dar."></canvas>
+    </section>
+    <aside>
+      <button id="switch" class="primary" aria-pressed="false">Schalter schließen</button>
+      <div class="group">
+        <h2>Gerät im Stromkreis</h2>
+        <div class="chips">
+          <button id="dev-lampe" aria-pressed="true">Lämpchen</button>
+          <button id="dev-motor" aria-pressed="false">Motor</button>
+        </div>
+      </div>
+      <div class="group">
+        <h2>Elektronen pro Sekunde</h2>
+        <div class="counts">
+          <div class="cnt"><b>A</b><span id="cA">0</span><small>pro Sekunde</small></div>
+          <div class="cnt"><b>B</b><span id="cB">0</span><small>pro Sekunde</small></div>
+          <div class="cnt"><b>C</b><span id="cC">0</span><small>pro Sekunde</small></div>
+        </div>
+        <button id="count10">10 Sekunden zählen</button>
+        <div class="tally" id="tally" aria-live="polite"></div>
+      </div>
+      <div class="group">
+        <h2>Ansicht</h2>
+        <div class="toggles">
+          <button id="energy" aria-pressed="false">Energie zeigen</button>
+          <button id="track" aria-pressed="false">Ein Elektron verfolgen</button>
+          <button id="explain" aria-pressed="false">Erklärung zeigen</button>
+          <button id="pause" aria-pressed="false">Anhalten</button>
+        </div>
+      </div>
+      <div class="fact" id="fact" hidden>
+        <h3 id="factH">Was zeigt die Animation?</h3>
+        <p id="factP"></p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(() => {
+  const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+  const W = 1000, H = 600;
+  const C = { panel: '#1B2A4A', text: '#F4F7FB', muted: '#B9C6DE', wire: '#B9C6DE', accent: '#FFC145', e: '#7FD3FF', count: '#FF8A7A', deep: '#132038' };
+  const X0 = 150, X1 = 850, Y0 = 100, Y1 = 470, BX = 500, MID = (Y0 + Y1) / 2;
+  // Pfad der Elektronen: vom Minuspol (links an der Batterie) im Uhrzeigersinn zum Pluspol
+  const path = [[BX - 10, Y1], [X0, Y1], [X0, Y0], [X1, Y0], [X1, Y1], [BX + 10, Y1], [BX - 10, Y1]];
+  const segs = []; let PL = 0;
+  for (let i = 0; i + 1 < path.length; i++) { const a = path[i], b = path[i + 1], l = Math.hypot(b[0] - a[0], b[1] - a[1]); segs.push({ a, b, l, s: PL }); PL += l; }
+  const SP = 20, N = Math.round(PL / SP);           // Abstand der Elektronen; Pfadlänge ist ein Vielfaches davon
+  const posOf = s => { s = ((s % PL) + PL) % PL; for (const g of segs) if (s <= g.s + g.l) { const t = (s - g.s) / g.l; return [g.a[0] + (g.b[0] - g.a[0]) * t, g.a[1] + (g.b[1] - g.a[1]) * t]; } return path[0]; };
+  // Zählstellen liegen auf Vielfachen von SP: alle Elektronen passieren A, B und C im selben Takt
+  const P = { A: 160, B: 340 + 370 + 350, C: 340 + 370 + 700 + 370 + 160 };
+  const DEV_S = 340 + 370 + 700 + 185;               // Gerät rechts in der Mitte
+  const SPEED = { lampe: 60, motor: 100 };           // 3 bzw. 5 Elektronen pro Sekunde
+
+  let closed = false, dev = 'lampe', energy = false, tracking = false, explain = false, paused = false;
+  let phase = 0, prevPhase = 0, glow = 0, rot = 0, simT = 0;
+  const hits = { A: [], B: [], C: [] };
+  let counting = null;
+
+  const hidden = (x, y) => (Math.abs(y - Y1) < 2 && x > BX - 14 && x < BX + 14) || (!closed && Math.abs(x - X0) < 2 && y > MID - 34 && y < MID + 34) || (Math.abs(x - X1) < 2 && y > MID - 40 && y < MID + 40);
+
+  function line(x1, y1, x2, y2, col = C.wire, w = 6) { ctx.strokeStyle = col; ctx.lineWidth = w; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
+  function label(t, x, y, o = {}) { ctx.fillStyle = o.col || C.muted; ctx.font = `${o.w || 600} ${o.s || 18}px "Source Sans 3", Calibri, Arial, sans-serif`; ctx.textAlign = o.al || 'center'; ctx.textBaseline = 'middle'; ctx.fillText(t, x, y); }
+
+  function drawCircuit() {
+    line(BX - 10, Y1, X0, Y1); line(X0, Y1, X0, MID + 34); line(X0, MID - 34, X0, Y0); line(X0, Y0, X1, Y0);
+    line(X1, Y0, X1, MID - 40); line(X1, MID + 40, X1, Y1); line(X1, Y1, BX + 10, Y1);
+    // Batterie: kurzer Strich links (−), langer rechts (+)
+    line(BX - 10, Y1 - 16, BX - 10, Y1 + 16, C.text, 7); line(BX + 10, Y1 - 34, BX + 10, Y1 + 34, C.text, 7);
+    label('−', BX - 34, Y1 - 34, { s: 30, col: C.text, w: 700 }); label('+', BX + 36, Y1 - 34, { s: 30, col: C.text, w: 700 });
+    label('Batterie', BX, Y1 + 58, { s: 17 });
+    // Schalter (links)
+    ctx.fillStyle = C.text; ctx.beginPath(); ctx.arc(X0, MID + 34, 6, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(X0, MID - 34, 6, 0, 7); ctx.fill();
+    if (closed) line(X0, MID + 34, X0, MID - 34, C.text, 6); else line(X0, MID + 34, X0 - 36, MID - 22, C.text, 6);
+    label('Schalter', X0 - 30, MID, { s: 17, al: 'right' });
+    // Gerät (rechts)
+    if (dev === 'lampe') {
+      if (glow > 0.02) { const g = ctx.createRadialGradient(X1, MID, 10, X1, MID, 130); g.addColorStop(0, `rgba(255,233,168,${0.85 * glow})`); g.addColorStop(0.5, `rgba(255,193,69,${0.3 * glow})`); g.addColorStop(1, 'rgba(255,193,69,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(X1, MID, 130, 0, 7); ctx.fill(); }
+      ctx.fillStyle = glow > 0.02 ? `rgba(255,246,214,${0.25 + 0.6 * glow})` : C.deep; ctx.strokeStyle = C.text; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.arc(X1, MID, 40, 0, 7); ctx.fill(); ctx.stroke();
+      const d = 40 / Math.SQRT2; line(X1 - d, MID - d, X1 + d, MID + d, C.text, 4); line(X1 - d, MID + d, X1 + d, MID - d, C.text, 4);
+      label('Lämpchen', X1 + 56, MID, { s: 17, al: 'left' });
+    } else {
+      ctx.fillStyle = C.deep; ctx.strokeStyle = C.text; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(X1, MID, 40, 0, 7); ctx.fill(); ctx.stroke();
+      ctx.save(); ctx.translate(X1, MID); ctx.rotate(rot); ctx.strokeStyle = 'rgba(255,193,69,.55)'; ctx.lineWidth = 3;
+      for (let k = 0; k < 3; k++) { ctx.rotate(2 * Math.PI / 3); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(30, 0); ctx.stroke(); }
+      ctx.restore(); label('M', X1, MID + 1, { s: 30, col: C.text, w: 700 });
+      label('Motor', X1 + 56, MID, { s: 17, al: 'left' });
+    }
+  }
+  function drawElectrons() {
+    const trackI = Math.floor(N * 0.4);
+    for (let i = 0; i < N; i++) {
+      const s = i * SP + phase, [x, y] = posOf(s);
+      if (hidden(x, y)) continue;
+      const sm = ((s % PL) + PL) % PL;
+      ctx.fillStyle = C.e; ctx.beginPath(); ctx.arc(x, y, 6, 0, 7); ctx.fill();
+      if (energy && sm < DEV_S) { ctx.fillStyle = C.accent; ctx.fillRect(x - 5, y - 17, 10, 8); }
+      if (tracking && i === trackI) { ctx.strokeStyle = C.accent; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, 14, 0, 7); ctx.stroke(); }
+    }
+  }
+  function drawCounters(now) {
+    for (const k of ['A', 'B', 'C']) {
+      const [x, y] = posOf(P[k]);
+      const flash = hits[k].length && now - hits[k].at(-1) < 0.18;
+      const ox = 0, oy = y === Y0 ? -46 : 46;
+      ctx.strokeStyle = C.count; ctx.lineWidth = 4; line(x, y - 22, x, y + 22, C.count, 4);
+      ctx.fillStyle = flash ? C.count : C.panel; ctx.strokeStyle = C.count; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(x + ox, y + oy, 22, 0, 7); ctx.fill(); ctx.stroke();
+      label(k, x + ox, y + oy + 1, { s: 22, w: 700, col: flash ? C.panel : C.count });
+    }
+  }
+  // Anzeige: Durchgänge pro Sekunde, gemittelt über die letzten 2 Sekunden (an A, B und C immer gleich)
+  function rate(k, now) { const n = hits[k].filter(t => now - t <= 2.0).length; return closed ? Math.round(n / 2) : 0; }
+
+  function step(dt) {
+    const v = closed ? SPEED[dev] : 0;
+    simT += dt;
+    prevPhase = phase; phase += v * dt;
+    // Durchgänge: ein Elektron passiert eine Zählstelle, wenn phase ein Vielfaches von SP überschreitet
+    const n0 = Math.floor(prevPhase / SP), n1 = Math.floor(phase / SP);
+    for (let n = n0 + 1; n <= n1; n++) for (const k of ['A', 'B', 'C']) { hits[k].push(simT); if (counting) counting[k]++; }
+    for (const k of ['A', 'B', 'C']) while (hits[k].length && simT - hits[k][0] > 2.5) hits[k].shift();
+    glow += ((closed && dev === 'lampe' ? 1 : 0) - glow) * Math.min(1, dt * 6);
+    if (closed && dev === 'motor') rot += dt * 6;
+    if (counting) { counting.t -= dt; if (counting.t <= 0) finishCount(); else document.getElementById('tally').textContent = `Zähle … noch ${Math.ceil(counting.t)} s   A: ${counting.A}   B: ${counting.B}   C: ${counting.C}`; }
+  }
+  function finishCount() {
+    const c = counting; counting = null;
+    document.getElementById('tally').textContent = `In 10 Sekunden gezählt:   A: ${c.A}   B: ${c.B}   C: ${c.C}`;
+    document.getElementById('count10').disabled = false;
+  }
+
+  const $ = id => document.getElementById(id);
+  const swBtn = $('switch');
+  swBtn.addEventListener('click', () => { closed = !closed; sync(); });
+  $('dev-lampe').addEventListener('click', () => { dev = 'lampe'; sync(); });
+  $('dev-motor').addEventListener('click', () => { dev = 'motor'; sync(); });
+  $('count10').addEventListener('click', () => { counting = { t: 10, A: 0, B: 0, C: 0 }; $('count10').disabled = true; });
+  const tog = (id, get, set) => $(id).addEventListener('click', () => { set(!get()); $(id).setAttribute('aria-pressed', String(get())); sync(); });
+  tog('energy', () => energy, v => energy = v);
+  tog('track', () => tracking, v => tracking = v);
+  tog('explain', () => explain, v => explain = v);
+  tog('pause', () => paused, v => paused = v);
+
+  function sync() {
+    swBtn.textContent = closed ? 'Schalter öffnen' : 'Schalter schließen';
+    swBtn.setAttribute('aria-pressed', String(closed));
+    $('dev-lampe').setAttribute('aria-pressed', String(dev === 'lampe'));
+    $('dev-motor').setAttribute('aria-pressed', String(dev === 'motor'));
+    $('fact').hidden = !explain;
+    let h, p;
+    if (!closed) { h = 'Schalter offen'; p = 'Die Elektronen sind überall im Draht, aber sie werden nicht angetrieben. An keiner Zählstelle kommt ein Elektron vorbei: Die Stromstärke ist null.'; }
+    else if (energy) { h = 'Elektronen und Energie'; p = 'Die Elektronen bekommen an der Batterie Energie und geben sie am ' + (dev === 'lampe' ? 'Lämpchen' : 'Motor') + ' ab. Die Elektronen selbst bleiben alle im Stromkreis. Verbraucht wird nur die Energie, nicht der Strom.'; }
+    else { h = 'An A, B und C gleich viele'; p = 'An jeder Zählstelle kommen gleich viele Elektronen pro Sekunde vorbei. Die Stromstärke ist überall im Stromkreis gleich groß. ' + (dev === 'motor' ? 'Mit dem Motor sind es mehr pro Sekunde als mit dem Lämpchen: Die Stromstärke ist größer.' : 'Ein anderes Gerät kann eine andere Stromstärke haben. Probiere den Motor aus.'); }
+    $('factH').textContent = h; $('factP').textContent = p;
+  }
+
+  function resize() { const dpr = Math.min(window.devicePixelRatio || 1, 2), w = cv.clientWidth; cv.width = Math.round(w * dpr); cv.height = Math.round(w * 0.6 * dpr); ctx.setTransform(cv.width / W, 0, 0, cv.height / H, 0, 0); }
+  window.addEventListener('resize', resize);
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000) * (reduce ? 0.5 : 1); last = now;
+    if (!paused) step(dt);
+    ctx.fillStyle = C.panel; ctx.fillRect(0, 0, W, H);
+    drawCircuit(); drawElectrons(); drawCounters(simT);
+    for (const k of ['A', 'B', 'C']) $('c' + k).textContent = rate(k, simT);
+    requestAnimationFrame(frame);
+  }
+  resize(); sync(); requestAnimationFrame(frame);
+})();
+</script>
+
+<a href="../../../../index.html#klasse-9" style="position:fixed;left:10px;bottom:10px;z-index:50;font:600 14px/1 Arial,Helvetica,sans-serif;color:#fff;background:rgba(27,42,74,.88);text-decoration:none;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.35)">&larr; Übersicht</a>
+</body></html>
