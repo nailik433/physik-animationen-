@@ -6,6 +6,22 @@ Statische Seite mit interaktiven Physik-Animationen für den Unterricht (Klasse 
 
 **Nur die Animationen bauen, die der Nutzer ausdrücklich vorgibt** (meist als Prompt-Datei). Keine eigenen Animationen oder „Beispiele“ ergänzen.
 
+## iPad zuerst (gilt für jede Animation)
+
+Alle Animationen werden **für die Nutzung am iPad optimiert** (Safari, quer und hochkant; typische Größen 1024×768, 1180×820, 1366×1024 – dazu Beamer-Betrieb vom iPad aus).
+
+- Bedienung nur per **Touch**: nichts darf von Hover, Rechtsklick oder Tastatur abhängen. Tastenkürzel sind nur eine Zugabe, jede Funktion braucht auch einen Knopf.
+- Antippbare Elemente mindestens **44 × 44 px**, mit Abstand zueinander. Schieberegler gut greifbar (Höhe ≥ 32 px).
+- **Zeigerereignisse** (`pointerdown/move/up`, bei Ziehen `setPointerCapture`) statt Maus-Ereignisse. Auf Zeichenflächen, die gezogen werden: `touch-action: none`, sonst scrollt oder zoomt die Seite mit. Auf Knöpfen und Bedienflächen `touch-action: manipulation` (kein Doppeltipp-Zoom).
+- Auf Bedien- und Zeichenflächen `user-select: none` und `-webkit-touch-callout: none`, damit kein Textmarkieren oder Lupenmenü aufpoppt.
+- `<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">`, Sicherheitsabstände mit `env(safe-area-inset-*)`. Höhen mit `dvh` statt `vh` (Safari-Adressleiste).
+- Layout muss **quer und hochkant** ohne horizontales Scrollen funktionieren; bei Vollbild-Animationen das Seitenverhältnis halten.
+- Vollbild (`requestFullscreen`) nur als Zugabe, nie als Voraussetzung.
+- Keine Funktionen, die auf dem iPad fehlen (z. B. Datei-Download-Tricks, Hover-Tooltips, Rechtsklickmenüs).
+- Leistung: flüssig auch auf älteren iPads (Canvas-Auflösung auf `devicePixelRatio ≤ 2` begrenzen, keine unnötigen Verläufe/Schatten pro Bild).
+
+**Test:** zusätzlich zum Desktop mit Playwright-Geräteprofil `iPad (gen 7)` und `iPad Pro 11` testen, jeweils quer und hochkant (`isMobile`, `hasTouch`), per Touch bedienen (`tap`), Screenshots ansehen und auf Überlappung/Abschneiden prüfen.
+
 ## Wenn eine neue Animation entsteht (immer alle Schritte)
 
 1. Datei aus `animationen/_vorlage.html` ableiten (oder, wenn der Prompt eine eigenständige Einzeldatei verlangt, als `…/<name>/index.html` mit eingebettetem CSS/JS ohne `assets/`), Ablage: `animationen/klasse-<N>/<thema-slug>/<name>.html` (Slug: Kleinbuchstaben, Umlaute ausgeschrieben, z. B. `elektrizitaet`).
@@ -19,7 +35,7 @@ Statische Seite mit interaktiven Physik-Animationen für den Unterricht (Klasse 
 - Farben nie hart codieren, sondern `Phys.f.*` (CSS-Variablen → Hell/Dunkel). Farbcode der Größen siehe README und beibehalten.
 - Layout: Zeichenfläche (`canvas`) links, Steuerung/Messwerte rechts, darunter ein „Merke“-Kasten mit den Kernaussagen. Jede Animation hat einen Pause-Knopf (`id="pause"`).
 - Physik korrekt und schulgerecht (DIN-Schaltsymbole, Einheiten mit Leerzeichen „6 V“, deutsches Dezimalkomma über `Phys.zahl`). Wo Geschwindigkeiten nur anschaulich skaliert sind, steht ein Hinweis auf der Seite.
-- Bedienelemente mind. 44 px hoch, Seite funktioniert auch auf dem Handy (kein horizontales Scrollen) und am Beamer (große Schrift, hoher Kontrast).
+- Seite funktioniert auch am Beamer (große Schrift, hoher Kontrast). Handy ist zweitrangig, das iPad hat Vorrang (siehe oben).
 
 ## Testen
 
