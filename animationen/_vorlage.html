@@ -1,0 +1,82 @@
+<!doctype html>
+<!--
+  VORLAGE für eine neue Animation.
+  1. Datei kopieren nach  animationen/klasse-<N>/<thema-ohne-umlaute>/<name>.html
+     (Beispiel: animationen/klasse-8/optik/lichtbrechung.html)
+  2. Titel, Klasse/Thema in der Kopfzeile, Text und Skript anpassen.
+  3. Die Pfade zu assets/ gelten für die Zieltiefe (drei Ebenen). Die Vorlage selbst ist daher nur als Kopie lauffähig.
+  4. Eintrag in daten/animationen.js ergänzen – fertig.
+-->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TITEL – Physik-Animationen</title>
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<header class="kopf">
+  <a class="zurueck" href="../../../index.html#klasse-8">← Übersicht</a>
+  <span class="krumen">Klasse 8 · THEMA</span>
+</header>
+
+<main class="seite">
+  <h1>TITEL</h1>
+  <p class="lead">Ein bis zwei Sätze: Was wird beobachtet, welche Frage steht im Raum?</p>
+
+  <div class="buehne">
+    <div class="haupt">
+      <section class="karte">
+        <canvas id="buehne" role="img" aria-label="Beschreibung der Animation"></canvas>
+      </section>
+      <section class="karte merke">
+        <h2>Merke</h2>
+        <ul>
+          <li>Kernaussage 1</li>
+          <li>Kernaussage 2 mit Formel: <span class="formel">F = m · a</span></li>
+        </ul>
+      </section>
+    </div>
+
+    <aside class="steuerung">
+      <section class="karte">
+        <h2>Steuerung</h2>
+        <div style="display:grid;gap:14px">
+          <div class="regler">
+            <label for="wert">Größe</label>
+            <output id="wert-anzeige" for="wert"></output>
+            <input id="wert" type="range" min="0" max="10" step="1" value="5">
+          </div>
+          <button class="knopf" id="pause" type="button" aria-pressed="false">❚❚ Pause</button>
+        </div>
+      </section>
+      <section class="karte">
+        <h2>Messwerte</h2>
+        <div class="messwerte">
+          <div class="wert u"><small>Größe</small><strong id="out-wert">–</strong></div>
+        </div>
+      </section>
+    </aside>
+  </div>
+</main>
+
+<script src="../../../assets/common.js"></script>
+<script>
+(function () {
+  'use strict';
+  const L = Phys.leinwand(document.getElementById('buehne'), 800, 450);   // Koordinaten 800 × 450
+  const ctx = L.ctx, F = Phys.f;                                           // F = Farben (Hell/Dunkel)
+
+  let wert = 5;
+  Phys.regler(document.getElementById('wert'), document.getElementById('wert-anzeige'),
+    v => Phys.zahl(v) + ' Einheit', v => { wert = v; });
+
+  Phys.animieren(dt => {          // dt = Sekunden seit dem letzten Bild (bei Pause: 0)
+    L.neu();
+    Phys.text(ctx, 'Hier zeichnen …', 400, 225, { groesse: 24, fett: true });
+    document.getElementById('out-wert').textContent = Phys.zahl(wert) + ' Einheit';
+  });
+})();
+</script>
+</body>
+</html>
