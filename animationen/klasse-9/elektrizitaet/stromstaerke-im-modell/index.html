@@ -1,10 +1,11 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Stromstärke im Modell</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap">
 <style>
-  /* Layout: Stromkreis mit drei Zählstellen links, Bedienung und Zählstand rechts. Gleiche Bildsprache wie die Animationen aus DS 1 und DS 3. */
+  /* Layout: links die Bühne mit dem Stromkreis, rechts Bedienung, Zählstand und Erklärung. Für das iPad: alle Bedienelemente mindestens 44 px, Ziehen per Finger auf der Bühne. */
   :root {
     color-scheme: dark;
     --ground: #16213E;
@@ -17,222 +18,558 @@
     --accent-soft: rgba(255, 193, 69, 0.18);
     --electron: #7FD3FF;
     --count: #FF8A7A;
-    --display: "Source Serif 4", Cambria, Georgia, serif;
-    --body: "Source Sans 3", Calibri, "Segoe UI", Arial, sans-serif;
+    --display: "Source Serif 4", Cambria, Georgia, "Times New Roman", serif;
+    --body: "Source Sans 3", Calibri, "Segoe UI", -apple-system, Arial, sans-serif;
   }
-  html, body { height: 100%; }
-  body { background: var(--ground); color: var(--text); font-family: var(--body); font-size: 17px; line-height: 1.5; padding-inline: 16px; padding-block: 20px 28px; }
-  .wrap { max-width: 1240px; margin: 0 auto; display: grid; gap: 16px; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--ground); color: var(--text); font-family: var(--body);
+    font-size: 17px; line-height: 1.5; min-height: 100vh; min-height: 100dvh;
+    padding: 20px 16px 28px;
+    padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right));
+    padding-bottom: calc(28px + env(safe-area-inset-bottom));
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap { max-width: 1280px; margin: 0 auto; display: grid; gap: 16px; }
   header { display: grid; gap: 4px; }
   h1 { font-family: var(--display); font-size: clamp(26px, 3.4vw, 40px); line-height: 1.15; margin: 0; text-wrap: balance; }
-  .lead { color: var(--muted); margin: 0; max-width: 70ch; }
-  .main { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 16px; align-items: start; }
-  @media (max-width: 960px) { .main { grid-template-columns: 1fr; } }
+  .lead { color: var(--muted); margin: 0; max-width: 75ch; }
+  .main { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+  @media (max-width: 980px) { .main { grid-template-columns: 1fr; } }
   .stage { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; min-width: 0; }
-  canvas { display: block; width: 100%; aspect-ratio: 1000 / 600; max-width: 100%; }
-  aside { display: grid; gap: 12px; min-width: 0; }
+  canvas { display: block; width: 100%; aspect-ratio: 1000 / 600; max-width: 100%; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; cursor: grab; }
+  canvas.zieht { cursor: grabbing; }
+  .hinweis { padding: 10px 14px; border-top: 1px solid var(--line); background: var(--panel-2); color: var(--muted); font-size: 16px; }
+  .hinweis b { color: var(--accent); }
+  aside { display: grid; gap: 14px; min-width: 0; }
   .group { display: grid; gap: 8px; }
-  .group h2 { font-size: 13px; font-weight: 700; letter-spacing: .06em; color: var(--muted); margin: 0; }
+  .group h2 { font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0; }
   .chips, .toggles { display: flex; flex-wrap: wrap; gap: 8px; }
-  button { font: 600 15px/1.1 var(--body); color: var(--text); background: transparent; border: 1.5px solid var(--line); border-radius: 999px; padding: 9px 14px; cursor: pointer; }
+  button {
+    font: 600 16px/1.1 var(--body); color: var(--text); background: transparent;
+    border: 1.5px solid var(--line); border-radius: 999px; padding: 10px 16px; min-height: 44px; cursor: pointer;
+    touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+  }
   button:hover { border-color: var(--muted); }
-  button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
-  button.primary { background: var(--accent); color: #16213E; border-color: var(--accent); font-size: 17px; padding: 12px 18px; width: 100%; }
-  button.primary[aria-pressed="true"] { background: transparent; color: var(--accent); }
+  button.primary { background: var(--accent); color: #16213E; border-color: var(--accent); font-size: 18px; padding: 12px 18px; width: 100%; }
+  button.primary[aria-pressed="false"] { background: transparent; color: var(--accent); }
   button:disabled { opacity: .5; cursor: default; }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); border: 1.5px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .seg button { border: 0; border-radius: 0; padding: 8px 6px; min-height: 52px; font-size: 15px; line-height: 1.15; }
+  .seg button + button { border-left: 1.5px solid var(--line); }
+  .regler { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: center; }
+  .regler label { font-weight: 600; }
+  .regler output { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent); }
+  .regler input { grid-column: 1 / -1; width: 100%; height: 36px; accent-color: var(--accent); margin: 0; touch-action: manipulation; }
   .counts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .cnt { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px; text-align: center; display: grid; gap: 2px; }
+  .cnt { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 6px; text-align: center; display: grid; gap: 0; transition: background .08s; }
+  .cnt.blitz { background: rgba(255, 138, 122, .28); }
   .cnt b { font-size: 15px; color: var(--count); }
-  .cnt span { font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .cnt span { font-size: 34px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.15; }
   .cnt small { font-size: 12px; color: var(--muted); }
-  .tally { font-size: 15px; color: var(--muted); min-height: 1.5em; }
-  .fact { padding: 14px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); display: grid; gap: 6px; }
-  .fact h3 { font-family: var(--display); font-size: 19px; margin: 0; color: var(--accent); }
-  .fact p { margin: 0; }
+  .rate { font-size: 15px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .tally { font-size: 16px; color: var(--text); min-height: 1.5em; font-variant-numeric: tabular-nums; }
+  .card { padding: 14px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); display: grid; gap: 6px; }
+  .card h3 { font-family: var(--display); font-size: 19px; margin: 0; color: var(--accent); }
+  .card p, .card ol { margin: 0; }
+  .card ol { padding-left: 1.25em; display: grid; gap: 6px; }
+  .merke { border-left: 5px solid var(--accent); }
+  .merke ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+  .unten { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 980px) { .unten { grid-template-columns: 1fr; } }
 </style>
-
+</head>
+<body>
 <div class="wrap">
   <header>
     <h1>Stromstärke im Modell</h1>
-    <p class="lead">Die Zählstellen A, B und C zählen, wie viele Elektronen pro Sekunde vorbeikommen. Das ist die Stromstärke.</p>
+    <p class="lead">Der Draht ist voll mit Elektronen, dicht an dicht – wie ein Schlauch voller Kugeln oder eine Fahrradkette. Schiebe mit dem Finger eine Kugel an und beobachte die Zählstellen A, B und C.</p>
   </header>
+
   <div class="main">
-    <section class="stage" aria-label="Animation: Stromkreis mit drei Zählstellen">
-      <canvas id="cv" role="img" aria-label="Stromkreis aus Batterie, Schalter und Lämpchen oder Motor mit den Zählstellen A, B und C. Punkte stellen Elektronen dar."></canvas>
+    <section class="stage" aria-label="Animation: Elektronen im geschlossenen Stromkreis mit drei Zählstellen">
+      <canvas id="cv" role="img" aria-label="Geschlossener Stromkreis, in dem Kugeln dicht an dicht liegen. Mit dem Finger an einer Kugel ziehen, dann bewegen sich alle. Die Zählstellen A, B und C zählen gleich viele."></canvas>
+      <div class="hinweis" id="hinweis"></div>
     </section>
+
     <aside>
-      <button id="switch" class="primary" aria-pressed="false">Schalter schließen</button>
+      <button id="schalter" class="primary" aria-pressed="true">Schalter öffnen</button>
+
       <div class="group">
-        <h2>Gerät im Stromkreis</h2>
-        <div class="chips">
+        <h2>Darstellung</h2>
+        <div class="seg" id="skin" role="group" aria-label="Darstellung wählen">
+          <button data-skin="kugeln" aria-pressed="true">Kugeln im Schlauch</button>
+          <button data-skin="kette" aria-pressed="false">Fahrrad&shy;kette</button>
+          <button data-skin="elektronen" aria-pressed="false">Elektronen im Draht</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>Antrieb und Bremse</h2>
+        <div class="regler">
+          <label for="u">Antrieb (Batterie)</label><output id="uOut" for="u">aus</output>
+          <input id="u" type="range" min="0" max="6" step="0.5" value="0">
+        </div>
+        <div class="regler">
+          <label for="bremse">Klemme zudrehen</label><output id="bremseOut" for="bremse">0 %</output>
+          <input id="bremse" type="range" min="0" max="90" step="5" value="0">
+        </div>
+        <div class="chips" role="group" aria-label="Gerät im Stromkreis">
           <button id="dev-lampe" aria-pressed="true">Lämpchen</button>
           <button id="dev-motor" aria-pressed="false">Motor</button>
         </div>
       </div>
+
       <div class="group">
-        <h2>Elektronen pro Sekunde</h2>
-        <div class="counts">
-          <div class="cnt"><b>A</b><span id="cA">0</span><small>pro Sekunde</small></div>
-          <div class="cnt"><b>B</b><span id="cB">0</span><small>pro Sekunde</small></div>
-          <div class="cnt"><b>C</b><span id="cC">0</span><small>pro Sekunde</small></div>
+        <h2>Gezählt an A, B und C</h2>
+        <div class="counts" aria-live="off">
+          <div class="cnt" id="boxA"><b>A</b><span id="cA">0</span><small>vorbei</small></div>
+          <div class="cnt" id="boxB"><b>B</b><span id="cB">0</span><small>vorbei</small></div>
+          <div class="cnt" id="boxC"><b>C</b><span id="cC">0</span><small>vorbei</small></div>
         </div>
-        <button id="count10">10 Sekunden zählen</button>
+        <div class="rate" id="rate"></div>
+        <div class="toggles">
+          <button id="zaehl10">10 Sekunden zählen</button>
+          <button id="nullen">Zähler auf 0</button>
+        </div>
         <div class="tally" id="tally" aria-live="polite"></div>
       </div>
+
       <div class="group">
         <h2>Ansicht</h2>
         <div class="toggles">
-          <button id="energy" aria-pressed="false">Energie zeigen</button>
-          <button id="track" aria-pressed="false">Ein Elektron verfolgen</button>
-          <button id="explain" aria-pressed="false">Erklärung zeigen</button>
+          <button id="push" aria-pressed="true">Schubs-Pfeile</button>
+          <button id="track" aria-pressed="false">Eine Kugel verfolgen</button>
+          <button id="explain" aria-pressed="true">Erklärung</button>
           <button id="pause" aria-pressed="false">Anhalten</button>
         </div>
       </div>
-      <div class="fact" id="fact" hidden>
-        <h3 id="factH">Was zeigt die Animation?</h3>
-        <p id="factP"></p>
+
+      <div class="card" id="erkl">
+        <h3 id="erklH"></h3>
+        <p id="erklP"></p>
       </div>
     </aside>
+  </div>
+
+  <div class="unten">
+    <section class="card merke">
+      <h3>Merke</h3>
+      <ul>
+        <li>Die Elektronen liegen im Draht <b>dicht an dicht</b>. Es gibt keine Lücken und keinen Platz zum Ausweichen.</li>
+        <li>Sie <b>schubsen sich gegenseitig</b>: Bewegt sich ein Elektron, müssen sich alle anderen mitbewegen – wie Kugeln im Schlauch oder die Glieder einer Fahrradkette.</li>
+        <li>Die <b>Stromstärke</b> ist die Zahl der Elektronen, die pro Sekunde an einer Stelle vorbeikommen.</li>
+        <li>Kommt bei A ein Elektron vorbei, muss zugleich bei B und C eines vorbeikommen. Es kann keines verloren gehen: Die Stromstärke ist <b>überall gleich groß</b>.</li>
+      </ul>
+    </section>
+    <section class="card">
+      <h3>Aufgaben</h3>
+      <ol>
+        <li>Ziehe mit dem Finger an einer Kugel. Was machen die Kugeln weit weg von deinem Finger?</li>
+        <li>Drehe den Antrieb auf und zähle 10 Sekunden. Vergleiche A, B und C.</li>
+        <li>Drehe die Klemme zu. Was passiert bei A und C, obwohl nur an der Klemme gebremst wird?</li>
+        <li>Öffne den Schalter. Warum stehen sofort alle Kugeln still, auch weit weg?</li>
+        <li>Wechsle die Darstellung. Was bleibt gleich, was ändert sich?</li>
+      </ol>
+    </section>
   </div>
 </div>
 
 <script>
 (() => {
-  const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+  'use strict';
   const W = 1000, H = 600;
-  const C = { panel: '#1B2A4A', text: '#F4F7FB', muted: '#B9C6DE', wire: '#B9C6DE', accent: '#FFC145', e: '#7FD3FF', count: '#FF8A7A', deep: '#132038' };
-  const X0 = 150, X1 = 850, Y0 = 100, Y1 = 470, BX = 500, MID = (Y0 + Y1) / 2;
-  // Pfad der Elektronen: vom Minuspol (links an der Batterie) im Uhrzeigersinn zum Pluspol
-  const path = [[BX - 10, Y1], [X0, Y1], [X0, Y0], [X1, Y0], [X1, Y1], [BX + 10, Y1], [BX - 10, Y1]];
-  const segs = []; let PL = 0;
-  for (let i = 0; i + 1 < path.length; i++) { const a = path[i], b = path[i + 1], l = Math.hypot(b[0] - a[0], b[1] - a[1]); segs.push({ a, b, l, s: PL }); PL += l; }
-  const SP = 20, N = Math.round(PL / SP);           // Abstand der Elektronen; Pfadlänge ist ein Vielfaches davon
-  const posOf = s => { s = ((s % PL) + PL) % PL; for (const g of segs) if (s <= g.s + g.l) { const t = (s - g.s) / g.l; return [g.a[0] + (g.b[0] - g.a[0]) * t, g.a[1] + (g.b[1] - g.a[1]) * t]; } return path[0]; };
-  // Zählstellen liegen auf Vielfachen von SP: alle Elektronen passieren A, B und C im selben Takt
-  const P = { A: 160, B: 340 + 370 + 350, C: 340 + 370 + 700 + 370 + 160 };
-  const DEV_S = 340 + 370 + 700 + 185;               // Gerät rechts in der Mitte
-  const SPEED = { lampe: 60, motor: 100 };           // 3 bzw. 5 Elektronen pro Sekunde
-
-  let closed = false, dev = 'lampe', energy = false, tracking = false, explain = false, paused = false;
-  let phase = 0, prevPhase = 0, glow = 0, rot = 0, simT = 0;
-  const hits = { A: [], B: [], C: [] };
-  let counting = null;
-
-  const hidden = (x, y) => (Math.abs(y - Y1) < 2 && x > BX - 14 && x < BX + 14) || (!closed && Math.abs(x - X0) < 2 && y > MID - 34 && y < MID + 34) || (Math.abs(x - X1) < 2 && y > MID - 40 && y < MID + 40);
-
-  function line(x1, y1, x2, y2, col = C.wire, w = 6) { ctx.strokeStyle = col; ctx.lineWidth = w; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
-  function label(t, x, y, o = {}) { ctx.fillStyle = o.col || C.muted; ctx.font = `${o.w || 600} ${o.s || 18}px "Source Sans 3", Calibri, Arial, sans-serif`; ctx.textAlign = o.al || 'center'; ctx.textBaseline = 'middle'; ctx.fillText(t, x, y); }
-
-  function drawCircuit() {
-    line(BX - 10, Y1, X0, Y1); line(X0, Y1, X0, MID + 34); line(X0, MID - 34, X0, Y0); line(X0, Y0, X1, Y0);
-    line(X1, Y0, X1, MID - 40); line(X1, MID + 40, X1, Y1); line(X1, Y1, BX + 10, Y1);
-    // Batterie: kurzer Strich links (−), langer rechts (+)
-    line(BX - 10, Y1 - 16, BX - 10, Y1 + 16, C.text, 7); line(BX + 10, Y1 - 34, BX + 10, Y1 + 34, C.text, 7);
-    label('−', BX - 34, Y1 - 34, { s: 30, col: C.text, w: 700 }); label('+', BX + 36, Y1 - 34, { s: 30, col: C.text, w: 700 });
-    label('Batterie', BX, Y1 + 58, { s: 17 });
-    // Schalter (links)
-    ctx.fillStyle = C.text; ctx.beginPath(); ctx.arc(X0, MID + 34, 6, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(X0, MID - 34, 6, 0, 7); ctx.fill();
-    if (closed) line(X0, MID + 34, X0, MID - 34, C.text, 6); else line(X0, MID + 34, X0 - 36, MID - 22, C.text, 6);
-    label('Schalter', X0 - 30, MID, { s: 17, al: 'right' });
-    // Gerät (rechts)
-    if (dev === 'lampe') {
-      if (glow > 0.02) { const g = ctx.createRadialGradient(X1, MID, 10, X1, MID, 130); g.addColorStop(0, `rgba(255,233,168,${0.85 * glow})`); g.addColorStop(0.5, `rgba(255,193,69,${0.3 * glow})`); g.addColorStop(1, 'rgba(255,193,69,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(X1, MID, 130, 0, 7); ctx.fill(); }
-      ctx.fillStyle = glow > 0.02 ? `rgba(255,246,214,${0.25 + 0.6 * glow})` : C.deep; ctx.strokeStyle = C.text; ctx.lineWidth = 4;
-      ctx.beginPath(); ctx.arc(X1, MID, 40, 0, 7); ctx.fill(); ctx.stroke();
-      const d = 40 / Math.SQRT2; line(X1 - d, MID - d, X1 + d, MID + d, C.text, 4); line(X1 - d, MID + d, X1 + d, MID - d, C.text, 4);
-      label('Lämpchen', X1 + 56, MID, { s: 17, al: 'left' });
-    } else {
-      ctx.fillStyle = C.deep; ctx.strokeStyle = C.text; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(X1, MID, 40, 0, 7); ctx.fill(); ctx.stroke();
-      ctx.save(); ctx.translate(X1, MID); ctx.rotate(rot); ctx.strokeStyle = 'rgba(255,193,69,.55)'; ctx.lineWidth = 3;
-      for (let k = 0; k < 3; k++) { ctx.rotate(2 * Math.PI / 3); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(30, 0); ctx.stroke(); }
-      ctx.restore(); label('M', X1, MID + 1, { s: 30, col: C.text, w: 700 });
-      label('Motor', X1 + 56, MID, { s: 17, al: 'left' });
-    }
-  }
-  function drawElectrons() {
-    const trackI = Math.floor(N * 0.4);
-    for (let i = 0; i < N; i++) {
-      const s = i * SP + phase, [x, y] = posOf(s);
-      if (hidden(x, y)) continue;
-      const sm = ((s % PL) + PL) % PL;
-      ctx.fillStyle = C.e; ctx.beginPath(); ctx.arc(x, y, 6, 0, 7); ctx.fill();
-      if (energy && sm < DEV_S) { ctx.fillStyle = C.accent; ctx.fillRect(x - 5, y - 17, 10, 8); }
-      if (tracking && i === trackI) { ctx.strokeStyle = C.accent; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, 14, 0, 7); ctx.stroke(); }
-    }
-  }
-  function drawCounters(now) {
-    for (const k of ['A', 'B', 'C']) {
-      const [x, y] = posOf(P[k]);
-      const flash = hits[k].length && now - hits[k].at(-1) < 0.18;
-      const ox = 0, oy = y === Y0 ? -46 : 46;
-      ctx.strokeStyle = C.count; ctx.lineWidth = 4; line(x, y - 22, x, y + 22, C.count, 4);
-      ctx.fillStyle = flash ? C.count : C.panel; ctx.strokeStyle = C.count; ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.arc(x + ox, y + oy, 22, 0, 7); ctx.fill(); ctx.stroke();
-      label(k, x + ox, y + oy + 1, { s: 22, w: 700, col: flash ? C.panel : C.count });
-    }
-  }
-  // Anzeige: Durchgänge pro Sekunde, gemittelt über die letzten 2 Sekunden (an A, B und C immer gleich)
-  function rate(k, now) { const n = hits[k].filter(t => now - t <= 2.0).length; return closed ? Math.round(n / 2) : 0; }
-
-  function step(dt) {
-    const v = closed ? SPEED[dev] : 0;
-    simT += dt;
-    prevPhase = phase; phase += v * dt;
-    // Durchgänge: ein Elektron passiert eine Zählstelle, wenn phase ein Vielfaches von SP überschreitet
-    const n0 = Math.floor(prevPhase / SP), n1 = Math.floor(phase / SP);
-    for (let n = n0 + 1; n <= n1; n++) for (const k of ['A', 'B', 'C']) { hits[k].push(simT); if (counting) counting[k]++; }
-    for (const k of ['A', 'B', 'C']) while (hits[k].length && simT - hits[k][0] > 2.5) hits[k].shift();
-    glow += ((closed && dev === 'lampe' ? 1 : 0) - glow) * Math.min(1, dt * 6);
-    if (closed && dev === 'motor') rot += dt * 6;
-    if (counting) { counting.t -= dt; if (counting.t <= 0) finishCount(); else document.getElementById('tally').textContent = `Zähle … noch ${Math.ceil(counting.t)} s   A: ${counting.A}   B: ${counting.B}   C: ${counting.C}`; }
-  }
-  function finishCount() {
-    const c = counting; counting = null;
-    document.getElementById('tally').textContent = `In 10 Sekunden gezählt:   A: ${c.A}   B: ${c.B}   C: ${c.C}`;
-    document.getElementById('count10').disabled = false;
-  }
-
+  const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
   const $ = id => document.getElementById(id);
-  const swBtn = $('switch');
-  swBtn.addEventListener('click', () => { closed = !closed; sync(); });
-  $('dev-lampe').addEventListener('click', () => { dev = 'lampe'; sync(); });
-  $('dev-motor').addEventListener('click', () => { dev = 'motor'; sync(); });
-  $('count10').addEventListener('click', () => { counting = { t: 10, A: 0, B: 0, C: 0 }; $('count10').disabled = true; });
-  const tog = (id, get, set) => $(id).addEventListener('click', () => { set(!get()); $(id).setAttribute('aria-pressed', String(get())); sync(); });
-  tog('energy', () => energy, v => energy = v);
-  tog('track', () => tracking, v => tracking = v);
-  tog('explain', () => explain, v => explain = v);
-  tog('pause', () => paused, v => paused = v);
+  const COL = { panel: '#1B2A4A', deep: '#101A33', text: '#F4F7FB', muted: '#B9C6DE', accent: '#FFC145', e: '#7FD3FF', count: '#FF8A7A', tube: '#3A4F82', wire: '#B9C6DE', ink: '#0B1226' };
+  const PI = Math.PI;
 
-  function sync() {
-    swBtn.textContent = closed ? 'Schalter öffnen' : 'Schalter schließen';
-    swBtn.setAttribute('aria-pressed', String(closed));
-    $('dev-lampe').setAttribute('aria-pressed', String(dev === 'lampe'));
-    $('dev-motor').setAttribute('aria-pressed', String(dev === 'motor'));
-    $('fact').hidden = !explain;
-    let h, p;
-    if (!closed) { h = 'Schalter offen'; p = 'Die Elektronen sind überall im Draht, aber sie werden nicht angetrieben. An keiner Zählstelle kommt ein Elektron vorbei: Die Stromstärke ist null.'; }
-    else if (energy) { h = 'Elektronen und Energie'; p = 'Die Elektronen bekommen an der Batterie Energie und geben sie am ' + (dev === 'lampe' ? 'Lämpchen' : 'Motor') + ' ab. Die Elektronen selbst bleiben alle im Stromkreis. Verbraucht wird nur die Energie, nicht der Strom.'; }
-    else { h = 'An A, B und C gleich viele'; p = 'An jeder Zählstelle kommen gleich viele Elektronen pro Sekunde vorbei. Die Stromstärke ist überall im Stromkreis gleich groß. ' + (dev === 'motor' ? 'Mit dem Motor sind es mehr pro Sekunde als mit dem Lämpchen: Die Stromstärke ist größer.' : 'Ein anderes Gerät kann eine andere Stromstärke haben. Probiere den Motor aus.'); }
-    $('factH').textContent = h; $('factP').textContent = p;
+  /* ------------------------------------------------------------------
+     Geometrie: Stromkreis als Rechteck mit weich gerundeten Ecken.
+     Start in der Mitte unten (Batterie), Laufrichtung im Uhrzeigersinn.
+     ------------------------------------------------------------------ */
+  const LI = 150, RE = 850, OB = 110, UN = 470, RAD = 60, BX = 500;
+  const segs = [];
+  let L = 0;
+  const gerade = (x0, y0, x1, y1) => { const l = Math.hypot(x1 - x0, y1 - y0); segs.push({ k: 'g', x0, y0, x1, y1, l, s: L }); L += l; };
+  const bogen = (cx, cy, a0, a1) => { const l = RAD * (a1 - a0); segs.push({ k: 'b', cx, cy, a0, a1, l, s: L }); L += l; };
+  gerade(BX, UN, LI + RAD, UN);          bogen(LI + RAD, UN - RAD, PI / 2, PI);
+  gerade(LI, UN - RAD, LI, OB + RAD);    bogen(LI + RAD, OB + RAD, PI, 1.5 * PI);
+  gerade(LI + RAD, OB, RE - RAD, OB);    bogen(RE - RAD, OB + RAD, 1.5 * PI, 2 * PI);
+  gerade(RE, OB + RAD, RE, UN - RAD);    bogen(RE - RAD, UN - RAD, 2 * PI, 2.5 * PI);
+  gerade(RE - RAD, UN, BX, UN);
+
+  const N = 40;                          // Anzahl der Kugeln/Elektronen
+  const D = L / N;                       // Abstand (= Kugeldurchmesser = Länge eines Kettenglieds)
+
+  function pointAt(u) {
+    u = ((u % L) + L) % L;
+    let g = segs[segs.length - 1];
+    for (const q of segs) if (u <= q.s + q.l) { g = q; break; }
+    const t = u - g.s;
+    if (g.k === 'g') { const f = t / g.l; return { x: g.x0 + (g.x1 - g.x0) * f, y: g.y0 + (g.y1 - g.y0) * f, tx: (g.x1 - g.x0) / g.l, ty: (g.y1 - g.y0) / g.l }; }
+    const a = g.a0 + t / RAD;
+    return { x: g.cx + RAD * Math.cos(a), y: g.cy + RAD * Math.sin(a), tx: -Math.sin(a), ty: Math.cos(a) };
+  }
+  const pfad = new Path2D();
+  segs.forEach((q, i) => { if (q.k === 'g') { if (i === 0) pfad.moveTo(q.x0, q.y0); pfad.lineTo(q.x1, q.y1); } else pfad.arc(q.cx, q.cy, RAD, q.a0, q.a1); });
+  pfad.closePath();
+  const PROBEN = 800, probe = [];
+  for (let i = 0; i < PROBEN; i++) { const u = i * L / PROBEN, p = pointAt(u); probe.push({ u, x: p.x, y: p.y }); }
+
+  /* Alle Zählstellen und Bauteile liegen auf Vielfachen von D. Dadurch läuft bei jedem Schritt der
+     Kette an A, B und C gleichzeitig je eine Kugel vorbei – so wie in einer dicht gepackten Kette. */
+  const U_ZAEHL = [4 * D, 20 * D, 36 * D];
+  const NAMEN = ['A', 'B', 'C'];
+  const U_SCHALTER = 10 * D, U_LAMPE = 30 * D, U_KLEMME = 25 * D;
+
+  /* ------------------------------------------------------------------
+     Zustand
+     ------------------------------------------------------------------ */
+  const st = {
+    s: 0, maxS: 0, zu: true, U: 0, dev: 'lampe', bremse: 0, skin: 'kugeln',
+    push: true, track: false, explain: true, paused: false,
+    zieht: false, lastU: 0, hand: null, sPrev: 0,
+    simT: 0, speed: 0, wheel: 0, tReset: 0,
+    basis: [0, 0, 0], cnt: [0, 0, 0], hits: [[], [], []], letzterHit: [-9, -9, -9],
+    zaehl: null
+  };
+  const einsFloor = (x, k) => Math.floor((x - U_ZAEHL[k]) / D + 1e-9);   // Kugeln, die Station k bis Weg x passiert haben
+  function nullen() { st.basis = [0, 1, 2].map(k => einsFloor(st.maxS, k)); st.cnt = [0, 0, 0]; st.hits = [[], [], []]; st.tReset = st.simT; }
+
+  function bewegen(ds) {                  // schiebt die ganze Kette um ds (px)
+    st.s += ds;
+    if (st.s > st.maxS) {
+      st.maxS = st.s;
+      for (let k = 0; k < 3; k++) {
+        const neu = einsFloor(st.maxS, k) - st.basis[k];
+        while (st.cnt[k] < neu) { st.cnt[k]++; st.hits[k].push(st.simT); st.letzterHit[k] = st.simT; if (st.zaehl) st.zaehl.n[k]++; }
+      }
+    }
+  }
+  const ANTRIEB = { lampe: 0.5, motor: 0.9 };         // Kugeln pro Sekunde und Volt
+  function antriebTempo() { return st.zu && !st.zieht ? st.U * ANTRIEB[st.dev] * (1 - st.bremse / 100) : 0; }   // Kugeln/s
+
+  function schritt(dt) {
+    st.simT += dt;
+    const v = antriebTempo();
+    if (v > 0) bewegen(v * D * dt);
+    const weg = st.s - st.sPrev;                       // Weg dieses Bildes: Antrieb plus Ziehen mit dem Finger
+    const gemessen = dt > 0 ? weg / D / dt : 0;
+    st.speed += (gemessen - st.speed) * Math.min(1, dt * 10);
+    st.wheel += weg / 38;
+    st.sPrev = st.s;
+    if (st.zaehl) { st.zaehl.t -= dt; if (st.zaehl.t <= 0) zaehlenBeenden(); }
   }
 
-  function resize() { const dpr = Math.min(window.devicePixelRatio || 1, 2), w = cv.clientWidth; cv.width = Math.round(w * dpr); cv.height = Math.round(w * 0.6 * dpr); ctx.setTransform(cv.width / W, 0, 0, cv.height / H, 0, 0); }
-  window.addEventListener('resize', resize);
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let last = performance.now();
-  function frame(now) {
-    const dt = Math.min(0.05, (now - last) / 1000) * (reduce ? 0.5 : 1); last = now;
-    if (!paused) step(dt);
-    ctx.fillStyle = C.panel; ctx.fillRect(0, 0, W, H);
-    drawCircuit(); drawElectrons(); drawCounters(simT);
-    for (const k of ['A', 'B', 'C']) $('c' + k).textContent = rate(k, simT);
+  /* ------------------------------------------------------------------
+     Zeichnen
+     ------------------------------------------------------------------ */
+  const text = (s, x, y, size, col, al, bold) => {
+    ctx.font = (bold ? '700 ' : '500 ') + size + 'px "Source Sans 3", Calibri, "Segoe UI", Arial, sans-serif';
+    ctx.fillStyle = col || COL.muted; ctx.textAlign = al || 'center'; ctx.textBaseline = 'middle'; ctx.fillText(s, x, y);
+  };
+
+  function zeichneRohr() {
+    ctx.lineJoin = 'round';
+    if (st.skin === 'kugeln') {
+      ctx.strokeStyle = COL.tube; ctx.lineWidth = 64; ctx.stroke(pfad);
+      ctx.strokeStyle = COL.deep; ctx.lineWidth = 56; ctx.stroke(pfad);
+    } else if (st.skin === 'elektronen') {
+      ctx.strokeStyle = COL.wire; ctx.lineWidth = 6; ctx.stroke(pfad);
+    } else {
+      ctx.strokeStyle = 'rgba(185,198,222,.18)'; ctx.lineWidth = 2; ctx.setLineDash([4, 8]); ctx.stroke(pfad); ctx.setLineDash([]);
+    }
+  }
+
+  function zeichneBatterie() {
+    const x = BX, y = UN + 46;
+    if (st.skin === 'elektronen') {
+      ctx.fillStyle = COL.deep; ctx.strokeStyle = COL.text; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x - 54, y - 22, 108, 44, 8) : ctx.rect(x - 54, y - 22, 108, 44); ctx.fill(); ctx.stroke();
+      ctx.lineWidth = 7; ctx.strokeStyle = COL.text;
+      ctx.beginPath(); ctx.moveTo(x - 10, y - 14); ctx.lineTo(x - 10, y + 14); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x + 10, y - 22 + 3); ctx.lineTo(x + 10, y + 22 - 3); ctx.stroke();
+      ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x - 54 + 12, UN); ctx.lineTo(x - 54 + 12, y - 22); ctx.stroke();
+    } else {
+      ctx.save(); ctx.translate(x, y); ctx.rotate(-st.wheel);        // Zahnrad schiebt die Kugeln/Glieder an
+      const zahn = 10, r0 = 30, r1 = 42;
+      ctx.beginPath();
+      for (let i = 0; i < zahn; i++) {
+        const a = i * 2 * PI / zahn, b = a + PI / zahn * 0.55;
+        ctx.lineTo(r0 * Math.cos(a), r0 * Math.sin(a)); ctx.lineTo(r1 * Math.cos(a + 0.06), r1 * Math.sin(a + 0.06));
+        ctx.lineTo(r1 * Math.cos(b), r1 * Math.sin(b)); ctx.lineTo(r0 * Math.cos(b + 0.06), r0 * Math.sin(b + 0.06));
+      }
+      ctx.closePath(); ctx.fillStyle = '#51628C'; ctx.fill(); ctx.strokeStyle = COL.ink; ctx.lineWidth = 2.5; ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, 0, 12, 0, 2 * PI); ctx.fillStyle = COL.deep; ctx.fill(); ctx.stroke();
+      ctx.restore();
+    }
+    text('−', x - 84, y - 2, 34, COL.text, 'center', true);
+    text('+', x + 84, y - 2, 34, COL.text, 'center', true);
+    text('Batterie' + (st.skin === 'elektronen' ? '' : ' = Antrieb'), x, y + 56, 17, COL.muted, 'center', false);
+  }
+
+  function zeichneGeraet(hell) {
+    const p = pointAt(U_LAMPE), x = p.x, y = p.y;
+    if (st.dev === 'lampe') {
+      if (hell > 0.02) {
+        ctx.fillStyle = 'rgba(255,193,69,' + (0.16 * hell) + ')'; ctx.beginPath(); ctx.arc(x, y, 78, 0, 7); ctx.fill();
+        ctx.fillStyle = 'rgba(255,193,69,' + (0.22 * hell) + ')'; ctx.beginPath(); ctx.arc(x, y, 58, 0, 7); ctx.fill();
+      }
+      ctx.fillStyle = hell > 0.02 ? 'rgba(255,225,140,' + (0.25 + 0.7 * hell) + ')' : COL.deep; ctx.strokeStyle = COL.text; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.arc(x, y, 40, 0, 7); ctx.fill(); ctx.stroke();
+      const d = 40 / Math.SQRT2;
+      ctx.beginPath(); ctx.moveTo(x - d, y - d); ctx.lineTo(x + d, y + d); ctx.moveTo(x - d, y + d); ctx.lineTo(x + d, y - d); ctx.stroke();
+    } else {
+      ctx.fillStyle = COL.deep; ctx.strokeStyle = COL.text; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.arc(x, y, 40, 0, 7); ctx.fill(); ctx.stroke();
+      ctx.save(); ctx.translate(x, y); ctx.rotate(st.wheel * 0.9); ctx.strokeStyle = 'rgba(255,193,69,.7)'; ctx.lineWidth = 4;
+      for (let k = 0; k < 3; k++) { ctx.rotate(2 * PI / 3); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(30, 0); ctx.stroke(); }
+      ctx.restore();
+      text('M', x, y + 1, 26, COL.text, 'center', true);
+    }
+    text(st.dev === 'lampe' ? 'Lämpchen' : 'Motor', x + 62, y, 18, COL.muted, 'left', true);
+  }
+
+  function zeichneSchalter() {
+    const p = pointAt(U_SCHALTER);
+    text('Schalter', p.x - 64, p.y - 20, 18, COL.muted, 'right', true);
+    text(st.zu ? 'zu' : 'offen', p.x - 64, p.y + 14, 30, st.zu ? COL.text : COL.count, 'right', true);
+  }
+  function zeichneSperre() {                       // geschlossene Sperre im Rohr: offener Schalter
+    if (st.zu) return;
+    const p = pointAt(U_SCHALTER), nx = -p.ty, ny = p.tx;
+    ctx.strokeStyle = COL.count; ctx.lineWidth = 9; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(p.x - nx * 42, p.y - ny * 42); ctx.lineTo(p.x + nx * 42, p.y + ny * 42); ctx.stroke(); ctx.lineCap = 'butt';
+  }
+  function zeichneKlemme() {
+    const p = pointAt(U_KLEMME), nx = -p.ty, ny = p.tx, off = 40 - 20 * (st.bremse / 90);
+    ctx.fillStyle = COL.count; ctx.strokeStyle = COL.ink; ctx.lineWidth = 2;
+    for (const sg of [-1, 1]) {
+      ctx.save(); ctx.translate(p.x + nx * off * sg, p.y + ny * off * sg); ctx.rotate(Math.atan2(p.ty, p.tx));
+      ctx.beginPath(); ctx.rect(-22, sg < 0 ? -22 : 0, 44, 22); ctx.fill(); ctx.stroke(); ctx.restore();
+    }
+    text('Klemme', p.x, p.y - 84, 17, COL.count, 'center', true);
+  }
+
+  function zeichneStationen() {
+    ctx.lineCap = 'butt';
+    for (let k = 0; k < 3; k++) {
+      const p = pointAt(U_ZAEHL[k]), nx = -p.ty, ny = p.tx;                  // nach innen
+      const ox = -nx, oy = -ny;                                               // nach außen
+      ctx.strokeStyle = COL.count; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.moveTo(p.x + nx * 38, p.y + ny * 38); ctx.lineTo(p.x + ox * 38, p.y + oy * 38); ctx.stroke();
+      const mx = p.x + ox * 66, my = p.y + oy * 66;
+      const blitz = st.simT - st.letzterHit[k] < 0.22;
+      ctx.fillStyle = blitz ? COL.count : COL.panel; ctx.strokeStyle = COL.count; ctx.lineWidth = 3.5;
+      ctx.beginPath(); ctx.arc(mx, my, 24, 0, 7); ctx.fill(); ctx.stroke();
+      text(NAMEN[k], mx, my + 1, 24, blitz ? COL.panel : COL.count, 'center', true);
+      text(String(st.cnt[k]), mx + 40, my, 30, COL.text, 'left', true);
+    }
+  }
+
+  function kugelnZeichnen(sDraw) {
+    const v = st.speed, ruht = Math.abs(v) < 0.05;
+    const dir = v >= 0 ? 1 : -1;
+    const verfolgt = 7;
+    for (let i = 0; i < N; i++) {
+      const u = sDraw + i * D, p = pointAt(u), pn = pointAt(u + D / 2);
+      if (st.skin === 'kugeln') {
+        ctx.fillStyle = COL.e; ctx.strokeStyle = COL.ink; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(p.x, p.y, D / 2 - 1.2, 0, 7); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.beginPath(); ctx.arc(p.x - 7, p.y - 8, 6.5, 0, 7); ctx.fill();
+      } else if (st.skin === 'kette') {
+        const pm = pointAt(u + D / 2), ang = Math.atan2(pm.ty, pm.tx);
+        ctx.save(); ctx.translate(pm.x, pm.y); ctx.rotate(ang);
+        ctx.fillStyle = i % 2 ? '#8896B8' : '#5E6F95'; ctx.strokeStyle = COL.ink; ctx.lineWidth = 2;
+        const len = D + 5, h = i % 2 ? 24 : 18;
+        ctx.beginPath(); ctx.roundRect ? ctx.roundRect(-len / 2, -h / 2, len, h, h / 2) : ctx.rect(-len / 2, -h / 2, len, h); ctx.fill(); ctx.stroke();
+        ctx.restore();
+        ctx.fillStyle = COL.deep; ctx.strokeStyle = COL.ink; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 6.5, 0, 7); ctx.fill(); ctx.stroke();
+      } else {
+        ctx.fillStyle = COL.e; ctx.strokeStyle = COL.ink; ctx.lineWidth = 1.8;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 11, 0, 7); ctx.fill(); ctx.stroke();
+        ctx.strokeStyle = COL.ink; ctx.lineWidth = 2.6; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(p.x - 5, p.y); ctx.lineTo(p.x + 5, p.y); ctx.stroke(); ctx.lineCap = 'butt';
+      }
+      if (st.push) {
+        const ang = Math.atan2(pn.ty, pn.tx);
+        ctx.save(); ctx.translate(pn.x, pn.y); ctx.rotate(ang);
+        if (st.skin === 'elektronen') {                    // zwei Elektronen stoßen sich ab: zwei Pfeile auseinander
+          ctx.fillStyle = COL.count;
+          for (const sg of [-1, 1]) { ctx.beginPath(); ctx.moveTo(sg * 14, 0); ctx.lineTo(sg * 5, -5.5); ctx.lineTo(sg * 5, 5.5); ctx.closePath(); ctx.fill(); }
+        } else if (!ruht) {                                // Berührpunkt: Schubs in Bewegungsrichtung
+          ctx.fillStyle = COL.accent; ctx.strokeStyle = COL.ink; ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.moveTo(dir * 11, 0); ctx.lineTo(-dir * 6, -8); ctx.lineTo(-dir * 6, 8); ctx.closePath(); ctx.fill(); ctx.stroke();
+        }
+        ctx.restore();
+      }
+      if (st.track && i === verfolgt) { ctx.strokeStyle = COL.accent; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(p.x, p.y, D / 2 + 6, 0, 7); ctx.stroke(); }
+    }
+  }
+
+  function zeichneHand() {
+    if (!st.zieht || !st.hand) return;
+    ctx.strokeStyle = COL.accent; ctx.lineWidth = 4; ctx.fillStyle = 'rgba(255,193,69,.22)';
+    ctx.beginPath(); ctx.arc(st.hand.x, st.hand.y, 30, 0, 7); ctx.fill(); ctx.stroke();
+  }
+
+  function hinweisText() {
+    if (st.zieht && !st.zu) return '<b>Der Schalter ist offen.</b> Die Kette steckt fest – du kannst nicht ziehen. Schließe zuerst den Schalter.';
+    if (st.zieht) return '<b>Du ziehst nur an einer Stelle</b> – und trotzdem bewegt sich die ganze Kette mit, auch ganz weit weg.';
+    if (!st.zu) return '<b>Schalter offen:</b> Die Sperre hält die Kette fest. Weil alles dicht an dicht liegt, steht sofort alles still.';
+    if (Math.abs(st.speed) > 0.05 && st.bremse > 0) return '<b>Gebremst wird nur an der Klemme</b> – trotzdem werden A, B und C zusammen langsamer. Keine Kugel kann überholen.';
+    if (Math.abs(st.speed) > 0.05) return '<b>An A, B und C kommt immer gleichzeitig eine Kugel vorbei.</b> Schau auf die Zähler: Sie blinken im selben Moment.';
+    return '<b>Tippe auf eine Kugel und ziehe</b> – oder drehe rechts den Antrieb auf. Alle Kugeln liegen dicht an dicht.';
+  }
+
+  function erklaerung() {
+    let h, p;
+    const sk = { kugeln: 'Kugeln im Schlauch', kette: 'Glieder der Fahrradkette', elektronen: 'Elektronen im Draht' }[st.skin];
+    if (st.skin === 'elektronen') {
+      h = 'Elektronen im Draht';
+      p = 'Jedes Elektron stößt seine Nachbarn ab (rote Pfeile). Darum halten alle den gleichen Abstand und schieben sich gegenseitig an. Bewegt sich eines, bewegen sich alle.';
+    } else if (st.skin === 'kette') {
+      h = 'Wie bei der Fahrradkette';
+      p = 'Wenn du am Pedal ziehst, bewegt sich die Kette überall gleichzeitig. Kein Glied kann zurückbleiben oder verloren gehen. So ist es auch mit den Elektronen im Draht.';
+    } else {
+      h = 'Wie Kugeln im Schlauch';
+      p = 'Ist der Schlauch ganz voll, kann man nicht eine einzelne Kugel bewegen. Schiebst du eine an, müssen alle mitgehen. Elektronen im Draht verhalten sich genauso.';
+    }
+    if (st.bremse > 0 && Math.abs(st.speed) > 0.05) { h = 'Nur an der Klemme gebremst'; p = 'Alle ' + sk + ' werden gleich langsamer. Es kommen an A, B und C weniger vorbei, aber überall gleich viel. Die Stromstärke ist kleiner geworden, aber immer noch überall gleich.'; }
+    return [h, p];
+  }
+
+  function zeichnen() {
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+    ctx.fillStyle = COL.panel; ctx.fillRect(0, 0, W, H);
+    zeichneRohr();
+    zeichneBatterie();
+    const hell = Math.min(1, Math.abs(st.speed) / 3);
+    zeichneGeraet(hell);
+    zeichneSchalter();
+    kugelnZeichnen(st.s);
+    zeichneSperre();
+    zeichneKlemme();
+    zeichneStationen();
+    zeichneHand();
+  }
+
+  /* ------------------------------------------------------------------
+     Eingabe: Ziehen mit dem Finger oder der Maus an der Kette
+     ------------------------------------------------------------------ */
+  let scale = 1;
+  new ResizeObserver(() => {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2), w = cv.clientWidth;
+    if (!w) return;
+    cv.width = Math.round(w * dpr); cv.height = Math.round(w * dpr * H / W); scale = cv.width / W;
+  }).observe(cv);
+
+  const nachBuehne = e => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width * W, y: (e.clientY - r.top) / r.height * H }; };
+  function naechste(pt, mitte, spanne) {            // nächster Punkt auf dem Rohr (optional nur nahe einer Stelle u)
+    let best = null, bd = 1e12;
+    for (const q of probe) {
+      if (mitte !== undefined) { let du = Math.abs(q.u - mitte); du = Math.min(du, L - du); if (du > spanne) continue; }
+      const d = (q.x - pt.x) ** 2 + (q.y - pt.y) ** 2;
+      if (d < bd) { bd = d; best = q; }
+    }
+    return best ? { u: best.u, d: Math.sqrt(bd) } : null;
+  }
+  cv.addEventListener('pointerdown', e => {
+    const pt = nachBuehne(e), n = naechste(pt);
+    if (!n || n.d > 72) return;
+    st.zieht = true; st.lastU = n.u; st.hand = pt; cv.classList.add('zieht');
+    try { cv.setPointerCapture(e.pointerId); } catch (x) { }
+    e.preventDefault(); aktualisiere();
+  });
+  cv.addEventListener('pointermove', e => {
+    if (!st.zieht) return;
+    const pt = nachBuehne(e); st.hand = pt;
+    const n = naechste(pt, st.lastU, 220); if (!n) return;
+    let du = n.u - st.lastU; if (du > L / 2) du -= L; if (du < -L / 2) du += L;
+    st.lastU = n.u;
+    if (st.zu && !st.paused) bewegen(du);              // offener Schalter: die Sperre hält die Kette fest
+    e.preventDefault();
+  });
+  const loslassen = () => { if (!st.zieht) return; st.zieht = false; st.hand = null; cv.classList.remove('zieht'); aktualisiere(); };
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => cv.addEventListener(t, loslassen));
+
+  /* ------------------------------------------------------------------
+     Bedienung
+     ------------------------------------------------------------------ */
+  function zaehlenBeenden() {
+    const z = st.zaehl; st.zaehl = null; $('zaehl10').disabled = false;
+    const gl = z.n[0] === z.n[1] && z.n[1] === z.n[2];
+    $('tally').textContent = 'In 10 s gezählt:  A: ' + z.n[0] + '   B: ' + z.n[1] + '   C: ' + z.n[2] + (gl ? '  –  überall gleich viele.' : '');
+  }
+  $('schalter').addEventListener('click', () => { st.zu = !st.zu; aktualisiere(); });
+  $('u').addEventListener('input', e => { st.U = +e.target.value; aktualisiere(); });
+  $('bremse').addEventListener('input', e => { st.bremse = +e.target.value; aktualisiere(); });
+  $('dev-lampe').addEventListener('click', () => { st.dev = 'lampe'; aktualisiere(); });
+  $('dev-motor').addEventListener('click', () => { st.dev = 'motor'; aktualisiere(); });
+  document.querySelectorAll('#skin button').forEach(b => b.addEventListener('click', () => { st.skin = b.dataset.skin; aktualisiere(); }));
+  const tog = (id, key) => $(id).addEventListener('click', () => { st[key] = !st[key]; aktualisiere(); });
+  tog('push', 'push'); tog('track', 'track'); tog('explain', 'explain'); tog('pause', 'paused');
+  $('pause').addEventListener('click', () => { st.sPrev = st.s; });
+  $('nullen').addEventListener('click', () => { nullen(); $('tally').textContent = ''; aktualisiere(); });
+  $('zaehl10').addEventListener('click', () => { st.zaehl = { t: 10, n: [0, 0, 0] }; $('zaehl10').disabled = true; $('tally').textContent = 'Zähle … 10 Sekunden lang.'; });
+
+  const fmt = (x, n) => x.toLocaleString('de-DE', { minimumFractionDigits: n, maximumFractionDigits: n });
+  function aktualisiere() {
+    $('schalter').textContent = st.zu ? 'Schalter öffnen' : 'Schalter schließen';
+    $('schalter').setAttribute('aria-pressed', String(st.zu));
+    document.querySelectorAll('#skin button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.skin === st.skin)));
+    $('dev-lampe').setAttribute('aria-pressed', String(st.dev === 'lampe'));
+    $('dev-motor').setAttribute('aria-pressed', String(st.dev === 'motor'));
+    for (const [id, key] of [['push', 'push'], ['track', 'track'], ['explain', 'explain'], ['pause', 'paused']]) $(id).setAttribute('aria-pressed', String(st[key]));
+    $('pause').textContent = st.paused ? 'Weiter' : 'Anhalten';
+    $('u').value = st.U; $('bremse').value = st.bremse;
+    $('uOut').textContent = st.U === 0 ? 'aus' : fmt(st.U, 1) + ' V';
+    $('bremseOut').textContent = st.bremse + ' %';
+    $('erkl').hidden = !st.explain;
+    const [h, p] = erklaerung(); $('erklH').textContent = h; $('erklP').textContent = p;
+    $('hinweis').innerHTML = hinweisText();
+  }
+
+  function aktualisiereZaehler() {
+    for (let k = 0; k < 3; k++) {
+      $('c' + NAMEN[k]).textContent = st.cnt[k];
+      $('box' + NAMEN[k]).classList.toggle('blitz', st.simT - st.letzterHit[k] < 0.15);
+    }
+    const fenster = Math.max(1, Math.min(4, st.simT - st.tReset));
+    const r = st.hits.map(h => h.filter(t => st.simT - t <= fenster).length / fenster);
+    $('rate').textContent = 'Pro Sekunde:  A ' + fmt(r[0], 1) + '   B ' + fmt(r[1], 1) + '   C ' + fmt(r[2], 1);
+  }
+
+  /* ------------------------------------------------------------------
+     Hauptschleife
+     ------------------------------------------------------------------ */
+  const reduziert = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let letzte = performance.now(), hinweisAlt = '';
+  function frame(jetzt) {
+    const dt = Math.min(0.05, (jetzt - letzte) / 1000) * (reduziert ? 0.5 : 1); letzte = jetzt;
+    if (!st.paused) schritt(dt);
+    zeichnen(); aktualisiereZaehler();
+    const h = hinweisText(); if (h !== hinweisAlt) { hinweisAlt = h; $('hinweis').innerHTML = h; }
+    if (st.explain) { const [eh, ep] = erklaerung(); if ($('erklH').textContent !== eh) { $('erklH').textContent = eh; $('erklP').textContent = ep; } }
     requestAnimationFrame(frame);
   }
-  resize(); sync(); requestAnimationFrame(frame);
+  nullen(); aktualisiere(); requestAnimationFrame(frame);
+
+  /* Prüfschnittstelle für automatische Tests */
+  window.__strom = {
+    st, N, D, L, U_ZAEHL,
+    schritte(n, dt) { for (let i = 0; i < n; i++) schritt(dt || 1 / 60); },
+    ziehen(ds) { bewegen(ds); },
+    kettenStand() { const a = []; for (let i = 0; i < N; i++) a.push((((st.s + i * D) % L) + L) % L); return a; },
+    setU(v) { st.U = v; aktualisiere(); }, setBremse(v) { st.bremse = v; aktualisiere(); }, setZu(z) { st.zu = z; aktualisiere(); }
+  };
 })();
 </script>
-
 <!--uebersicht--><a href="../../../../index.html#klasse-9" aria-label="Zur Übersicht" style="position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);left:calc(env(safe-area-inset-left,0px) + 12px);z-index:2147483000;display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;background:rgba(27,42,74,.92);color:#fff;border:1px solid rgba(255,255,255,.4);font:600 16px/1 Arial,Helvetica,sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-user-select:none;user-select:none">&larr;&nbsp;Übersicht</a><!--/uebersicht-->
-</body></html>
+</body>
+</html>

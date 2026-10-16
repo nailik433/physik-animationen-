@@ -57,10 +57,10 @@ window.PHYSIK = {
       klasse: 9,
       thema: 'Elektrizität',
       titel: 'Stromstärke im Modell',
-      beschreibung: 'Die Zählstellen A, B und C zählen, wie viele Elektronen pro Sekunde vorbeikommen. Das ist die Stromstärke.',
+      beschreibung: 'Elektronen schubsen sich wie Kugeln im Schlauch oder die Glieder einer Fahrradkette: Mit dem Finger anschieben, an A, B und C zählen – überall kommt gleich viel vorbei.',
       datei: 'animationen/klasse-9/elektrizitaet/stromstaerke-im-modell/index.html',
       icon: '🔢',
-      tags: ['Stromstärke', 'Zählstellen', 'Elektronen', 'Lämpchen', 'Motor']
+      tags: ['Stromstärke', 'Zählstellen', 'Elektronen', 'Schubsen', 'Fahrradkette', 'Schlauch']
     },
     {
       klasse: 9,
