@@ -19,6 +19,15 @@ window.PHYSIK = {
     },
     {
       klasse: 8,
+      thema: 'Kräfte',
+      titel: 'Goldene Regel der Mechanik',
+      beschreibung: 'Lernstationen zur Goldenen Regel: Was man an Kraft spart, muss man an Weg zugeben. Mit Arbeitsblatt (Word) im selben Ordner.',
+      datei: 'animationen/klasse-8/kraefte/goldene-regel/goldene_regel.html',
+      icon: '⚖️',
+      tags: ['Goldene Regel', 'Kraft', 'Weg', 'Arbeit', 'Flaschenzug', 'Hebel']
+    },
+    {
+      klasse: 8,
       thema: 'Druck und Gase',
       titel: 'Gesetz von Boyle-Mariotte',
       beschreibung: 'Ein Gas wird im Zylinder zusammengedrückt: p · V bleibt konstant. Mit Teilchenmodell, Messtabelle und Diagramm.',

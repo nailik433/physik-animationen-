@@ -1,0 +1,1845 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Goldene Regel der Mechanik – Lernstationen</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1c2e4a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Goldene Regel">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f1e8;
+    --paper: #fbf8f0;
+    --ink: #1a1a1a;
+    --ink-soft: #4a4a4a;
+    --muted: #8a8578;
+    --accent: #b84a1e;
+    --accent-soft: #e8c7b8;
+    --gold: #c8962b;
+    --navy: #1c2e4a;
+    --success: #2e7d4f;
+    --rule: #2b2b2b;
+    --line: #c9c3b4;
+    --shadow: 0 2px 8px rgba(28, 46, 74, 0.06), 0 12px 32px rgba(28, 46, 74, 0.08);
+    --radius: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    touch-action: manipulation;
+  }
+
+  /* ---------- Header ---------- */
+  header {
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+    padding: 18px 32px;
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  header .brand {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.5rem;
+    color: var(--navy);
+    letter-spacing: -0.01em;
+  }
+  header .brand em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  header .subtitle {
+    color: var(--muted);
+    font-size: 0.9rem;
+    letter-spacing: 0.01em;
+  }
+
+  /* ---------- Station-Nav ---------- */
+  nav.stations {
+    padding: 20px 32px 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .station-btn {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .station-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .station-btn.active {
+    background: var(--navy);
+    color: var(--paper);
+    border-color: var(--navy);
+  }
+  .station-btn .num {
+    font-family: 'Fraunces', serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .station-btn.active .num { color: var(--gold); }
+  .station-btn .name {
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  /* ---------- Main Content ---------- */
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 32px 48px;
+  }
+
+  .station { display: none; }
+  .station.active { display: block; }
+
+  .station-header {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--rule);
+  }
+  .station-header h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 2.2rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--navy);
+    margin-bottom: 6px;
+  }
+  .station-header h1 .num {
+    color: var(--accent);
+    font-style: italic;
+  }
+  .station-header p {
+    color: var(--ink-soft);
+    font-size: 1rem;
+    max-width: 780px;
+  }
+
+  .station-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 20px;
+  }
+
+  /* ---------- Panels ---------- */
+  .panel {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+  .panel h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 14px;
+    color: var(--navy);
+    letter-spacing: 0.01em;
+  }
+  .panel h2::before {
+    content: "§ ";
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  .sim-panel { padding: 0; overflow: hidden; }
+  .sim-canvas-wrap {
+    width: 100%;
+    aspect-ratio: 16/10;
+    background: linear-gradient(180deg, #fefdf8 0%, #f5efdf 100%);
+    position: relative;
+    display: block;
+  }
+  canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    touch-action: none;
+  }
+  .sim-caption {
+    padding: 10px 16px;
+    font-size: 0.82rem;
+    color: var(--muted);
+    border-top: 1px solid var(--line);
+    background: var(--paper);
+    font-style: italic;
+    font-family: 'Fraunces', serif;
+  }
+
+  /* ---------- Controls ---------- */
+  .controls-stack { display: flex; flex-direction: column; gap: 16px; }
+
+  .control-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: baseline;
+    margin-bottom: 4px;
+  }
+  .control-label {
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .control-label .unit {
+    color: var(--muted);
+    font-weight: 400;
+    font-size: 0.82rem;
+  }
+  .control-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 2px 10px;
+    border-radius: 4px;
+    min-width: 70px;
+    text-align: center;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 28px;
+    background: transparent;
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 6px;
+    background: var(--line);
+    border-radius: 3px;
+  }
+  input[type="range"]::-moz-range-track {
+    height: 6px;
+    background: var(--line);
+    border-radius: 3px;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--navy);
+    border: 3px solid var(--paper);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    margin-top: -11px;
+    cursor: pointer;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--navy);
+    border: 3px solid var(--paper);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    cursor: pointer;
+  }
+
+  /* ---------- Segmented Button (Flaschenzug) ---------- */
+  .segmented {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    background: var(--bg);
+    padding: 4px;
+    border-radius: var(--radius);
+  }
+  .seg-btn {
+    padding: 10px 6px;
+    background: transparent;
+    border: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+  .seg-btn:hover { color: var(--navy); }
+  .seg-btn.active {
+    background: var(--navy);
+    color: var(--paper);
+  }
+
+  /* ---------- Measurement Display ---------- */
+  .measurements {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .meas-box {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+  }
+  .meas-label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .meas-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--navy);
+  }
+  .meas-value .u {
+    font-size: 0.9rem;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .meas-group-label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    font-weight: 600;
+    margin: 10px 0 6px;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+  }
+
+  /* ---------- Goldene-Regel-Bilanz ---------- */
+  .balance {
+    background: linear-gradient(135deg, #fefaf0 0%, #fbe9b8 100%);
+    border: 2px solid var(--gold);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-top: 12px;
+  }
+  .balance-title {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 0.95rem;
+    color: #7a5a10;
+    margin-bottom: 8px;
+    letter-spacing: 0.01em;
+  }
+  .balance-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: baseline;
+    padding: 4px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.92rem;
+  }
+  .balance-row .lbl { color: var(--ink-soft); font-size: 0.85rem; }
+  .balance-row .val { font-weight: 700; color: var(--ink); }
+  .balance-verdict {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed #c8962b88;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-align: center;
+    color: var(--success);
+  }
+  .balance-verdict.off { color: var(--accent); }
+
+  /* ---------- Action Buttons ---------- */
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .sim-actions {
+    display: flex;
+    gap: 12px;
+    padding: 14px 18px;
+    border-top: 1px solid var(--line);
+    background: var(--paper);
+  }
+  .btn {
+    flex: 1;
+    padding: 12px 16px;
+    border: none;
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    min-height: 48px;
+  }
+  .btn-primary {
+    background: var(--navy);
+    color: var(--paper);
+  }
+  .btn-primary:hover { background: #263c5c; }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--line);
+  }
+  .btn-ghost:hover { border-color: var(--navy); }
+
+  /* ---------- Task Panel ---------- */
+  .task-panel {
+    margin-top: 20px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 18px 22px;
+  }
+  .task-panel h3 {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--accent);
+    margin-bottom: 8px;
+    letter-spacing: 0.01em;
+  }
+  .task-panel ol, .task-panel ul {
+    padding-left: 22px;
+    font-size: 0.94rem;
+    color: var(--ink-soft);
+  }
+  .task-panel li { margin-bottom: 6px; }
+  .task-panel li strong { color: var(--ink); }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 980px) {
+    .station-grid { grid-template-columns: 1fr; }
+    nav.stations { grid-template-columns: repeat(2, 1fr); }
+    header { padding: 14px 20px; }
+    main { padding: 18px 20px 36px; }
+    .station-header h1 { font-size: 1.7rem; }
+  }
+  @media (max-width: 560px) {
+    nav.stations { grid-template-columns: 1fr; }
+    .measurements { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- Utility ---------- */
+  .formula {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    background: var(--bg);
+    padding: 6px 10px;
+    border-radius: 4px;
+    display: inline-block;
+    color: var(--navy);
+  }
+  .hint {
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 6px;
+    font-family: 'Fraunces', serif;
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">Goldene Regel der <em>Mechanik</em></div>
+  <div class="subtitle">Vier Stationen · Physik · Realschule · Klasse 9</div>
+</header>
+
+<nav class="stations">
+  <button class="station-btn active" data-station="1">
+    <span class="num">Station 01</span>
+    <span class="name">Zweiseitiger Hebel</span>
+  </button>
+  <button class="station-btn" data-station="2">
+    <span class="num">Station 02</span>
+    <span class="name">Einseitiger Hebel</span>
+  </button>
+  <button class="station-btn" data-station="3">
+    <span class="num">Station 03</span>
+    <span class="name">Flaschenzug</span>
+  </button>
+  <button class="station-btn" data-station="4">
+    <span class="num">Station 04</span>
+    <span class="name">Schiefe Ebene</span>
+  </button>
+</nav>
+
+<main>
+
+  <!-- ==================== STATION 1: Zweiseitiger Hebel ==================== -->
+  <section class="station active" id="station-1">
+    <div class="station-header">
+      <h1><span class="num">01 —</span> Der zweiseitige Hebel</h1>
+      <p>Eine Wippe mit Drehpunkt in der Mitte. Last und Kraft wirken auf verschiedenen Seiten. Untersuche, wie sich <em>Kraftarm</em> und <em>Lastarm</em> auf die nötige Kraft und den Weg auswirken.</p>
+    </div>
+
+    <div class="station-grid">
+      <div class="panel sim-panel">
+        <div class="sim-canvas-wrap"><canvas id="canvas1"></canvas></div>
+        <div class="sim-actions">
+          <button class="btn btn-primary" id="s1-lift">Last heben</button>
+          <button class="btn btn-ghost" id="s1-reset">Zurücksetzen</button>
+        </div>
+        <div class="sim-caption">Blau = Last · Rot = Kraft · Dreieck = Drehpunkt</div>
+      </div>
+
+      <div class="controls-stack">
+        <div class="panel">
+          <h2>Stellschrauben</h2>
+          <div class="control-row">
+            <label class="control-label">Lastarm <span class="unit">(Abstand Last ↔ Drehpunkt)</span></label>
+            <span class="control-value" id="s1-larm-v">0.4 m</span>
+          </div>
+          <input type="range" id="s1-larm" min="0.2" max="1.2" step="0.05" value="0.4">
+
+          <div class="control-row" style="margin-top: 14px;">
+            <label class="control-label">Kraftarm <span class="unit">(Abstand Kraft ↔ Drehpunkt)</span></label>
+            <span class="control-value" id="s1-karm-v">0.8 m</span>
+          </div>
+          <input type="range" id="s1-karm" min="0.2" max="1.2" step="0.05" value="0.8">
+
+          <div class="control-row" style="margin-top: 14px;">
+            <label class="control-label">Masse der Last</label>
+            <span class="control-value" id="s1-mass-v">2.0 kg</span>
+          </div>
+          <input type="range" id="s1-mass" min="0.5" max="5" step="0.1" value="2">
+        </div>
+
+        <div class="panel">
+          <h2>Messwerte</h2>
+          <div class="meas-group-label">Auf der Lastseite</div>
+          <div class="measurements">
+            <div class="meas-box">
+              <div class="meas-label">Gewichtskraft Last</div>
+              <div class="meas-value"><span id="s1-fl">20.0</span> <span class="u">N</span></div>
+            </div>
+            <div class="meas-box">
+              <div class="meas-label">Weg der Last</div>
+              <div class="meas-value"><span id="s1-sl">0.00</span> <span class="u">m</span></div>
+            </div>
+          </div>
+          <div class="meas-group-label">Auf der Kraftseite</div>
+          <div class="measurements">
+            <div class="meas-box">
+              <div class="meas-label">Nötige Kraft</div>
+              <div class="meas-value"><span id="s1-fk">10.0</span> <span class="u">N</span></div>
+            </div>
+            <div class="meas-box">
+              <div class="meas-label">Weg der Hand</div>
+              <div class="meas-value"><span id="s1-sk">0.00</span> <span class="u">m</span></div>
+            </div>
+          </div>
+
+          <div class="balance">
+            <div class="balance-title">Goldene-Regel-Bilanz</div>
+            <div class="balance-row"><span class="lbl">F<sub>Last</sub> · s<sub>Last</sub> =</span><span class="val"><span id="s1-wl">0.00</span> Nm</span></div>
+            <div class="balance-row"><span class="lbl">F<sub>Kraft</sub> · s<sub>Kraft</sub> =</span><span class="val"><span id="s1-wk">0.00</span> Nm</span></div>
+            <div class="balance-verdict" id="s1-verdict">— Last noch nicht bewegt —</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-panel">
+      <h3>Forscherauftrag · Arbeitsblatt Station 1</h3>
+      <ol>
+        <li>Stelle <strong>Lastarm = Kraftarm</strong> ein. Hebe die Last. Notiere F<sub>Kraft</sub> und s<sub>Kraft</sub>.</li>
+        <li>Stelle den <strong>Kraftarm doppelt so lang</strong> wie den Lastarm ein. Was passiert mit der nötigen Kraft? Was mit dem Weg?</li>
+        <li>Finde Einstellungen, bei denen die Kraft nur <strong>¼</strong> der Gewichtskraft beträgt. Welcher Weg ergibt sich?</li>
+        <li>Formuliere: <em>„Was ich an Kraft spare, muss ich an ______ zusetzen."</em></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ==================== STATION 2: Einseitiger Hebel ==================== -->
+  <section class="station" id="station-2">
+    <div class="station-header">
+      <h1><span class="num">02 —</span> Der einseitige Hebel</h1>
+      <p>Last und Kraft greifen auf derselben Seite des Drehpunkts an — wie bei einer Schubkarre oder einem Nussknacker. Der Drehpunkt liegt am Ende des Hebels.</p>
+    </div>
+
+    <div class="station-grid">
+      <div class="panel sim-panel">
+        <div class="sim-canvas-wrap"><canvas id="canvas2"></canvas></div>
+        <div class="sim-actions">
+          <button class="btn btn-primary" id="s2-lift">Schubkarre heben</button>
+          <button class="btn btn-ghost" id="s2-reset">Zurücksetzen</button>
+        </div>
+        <div class="sim-caption">Schubkarren-Modell · Blau = Last · Rot = Kraft · Dreieck links = Drehpunkt (Rad)</div>
+      </div>
+
+      <div class="controls-stack">
+        <div class="panel">
+          <h2>Stellschrauben</h2>
+          <div class="control-row">
+            <label class="control-label">Lastarm <span class="unit">(Drehpunkt ↔ Last)</span></label>
+            <span class="control-value" id="s2-larm-v">0.3 m</span>
+          </div>
+          <input type="range" id="s2-larm" min="0.15" max="0.9" step="0.05" value="0.3">
+
+          <div class="control-row" style="margin-top: 14px;">
+            <label class="control-label">Kraftarm <span class="unit">(Drehpunkt ↔ Griff)</span></label>
+            <span class="control-value" id="s2-karm-v">1.0 m</span>
+          </div>
+          <input type="range" id="s2-karm" min="0.4" max="1.4" step="0.05" value="1.0">
+
+          <div class="control-row" style="margin-top: 14px;">
+            <label class="control-label">Masse der Last</label>
+            <span class="control-value" id="s2-mass-v">5.0 kg</span>
+          </div>
+          <input type="range" id="s2-mass" min="1" max="20" step="0.5" value="5">
+          <p class="hint">Hinweis: Der Kraftarm muss größer als der Lastarm sein, sonst liegt die Last ja hinter dem Griff.</p>
+        </div>
+
+        <div class="panel">
+          <h2>Messwerte</h2>
+          <div class="meas-group-label">Last</div>
+          <div class="measurements">
+            <div class="meas-box">
+              <div class="meas-label">Gewichtskraft</div>
+              <div class="meas-value"><span id="s2-fl">50.0</span> <span class="u">N</span></div>
+            </div>
+            <div class="meas-box">
+              <div class="meas-label">Weg (Hub)</div>
+              <div class="meas-value"><span id="s2-sl">0.00</span> <span class="u">m</span></div>
+            </div>
+          </div>
+          <div class="meas-group-label">Griff</div>
+          <div class="measurements">
+            <div class="meas-box">
+              <div class="meas-label">Nötige Kraft</div>
+              <div class="meas-value"><span id="s2-fk">15.0</span> <span class="u">N</span></div>
+            </div>
+            <div class="meas-box">
+              <div class="meas-label">Weg der Hand</div>
+              <div class="meas-value"><span id="s2-sk">0.00</span> <span class="u">m</span></div>
+            </div>
+          </div>
+
+          <div class="balance">
+            <div class="balance-title">Goldene-Regel-Bilanz</div>
+            <div class="balance-row"><span class="lbl">F<sub>Last</sub> · s<sub>Last</sub> =</span><span class="val"><span id="s2-wl">0.00</span> Nm</span></div>
+            <div class="balance-row"><span class="lbl">F<sub>Kraft</sub> · s<sub>Kraft</sub> =</span><span class="val"><span id="s2-wk">0.00</span> Nm</span></div>
+            <div class="balance-verdict" id="s2-verdict">— Last noch nicht bewegt —</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-panel">
+      <h3>Forscherauftrag · Arbeitsblatt Station 2</h3>
+      <ol>
+        <li>Notiere für drei verschiedene Kraftarm-Einstellungen jeweils F<sub>Kraft</sub> und s<sub>Kraft</sub>.</li>
+        <li>Was passiert, wenn du den <strong>Lastarm verkürzt</strong>, ohne den Kraftarm zu ändern?</li>
+        <li>Nenne zwei Werkzeuge aus dem Alltag, die nach dem Prinzip <em>einseitiger Hebel</em> funktionieren.</li>
+        <li>Vergleich mit Station 1: Worin besteht der <strong>Unterschied</strong> zum zweiseitigen Hebel? Worin die <strong>Gemeinsamkeit</strong>?</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ==================== STATION 3: Flaschenzug ==================== -->
+  <section class="station" id="station-3">
+    <div class="station-header">
+      <h1><span class="num">03 —</span> Der Flaschenzug</h1>
+      <p>Feste und lose Rollen verteilen die Last auf mehrere Seilabschnitte. Die Anzahl der tragenden Seile bestimmt, um welchen Faktor die Kraft kleiner — und der Weg länger — wird.</p>
+    </div>
+
+    <div class="station-grid">
+      <div class="panel sim-panel">
+        <div class="sim-canvas-wrap"><canvas id="canvas3"></canvas></div>
+        <div class="sim-actions">
+          <button class="btn btn-primary" id="s3-lift">Last heben</button>
+          <button class="btn btn-ghost" id="s3-reset">Zurücksetzen</button>
+        </div>
+        <div class="sim-caption">Zählen! Wie viele Seile tragen die Last?</div>
+      </div>
+
+      <div class="controls-stack">
+        <div class="panel">
+          <h2>Stellschrauben</h2>
+          <label class="control-label">Anzahl tragender Seile <em>n</em></label>
+          <div class="segmented" id="s3-segments" style="margin-top: 8px;">
+            <button class="seg-btn active" data-n="1">n = 1</button>
+            <button class="seg-btn" data-n="2">n = 2</button>
+            <button class="seg-btn" data-n="3">n = 3</button>
+            <button class="seg-btn" data-n="4">n = 4</button>
+          </div>
+          <p class="hint">n = 1: feste Rolle · n = 2: lose Rolle · n ≥ 2: Flaschenzug</p>
+
+          <div class="control-row" style="margin-top: 16px;">
+            <label class="control-label">Masse der Last</label>
+            <span class="control-value" id="s3-mass-v">10.0 kg</span>
+          </div>
+          <input type="range" id="s3-mass" min="2" max="40" step="0.5" value="10">
+
+          <div class="control-row" style="margin-top: 14px;">
+            <label class="control-label">Hubhöhe der Last</label>
+            <span class="control-value" id="s3-hub-v">0.40 m</span>
+          </div>
+          <input type="range" id="s3-hub" min="0.1" max="0.6" step="0.05" value="0.4">
+        </div>
+
+        <div class="panel">
+          <h2>Messwerte</h2>
+          <div class="meas-group-label">Last</div>
+          <div class="measurements">
+            <div class="meas-box">
+              <div class="meas-label">Gewichtskraft</div>
+              <div class="meas-value"><span id="s3-fl">100.0</span> <span class="u">N</span></div>
+            </div>
+            <div class="meas-box">
+              <div class="meas-label">Hubhöhe</div>
+              <div class="meas-value"><span id="s3-sl">0.00</span> <span class="u">m</span></div>
+            </div>
+          </div>
+          <div class="meas-group-label">Seilende (Hand)</div>
+          <div class="measurements">
+            <div class="meas-box">
+              <div class="meas-label">Zugkraft</div>
+              <div class="meas-value"><span id="s3-fk">100.0</span> <span class="u">N</span></div>
+            </div>
+            <div class="meas-box">
+              <div class="meas-label">Zugweg</div>
+              <div class="meas-value"><span id="s3-sk">0.00</span> <span class="u">m</span></div>
+            </div>
+          </div>
+
+          <div class="balance">
+            <div class="balance-title">Goldene-Regel-Bilanz</div>
+            <div class="balance-row"><span class="lbl">F<sub>Last</sub> · s<sub>Last</sub> =</span><span class="val"><span id="s3-wl">0.00</span> Nm</span></div>
+            <div class="balance-row"><span class="lbl">F<sub>Kraft</sub> · s<sub>Kraft</sub> =</span><span class="val"><span id="s3-wk">0.00</span> Nm</span></div>
+            <div class="balance-verdict" id="s3-verdict">— Last noch nicht gehoben —</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-panel">
+      <h3>Forscherauftrag · Arbeitsblatt Station 3</h3>
+      <ol>
+        <li>Baue alle vier Varianten (n = 1, 2, 3, 4) auf und hebe jeweils die Last. Notiere F<sub>Kraft</sub> und s<sub>Kraft</sub>.</li>
+        <li>Welches Verhältnis erkennst du zwischen der Zahl der tragenden Seile und dem Verhältnis von F<sub>Last</sub> zu F<sub>Kraft</sub>?</li>
+        <li>Stelle n = 4 ein. Die Last soll <strong>0,5 m</strong> hoch gehoben werden — wie weit musst du am Seil ziehen?</li>
+        <li>Warum spart man mit einer <strong>festen Rolle</strong> keine Kraft? Wozu ist sie dann gut?</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ==================== STATION 4: Schiefe Ebene ==================== -->
+  <section class="station" id="station-4">
+    <div class="station-header">
+      <h1><span class="num">04 —</span> Die schiefe Ebene</h1>
+      <p>Anstatt eine Last senkrecht hochzuheben, schieben wir sie über eine Rampe. Je flacher die Rampe, desto kleiner die Kraft — aber umso länger der Weg.</p>
+    </div>
+
+    <div class="station-grid">
+      <div class="panel sim-panel">
+        <div class="sim-canvas-wrap"><canvas id="canvas4"></canvas></div>
+        <div class="sim-actions">
+          <button class="btn btn-primary" id="s4-lift">Last hochziehen</button>
+          <button class="btn btn-ghost" id="s4-reset">Zurücksetzen</button>
+        </div>
+        <div class="sim-caption">Reibungsfreie Ebene · Blau = Last · Rot = Hangabtriebs-/Zugkraft</div>
+      </div>
+
+      <div class="controls-stack">
+        <div class="panel">
+          <h2>Stellschrauben</h2>
+          <div class="control-row">
+            <label class="control-label">Neigungswinkel α</label>
+            <span class="control-value" id="s4-angle-v">30°</span>
+          </div>
+          <input type="range" id="s4-angle" min="10" max="60" step="1" value="30">
+
+          <div class="control-row" style="margin-top: 14px;">
+            <label class="control-label">Hubhöhe <span class="unit">(Endhöhe über dem Boden)</span></label>
+            <span class="control-value" id="s4-hub-v">0.50 m</span>
+          </div>
+          <input type="range" id="s4-hub" min="0.2" max="0.9" step="0.05" value="0.5">
+
+          <div class="control-row" style="margin-top: 14px;">
+            <label class="control-label">Masse der Last</label>
+            <span class="control-value" id="s4-mass-v">5.0 kg</span>
+          </div>
+          <input type="range" id="s4-mass" min="1" max="20" step="0.5" value="5">
+        </div>
+
+        <div class="panel">
+          <h2>Messwerte</h2>
+          <div class="meas-group-label">Senkrecht heben (Vergleich)</div>
+          <div class="measurements">
+            <div class="meas-box">
+              <div class="meas-label">Gewichtskraft</div>
+              <div class="meas-value"><span id="s4-fl">50.0</span> <span class="u">N</span></div>
+            </div>
+            <div class="meas-box">
+              <div class="meas-label">Hubhöhe h</div>
+              <div class="meas-value"><span id="s4-sl">0.00</span> <span class="u">m</span></div>
+            </div>
+          </div>
+          <div class="meas-group-label">Entlang der Ebene</div>
+          <div class="measurements">
+            <div class="meas-box">
+              <div class="meas-label">Nötige Kraft</div>
+              <div class="meas-value"><span id="s4-fk">25.0</span> <span class="u">N</span></div>
+            </div>
+            <div class="meas-box">
+              <div class="meas-label">Weg auf Ebene</div>
+              <div class="meas-value"><span id="s4-sk">0.00</span> <span class="u">m</span></div>
+            </div>
+          </div>
+
+          <div class="balance">
+            <div class="balance-title">Goldene-Regel-Bilanz</div>
+            <div class="balance-row"><span class="lbl">F<sub>Last</sub> · h =</span><span class="val"><span id="s4-wl">0.00</span> Nm</span></div>
+            <div class="balance-row"><span class="lbl">F<sub>Kraft</sub> · s =</span><span class="val"><span id="s4-wk">0.00</span> Nm</span></div>
+            <div class="balance-verdict" id="s4-verdict">— Last noch nicht gezogen —</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-panel">
+      <h3>Forscherauftrag · Arbeitsblatt Station 4</h3>
+      <ol>
+        <li>Stelle eine Hubhöhe von 0,5 m ein. Miss F<sub>Kraft</sub> und den Weg für α = 60°, 45°, 30° und 15°.</li>
+        <li>Wie verändert sich die nötige Kraft, wenn du den Winkel halbierst? Genau halbiert — oder nicht?</li>
+        <li>Nenne mindestens <strong>zwei Beispiele</strong> für schiefe Ebenen im Alltag.</li>
+        <li>Warum sind Gebirgsstraßen fast nie <em>geradeaus</em> den Berg hoch, sondern in Serpentinen gebaut?</li>
+      </ol>
+    </div>
+  </section>
+
+</main>
+
+<script>
+/* ============================================================================
+   Navigation zwischen Stationen
+   ============================================================================ */
+const navButtons = document.querySelectorAll('.station-btn');
+const stations = document.querySelectorAll('.station');
+
+navButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const id = btn.dataset.station;
+    navButtons.forEach(b => b.classList.toggle('active', b === btn));
+    stations.forEach(s => s.classList.toggle('active', s.id === 'station-' + id));
+    // Allen Canvas-Animationen signalisieren: resetten, wenn Station verlassen
+    resetAllSimulations();
+    // Nach Tab-Wechsel Canvas neu vermessen
+    setTimeout(() => {
+      fitCanvas(cv1); drawStation1();
+      fitCanvas(cv2); drawStation2();
+      fitCanvas(cv3); drawStation3();
+      fitCanvas(cv4); drawStation4();
+    }, 20);
+  });
+});
+
+/* ============================================================================
+   Gemeinsame Helfer: HiDPI-Canvas-Setup, Zahlenformat, Arbeitsvergleich
+   ============================================================================ */
+const G = 10; // m/s² — didaktisch vereinfacht (in BW üblich in Klasse 9)
+
+function fitCanvas(canvas) {
+  const rect = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width  = Math.round(rect.width  * dpr);
+  canvas.height = Math.round(rect.height * dpr);
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  canvas._w = rect.width;
+  canvas._h = rect.height;
+  return ctx;
+}
+function fmt(x, d = 2) { return x.toFixed(d); }
+function compareWork(W1, W2, id) {
+  const verdict = document.getElementById(id);
+  if (W1 === 0 && W2 === 0) {
+    verdict.textContent = '— Last noch nicht bewegt —';
+    verdict.classList.remove('off');
+    return;
+  }
+  const diff = Math.abs(W1 - W2);
+  const avg  = (W1 + W2) / 2;
+  const rel  = avg > 0 ? diff / avg : 0;
+  if (rel < 0.01) {
+    verdict.textContent = '✓  Die Arbeit ist gleich groß — goldene Regel bestätigt.';
+    verdict.classList.remove('off');
+  } else {
+    verdict.textContent = 'Achtung: Arbeit weicht ab.';
+    verdict.classList.add('off');
+  }
+}
+
+function resetAllSimulations() {
+  [s1, s2, s3, s4].forEach(s => { if (s && s.reset) s.reset(); });
+}
+
+/* ============================================================================
+   STATION 1 — Zweiseitiger Hebel
+   Physik:  F_last · l_last = F_kraft · l_kraft
+            s_last = l_last · sin(θ),  s_kraft = l_kraft · sin(θ)
+   ============================================================================ */
+const cv1 = document.getElementById('canvas1');
+let ctx1 = fitCanvas(cv1);
+
+const s1 = {
+  larm: 0.4, karm: 0.8, mass: 2,
+  angle: 0,       // aktueller Hebel-Winkel (rad)
+  targetAngle: 0, // Zielwinkel beim Heben
+  animating: false,
+  animStart: 0,
+  duration: 1200, // ms
+  measured: false,
+  reset() {
+    this.angle = 0; this.targetAngle = 0;
+    this.animating = false; this.measured = false;
+    updateS1();
+  }
+};
+
+function updateS1() {
+  s1.larm = parseFloat(document.getElementById('s1-larm').value);
+  s1.karm = parseFloat(document.getElementById('s1-karm').value);
+  s1.mass = parseFloat(document.getElementById('s1-mass').value);
+
+  document.getElementById('s1-larm-v').textContent = s1.larm.toFixed(2) + ' m';
+  document.getElementById('s1-karm-v').textContent = s1.karm.toFixed(2) + ' m';
+  document.getElementById('s1-mass-v').textContent = s1.mass.toFixed(1) + ' kg';
+
+  const F_last  = s1.mass * G;
+  const F_kraft = F_last * s1.larm / s1.karm;
+
+  const sin = Math.sin(s1.angle);
+  const s_last  = s1.larm * sin;
+  const s_kraft = s1.karm * sin;
+
+  document.getElementById('s1-fl').textContent = fmt(F_last, 1);
+  document.getElementById('s1-fk').textContent = fmt(F_kraft, 1);
+  document.getElementById('s1-sl').textContent = fmt(Math.abs(s_last), 3);
+  document.getElementById('s1-sk').textContent = fmt(Math.abs(s_kraft), 3);
+
+  const W_last  = F_last  * Math.abs(s_last);
+  const W_kraft = F_kraft * Math.abs(s_kraft);
+  document.getElementById('s1-wl').textContent = fmt(W_last, 3);
+  document.getElementById('s1-wk').textContent = fmt(W_kraft, 3);
+  compareWork(W_last, W_kraft, 's1-verdict');
+
+  drawStation1();
+}
+
+function drawStation1() {
+  const w = cv1._w, h = cv1._h;
+  const ctx = ctx1;
+  ctx.clearRect(0, 0, w, h);
+
+  // Hintergrund-Linien (Raster)
+  drawGrid(ctx, w, h);
+
+  // Drehpunkt in der Mitte
+  const pivotX = w / 2;
+  const pivotY = h * 0.62;
+
+  // Skala: 1 m entspricht X Pixel
+  const scale = (w * 0.4) / Math.max(s1.larm, s1.karm, 1.2);
+
+  const L = s1.larm * scale;
+  const K = s1.karm * scale;
+  const theta = s1.angle; // Last links geht nach oben, wenn theta negativ (Hebel kippt nach links unten)
+  // Wenn wir die Last HEBEN: Lastseite geht nach OBEN, Kraftseite nach UNTEN
+  // Wir lassen den Balken um -theta drehen
+  const cos = Math.cos(theta), sin = Math.sin(theta);
+
+  // Balken-Endpunkte: bei positivem theta hebt sich LINKS (Last) an,
+  // RECHTS (Kraftseite) geht nach unten.
+  const leftEndX  = pivotX - L * cos;
+  const leftEndY  = pivotY - L * sin;
+  const rightEndX = pivotX + K * cos;
+  const rightEndY = pivotY + K * sin;
+
+  // Balken
+  ctx.strokeStyle = '#3a2f1e';
+  ctx.lineWidth = 10;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(leftEndX, leftEndY);
+  ctx.lineTo(rightEndX, rightEndY);
+  ctx.stroke();
+
+  // Drehpunkt (Dreieck)
+  ctx.fillStyle = '#1c2e4a';
+  ctx.beginPath();
+  ctx.moveTo(pivotX, pivotY);
+  ctx.lineTo(pivotX - 18, pivotY + 32);
+  ctx.lineTo(pivotX + 18, pivotY + 32);
+  ctx.closePath();
+  ctx.fill();
+  // Boden
+  ctx.strokeStyle = '#8a8578';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, pivotY + 32);
+  ctx.lineTo(w, pivotY + 32);
+  ctx.stroke();
+
+  // Hebelarm-Beschriftungen (Maßlinien)
+  drawDim(ctx, pivotX, pivotY + 48, leftEndX, pivotY + 48, `Lastarm ${s1.larm.toFixed(2)} m`, '#2b4a7a');
+  drawDim(ctx, pivotX, pivotY + 70, rightEndX, pivotY + 70, `Kraftarm ${s1.karm.toFixed(2)} m`, '#7a2b2b');
+
+  // Last hängt als Gewicht am linken Balkenende (kurzes Seil nach unten)
+  const loadSize = 30 + Math.min(40, s1.mass * 4);
+  const ropeLen = 22;
+  ctx.strokeStyle = '#1c2e4a';
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  ctx.moveTo(leftEndX, leftEndY);
+  ctx.lineTo(leftEndX, leftEndY + ropeLen);
+  ctx.stroke();
+  drawWeight(ctx, leftEndX, leftEndY + ropeLen + loadSize / 2, loadSize, s1.mass);
+
+  // Kraftpfeil nach unten am rechten Balkenende
+  const F_last  = s1.mass * G;
+  const F_kraft = F_last * s1.larm / s1.karm;
+  drawForceArrow(ctx, rightEndX, rightEndY, F_kraft, 'down');
+}
+
+/* ============================================================================
+   STATION 2 — Einseitiger Hebel (Schubkarre)
+   Physik: wie 1, nur dass beide auf derselben Seite des Drehpunkts liegen
+   ============================================================================ */
+const cv2 = document.getElementById('canvas2');
+let ctx2 = fitCanvas(cv2);
+
+const s2 = {
+  larm: 0.3, karm: 1.0, mass: 5,
+  angle: 0, targetAngle: 0,
+  animating: false, animStart: 0,
+  duration: 1200,
+  reset() {
+    this.angle = 0; this.targetAngle = 0;
+    this.animating = false;
+    updateS2();
+  }
+};
+
+function updateS2() {
+  s2.larm = parseFloat(document.getElementById('s2-larm').value);
+  s2.karm = parseFloat(document.getElementById('s2-karm').value);
+  s2.mass = parseFloat(document.getElementById('s2-mass').value);
+
+  // Kraftarm muss immer größer als Lastarm sein — sonst auf Minimum anheben
+  if (s2.karm <= s2.larm + 0.05) {
+    s2.karm = s2.larm + 0.1;
+    document.getElementById('s2-karm').value = s2.karm;
+  }
+
+  document.getElementById('s2-larm-v').textContent = s2.larm.toFixed(2) + ' m';
+  document.getElementById('s2-karm-v').textContent = s2.karm.toFixed(2) + ' m';
+  document.getElementById('s2-mass-v').textContent = s2.mass.toFixed(1) + ' kg';
+
+  const F_last  = s2.mass * G;
+  const F_kraft = F_last * s2.larm / s2.karm;
+  const sin = Math.sin(s2.angle);
+  const s_last  = s2.larm * sin;
+  const s_kraft = s2.karm * sin;
+
+  document.getElementById('s2-fl').textContent = fmt(F_last, 1);
+  document.getElementById('s2-fk').textContent = fmt(F_kraft, 1);
+  document.getElementById('s2-sl').textContent = fmt(Math.abs(s_last), 3);
+  document.getElementById('s2-sk').textContent = fmt(Math.abs(s_kraft), 3);
+
+  const W_last  = F_last  * Math.abs(s_last);
+  const W_kraft = F_kraft * Math.abs(s_kraft);
+  document.getElementById('s2-wl').textContent = fmt(W_last, 3);
+  document.getElementById('s2-wk').textContent = fmt(W_kraft, 3);
+  compareWork(W_last, W_kraft, 's2-verdict');
+
+  drawStation2();
+}
+
+function drawStation2() {
+  const w = cv2._w, h = cv2._h;
+  const ctx = ctx2;
+  ctx.clearRect(0, 0, w, h);
+  drawGrid(ctx, w, h);
+
+  // Drehpunkt (Rad) links
+  const pivotX = w * 0.15;
+  const pivotY = h * 0.68;
+
+  const scale = (w * 0.75) / Math.max(s2.karm, 1.4);
+
+  const L = s2.larm * scale;
+  const K = s2.karm * scale;
+  const theta = s2.angle; // wenn positiv, rechte Seite geht nach oben
+  const cos = Math.cos(theta), sin = Math.sin(theta);
+
+  // Balkenpunkte (relativ zum Drehpunkt, positive X nach rechts)
+  const loadX  = pivotX + L * cos;
+  const loadY  = pivotY - L * sin;
+  const gripX  = pivotX + K * cos;
+  const gripY  = pivotY - K * sin;
+
+  // Boden
+  ctx.strokeStyle = '#8a8578';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, pivotY + 24);
+  ctx.lineTo(w, pivotY + 24);
+  ctx.stroke();
+
+  // Balken (Schubkarre)
+  ctx.strokeStyle = '#3a2f1e';
+  ctx.lineWidth = 10;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(pivotX, pivotY);
+  ctx.lineTo(gripX, gripY);
+  ctx.stroke();
+
+  // Kiste/Last auf der Schubkarre (als Block auf dem Balken)
+  const loadSize = 34 + Math.min(30, s2.mass * 1.8);
+  // Wir zeichnen die Last ein bisschen oberhalb des Balkens
+  const boxOffsetX = Math.sin(theta) * (loadSize / 2);
+  const boxOffsetY = -Math.cos(theta) * (loadSize / 2);
+  drawWeight(ctx, loadX + boxOffsetX, loadY + boxOffsetY, loadSize, s2.mass, true);
+
+  // Rad (Drehpunkt)
+  ctx.fillStyle = '#2b2b2b';
+  ctx.beginPath();
+  ctx.arc(pivotX, pivotY, 16, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#8a8578';
+  ctx.beginPath();
+  ctx.arc(pivotX, pivotY, 6, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Griff (Kreis)
+  ctx.fillStyle = '#7a2b2b';
+  ctx.beginPath();
+  ctx.arc(gripX, gripY, 10, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Kraftpfeil am Griff (nach oben, denn wir heben)
+  const F_last  = s2.mass * G;
+  const F_kraft = F_last * s2.larm / s2.karm;
+  drawForceArrow(ctx, gripX, gripY, F_kraft, 'up');
+
+  // Maßlinien
+  drawDim(ctx, pivotX, pivotY + 42, loadX, pivotY + 42, `Lastarm ${s2.larm.toFixed(2)} m`, '#2b4a7a');
+  drawDim(ctx, pivotX, pivotY + 66, gripX, pivotY + 66, `Kraftarm ${s2.karm.toFixed(2)} m`, '#7a2b2b');
+}
+
+/* ============================================================================
+   STATION 3 — Flaschenzug
+   Physik: F_kraft = F_last / n ; s_kraft = n · s_last
+   ============================================================================ */
+const cv3 = document.getElementById('canvas3');
+let ctx3 = fitCanvas(cv3);
+
+const s3 = {
+  n: 1, mass: 10, hub: 0.4,
+  liftProgress: 0, // 0..1
+  animating: false, animStart: 0,
+  duration: 1600,
+  reset() {
+    this.liftProgress = 0; this.animating = false;
+    updateS3();
+  }
+};
+
+function updateS3() {
+  s3.mass = parseFloat(document.getElementById('s3-mass').value);
+  s3.hub  = parseFloat(document.getElementById('s3-hub').value);
+  document.getElementById('s3-mass-v').textContent = s3.mass.toFixed(1) + ' kg';
+  document.getElementById('s3-hub-v').textContent  = s3.hub.toFixed(2) + ' m';
+
+  const F_last  = s3.mass * G;
+  const F_kraft = F_last / s3.n;
+
+  const s_last  = s3.hub * s3.liftProgress;
+  const s_kraft = s_last * s3.n;
+
+  document.getElementById('s3-fl').textContent = fmt(F_last, 1);
+  document.getElementById('s3-fk').textContent = fmt(F_kraft, 1);
+  document.getElementById('s3-sl').textContent = fmt(s_last, 3);
+  document.getElementById('s3-sk').textContent = fmt(s_kraft, 3);
+
+  const W_last  = F_last  * s_last;
+  const W_kraft = F_kraft * s_kraft;
+  document.getElementById('s3-wl').textContent = fmt(W_last, 3);
+  document.getElementById('s3-wk').textContent = fmt(W_kraft, 3);
+  compareWork(W_last, W_kraft, 's3-verdict');
+
+  drawStation3();
+}
+
+function drawStation3() {
+  const w = cv3._w, h = cv3._h;
+  const ctx = ctx3;
+  ctx.clearRect(0, 0, w, h);
+  drawGrid(ctx, w, h);
+
+  // Decke
+  const ceilingY = h * 0.08;
+  ctx.fillStyle = '#3a2f1e';
+  ctx.fillRect(0, ceilingY - 14, w, 14);
+  ctx.strokeStyle = '#3a2f1e';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < w; x += 14) {
+    ctx.beginPath(); ctx.moveTo(x, ceilingY); ctx.lineTo(x + 10, ceilingY - 14); ctx.stroke();
+  }
+
+  const n = s3.n;
+  // Visuelle Hubhöhen (in Pixel) — fest gewählt, damit alles auf den Canvas passt.
+  // Last steigt um liftLoad, Hand fällt um liftLoad·n (Goldene Regel).
+  const liftLoadMax = h * 0.16;
+  const liftLoad = liftLoadMax * s3.liftProgress;
+  const liftHand = liftLoad * n;
+
+  const pulleyR  = 14;
+  const ropeColor = '#1c2e4a';
+  const blockColor = '#5a4a35';
+  const centerX = w * 0.5;
+  const loadSize = 50;
+
+  // Y-Position der festen Rolle(n) (oben, an der Decke)
+  const fixY = ceilingY + pulleyR + 14;
+
+  ctx.lineWidth = 2.2;
+  ctx.strokeStyle = ropeColor;
+
+  if (n === 1) {
+    // ---------- Feste Rolle (Spezialfall) ----------
+    drawPulley(ctx, centerX, fixY, pulleyR);
+
+    // Last hängt links, Hand zieht rechts nach unten
+    const loadX = centerX - pulleyR;
+    const loadY_initial = h * 0.78;
+    const loadY = loadY_initial - liftLoad;
+
+    // Seil von der Last hoch zur linken Tangente der Rolle
+    ctx.beginPath();
+    ctx.moveTo(loadX, loadY - loadSize/2);
+    ctx.lineTo(loadX, fixY);
+    ctx.stroke();
+    // Bogen über die Rolle
+    ctx.beginPath();
+    ctx.arc(centerX, fixY, pulleyR, Math.PI, 0, false);
+    ctx.stroke();
+    // Seil von der rechten Tangente nach unten zur Hand
+    const handX = centerX + pulleyR;
+    const handY = fixY + 36 + liftHand;  // Hand fängt nahe der Rolle an, geht nach unten
+    ctx.beginPath();
+    ctx.moveTo(handX, fixY);
+    ctx.lineTo(handX, handY);
+    ctx.stroke();
+
+    drawHand(ctx, handX, handY);
+    drawWeight(ctx, loadX, loadY, loadSize, s3.mass);
+
+  } else {
+    // ---------- Block-and-Tackle für n >= 2 ----------
+    // Geometrie: Pulleys an x = startX + i·stride (i = 0..n-1).
+    // stride = 2·pulleyR, damit aufeinanderfolgende Stränge genau auf den Tangenten
+    // der jeweiligen Rolle liegen (Strang i an x = startX + (i-0.5)·stride).
+    // Pulley i ist FEST  ⇔  (i + n) % 2 === 1
+    //                LOSE ⇔  (i + n) % 2 === 0
+    // Bei n gerade ist das Seil oben (an der Decke) befestigt; bei n ungerade
+    // am losen Block.
+    const stride  = 2 * pulleyR;
+    const startX  = centerX - (n - 1) * stride / 2;
+
+    const looseY_initial = h * 0.62;
+    const looseY = looseY_initial - liftLoad;
+
+    // Pulleys aufbauen
+    const pulleys = [];
+    for (let i = 0; i < n; i++) {
+      const isFixed = ((i + n) % 2) === 1;
+      pulleys.push({
+        x: startX + i * stride,
+        y: isFixed ? fixY : looseY,
+        isFixed: isFixed
+      });
+    }
+
+    // Strang-X-Positionen (n+1 Stränge: Index 0 = Anfang, Index n = Hand)
+    const strandX = [];
+    for (let i = 0; i <= n; i++) {
+      strandX.push(startX + (i - 0.5) * stride);
+    }
+
+    // ---------- Fester Block (oben) ----------
+    const fixedPx = pulleys.filter(p => p.isFixed).map(p => p.x);
+    const fixedBlockLeft  = Math.min(...fixedPx) - pulleyR - 6;
+    const fixedBlockRight = Math.max(...fixedPx) + pulleyR + 6;
+    ctx.fillStyle = blockColor;
+    ctx.fillRect(fixedBlockLeft, fixY - pulleyR - 9, fixedBlockRight - fixedBlockLeft, 7);
+    // Aufhängung: dicker Strich vom Block hoch zur Decke (mittig)
+    const fixHangX = (fixedBlockLeft + fixedBlockRight) / 2;
+    ctx.strokeStyle = '#3a2f1e';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(fixHangX, ceilingY);
+    ctx.lineTo(fixHangX, fixY - pulleyR - 9);
+    ctx.stroke();
+    ctx.lineWidth = 2.2;
+    ctx.strokeStyle = ropeColor;
+
+    // ---------- Loser Block (unten) ----------
+    const loosePx = pulleys.filter(p => !p.isFixed).map(p => p.x);
+    let looseBlockLeft  = Math.min(...loosePx) - pulleyR - 6;
+    let looseBlockRight = Math.max(...loosePx) + pulleyR + 6;
+    // Bei n ungerade ist das Seilende am losen Block befestigt (an x = strandX[0]).
+    // Den Block bei Bedarf nach links erweitern, damit die Aufhängung im Block sitzt.
+    if (n % 2 === 1) {
+      looseBlockLeft = Math.min(looseBlockLeft, strandX[0] - 6);
+    }
+    ctx.fillStyle = blockColor;
+    ctx.fillRect(looseBlockLeft, looseY + pulleyR + 2, looseBlockRight - looseBlockLeft, 7);
+
+    // ---------- Pulleys zeichnen ----------
+    pulleys.forEach(p => drawPulley(ctx, p.x, p.y, pulleyR));
+
+    // ---------- Seilverlauf ----------
+    ctx.strokeStyle = ropeColor;
+    ctx.lineWidth = 2.2;
+
+    // Strang 0: vom Anker zum ersten Pulley
+    let anchorY;
+    if (n % 2 === 0) {
+      // Anker an der Decke
+      anchorY = ceilingY;
+      ctx.fillStyle = ropeColor;
+      ctx.fillRect(strandX[0] - 4, ceilingY - 6, 8, 6);
+    } else {
+      // Anker am oberen Rand des losen Blocks
+      anchorY = looseY + pulleyR + 2;
+    }
+    ctx.beginPath();
+    ctx.moveTo(strandX[0], anchorY);
+    ctx.lineTo(strandX[0], pulleys[0].y);
+    ctx.stroke();
+
+    // Wraps (Bögen) und nachfolgende Stränge
+    for (let i = 0; i < n; i++) {
+      // Bogen um Pulley i: oben (fest) oder unten (lose)
+      ctx.beginPath();
+      if (pulleys[i].isFixed) {
+        ctx.arc(pulleys[i].x, pulleys[i].y, pulleyR, Math.PI, 0, false);
+      } else {
+        ctx.arc(pulleys[i].x, pulleys[i].y, pulleyR, 0, Math.PI, false);
+      }
+      ctx.stroke();
+
+      // Strang nach dem Pulley: zur nächsten Rolle oder (beim letzten) zur Hand
+      let strandEndY;
+      if (i < n - 1) {
+        strandEndY = pulleys[i + 1].y;
+      } else {
+        strandEndY = fixY + 36 + liftHand;
+      }
+      ctx.beginPath();
+      ctx.moveTo(strandX[i + 1], pulleys[i].y);
+      ctx.lineTo(strandX[i + 1], strandEndY);
+      ctx.stroke();
+    }
+
+    // ---------- Hand ----------
+    const handX = strandX[n];
+    const handY = fixY + 36 + liftHand;
+    drawHand(ctx, handX, handY);
+
+    // ---------- Last unter dem losen Block ----------
+    // Last hängt mittig unter den losen Pulleys (Schwerpunkt der losen Rollen)
+    const loadCenterX = loosePx.reduce((a, b) => a + b, 0) / loosePx.length;
+    const loadHookY   = looseY + pulleyR + 9;
+    const loadCenterY = loadHookY + 32 + loadSize/2;
+
+    ctx.strokeStyle = ropeColor;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(loadCenterX, loadHookY);
+    ctx.lineTo(loadCenterX, loadCenterY - loadSize/2);
+    ctx.stroke();
+
+    drawWeight(ctx, loadCenterX, loadCenterY, loadSize, s3.mass);
+  }
+
+  // Infoanzeige: n tragende Seile
+  ctx.fillStyle = '#1c2e4a';
+  ctx.font = 'italic 13px Fraunces, serif';
+  ctx.textAlign = 'right';
+  ctx.fillText(`n = ${n} tragende${n === 1 ? 's' : ''} Seil${n === 1 ? '' : 'e'}`, w - 14, h - 12);
+}
+
+function drawPulley(ctx, x, y, r) {
+  ctx.fillStyle = '#8a8578';
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#2b2b2b';
+  ctx.beginPath(); ctx.arc(x, y, r - 4, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#f5f1e8';
+  ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill();
+}
+
+function drawHand(ctx, x, y) {
+  ctx.fillStyle = '#e8c7b8';
+  ctx.strokeStyle = '#7a5a40';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(x, y, 10, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  // Pfeil nach unten
+  ctx.strokeStyle = '#b84a1e';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(x + 18, y - 12);
+  ctx.lineTo(x + 18, y + 12);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x + 14, y + 7);
+  ctx.lineTo(x + 18, y + 12);
+  ctx.lineTo(x + 22, y + 7);
+  ctx.stroke();
+}
+
+/* ============================================================================
+   STATION 4 — Schiefe Ebene
+   Physik: F_kraft = F_last · sin(α) ;  s = h / sin(α)
+   ============================================================================ */
+const cv4 = document.getElementById('canvas4');
+let ctx4 = fitCanvas(cv4);
+
+const s4 = {
+  angle: 30, mass: 5, hub: 0.5,
+  liftProgress: 0,
+  animating: false, animStart: 0,
+  duration: 1800,
+  reset() {
+    this.liftProgress = 0; this.animating = false;
+    updateS4();
+  }
+};
+
+function updateS4() {
+  s4.angle = parseFloat(document.getElementById('s4-angle').value);
+  s4.mass  = parseFloat(document.getElementById('s4-mass').value);
+  s4.hub   = parseFloat(document.getElementById('s4-hub').value);
+  document.getElementById('s4-angle-v').textContent = s4.angle + '°';
+  document.getElementById('s4-mass-v').textContent  = s4.mass.toFixed(1) + ' kg';
+  document.getElementById('s4-hub-v').textContent   = s4.hub.toFixed(2) + ' m';
+
+  const rad = s4.angle * Math.PI / 180;
+  const F_last  = s4.mass * G;
+  const F_kraft = F_last * Math.sin(rad);
+
+  const s_last  = s4.hub * s4.liftProgress;            // vertikale Hubhöhe
+  const s_kraft = s_last / Math.sin(rad);              // Weg auf der Ebene
+
+  document.getElementById('s4-fl').textContent = fmt(F_last, 1);
+  document.getElementById('s4-fk').textContent = fmt(F_kraft, 1);
+  document.getElementById('s4-sl').textContent = fmt(s_last, 3);
+  document.getElementById('s4-sk').textContent = fmt(s_kraft, 3);
+
+  const W_last  = F_last  * s_last;
+  const W_kraft = F_kraft * s_kraft;
+  document.getElementById('s4-wl').textContent = fmt(W_last, 3);
+  document.getElementById('s4-wk').textContent = fmt(W_kraft, 3);
+  compareWork(W_last, W_kraft, 's4-verdict');
+
+  drawStation4();
+}
+
+function drawStation4() {
+  const w = cv4._w, h = cv4._h;
+  const ctx = ctx4;
+  ctx.clearRect(0, 0, w, h);
+  drawGrid(ctx, w, h);
+
+  const rad = s4.angle * Math.PI / 180;
+
+  // Boden
+  const groundY = h * 0.85;
+  ctx.strokeStyle = '#8a8578';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, groundY);
+  ctx.lineTo(w, groundY);
+  ctx.stroke();
+
+  // Ebene: Länge so, dass Hubhöhe-Skalierung zur Sichtbarkeit passt
+  const visualHeightMax = h * 0.55; // maximale sichtbare Höhe der Rampe
+  const rampHeight = Math.min(visualHeightMax, s4.hub * h * 0.9);
+  const rampLength = rampHeight / Math.sin(rad);
+
+  const rampStartX = w * 0.12;
+  const rampEndX = rampStartX + rampLength * Math.cos(rad);
+  const rampEndY = groundY - rampHeight;
+
+  // Ebene zeichnen (dreieckiger Keil)
+  ctx.fillStyle = '#d8cfb8';
+  ctx.strokeStyle = '#5a4a35';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(rampStartX, groundY);
+  ctx.lineTo(rampEndX, rampEndY);
+  ctx.lineTo(rampEndX, groundY);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Hilfslinien (gestrichelt): Höhe und Länge
+  ctx.setLineDash([6, 4]);
+  ctx.strokeStyle = '#8a8578';
+  ctx.lineWidth = 1;
+  // Höhe
+  ctx.beginPath();
+  ctx.moveTo(rampEndX + 22, groundY);
+  ctx.lineTo(rampEndX + 22, rampEndY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#2b4a7a';
+  ctx.font = 'italic 12px Fraunces, serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(`h = ${s4.hub.toFixed(2)} m`, rampEndX + 28, (rampEndY + groundY) / 2);
+
+  // Winkel
+  ctx.fillStyle = '#7a2b2b';
+  ctx.fillText(`α = ${s4.angle}°`, rampStartX + 30, groundY - 6);
+
+  // Last als Kiste, Position entlang der Ebene je nach liftProgress
+  const progress = s4.liftProgress;
+  const loadX = rampStartX + progress * rampLength * Math.cos(rad);
+  const loadY = groundY - progress * rampLength * Math.sin(rad);
+  const loadSize = 34 + Math.min(26, s4.mass * 1.6);
+
+  // Last rotiert mit der Rampe — Box entlang der Neigung zeichnen
+  ctx.save();
+  ctx.translate(loadX, loadY);
+  ctx.rotate(-rad);
+  ctx.translate(0, -loadSize / 2 - 4);
+  drawWeightRaw(ctx, 0, 0, loadSize, s4.mass);
+  ctx.restore();
+
+  // Zugkraft-Pfeil: entlang der Ebene (parallel zur Hangrichtung), nach oben
+  const F_kraft = s4.mass * G * Math.sin(rad);
+  const pullAngle = rad;
+  const arrowStart = {
+    x: loadX + Math.cos(pullAngle) * (loadSize / 2 + 6),
+    y: loadY - Math.sin(pullAngle) * (loadSize / 2 + 6)
+  };
+  drawForceArrowAngle(ctx, arrowStart.x, arrowStart.y, F_kraft, pullAngle, 'red');
+}
+
+/* ============================================================================
+   Zeichenhilfen
+   ============================================================================ */
+function drawGrid(ctx, w, h) {
+  ctx.strokeStyle = '#e8e2d0';
+  ctx.lineWidth = 1;
+  const step = 32;
+  for (let x = 0; x < w; x += step) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+  }
+  for (let y = 0; y < h; y += step) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+  }
+}
+
+function drawWeight(ctx, x, y, size, mass, onTop = false) {
+  // Gewicht-Block, Ankerpunkt ist die MITTE
+  drawWeightRaw(ctx, x - size/2, y - size/2, size, mass);
+}
+
+function drawWeightRaw(ctx, x, y, size, mass) {
+  // Block
+  ctx.fillStyle = '#2b4a7a';
+  ctx.fillRect(x - size/2, y - size/2, size, size);
+  ctx.strokeStyle = '#0f1e33';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(x - size/2, y - size/2, size, size);
+
+  // Masse-Label
+  ctx.fillStyle = '#fbf8f0';
+  ctx.font = `bold ${Math.max(11, size*0.22)}px JetBrains Mono, monospace`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(`${mass.toFixed(1)}kg`, x, y);
+}
+
+function drawForceArrow(ctx, x, y, F, direction) {
+  // Direction: 'up', 'down'
+  const len = Math.min(60, 14 + F * 0.6);
+  const dy = direction === 'down' ? len : -len;
+  ctx.strokeStyle = '#b84a1e';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x, y + dy);
+  ctx.stroke();
+  // Pfeilspitze
+  const h = direction === 'down' ? 1 : -1;
+  ctx.beginPath();
+  ctx.moveTo(x - 6, y + dy - 6 * h);
+  ctx.lineTo(x, y + dy);
+  ctx.lineTo(x + 6, y + dy - 6 * h);
+  ctx.stroke();
+  // Label
+  ctx.fillStyle = '#b84a1e';
+  ctx.font = 'bold 12px JetBrains Mono, monospace';
+  ctx.textAlign = direction === 'down' ? 'left' : 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(`F = ${F.toFixed(1)} N`, x + 10, y + dy / 2);
+}
+
+function drawForceArrowAngle(ctx, x, y, F, angle, color) {
+  // angle: Winkel in rad, Pfeil zeigt "hoch" an der Rampe
+  const len = Math.min(80, 20 + F * 0.8);
+  const dx = Math.cos(angle) * len;
+  const dy = -Math.sin(angle) * len;
+  ctx.strokeStyle = '#b84a1e';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + dx, y + dy);
+  ctx.stroke();
+  // Spitze
+  const ax = x + dx, ay = y + dy;
+  const a1 = angle + Math.PI - 0.35;
+  const a2 = angle + Math.PI + 0.35;
+  ctx.beginPath();
+  ctx.moveTo(ax, ay);
+  ctx.lineTo(ax + 12 * Math.cos(a1), ay - 12 * Math.sin(a1));
+  ctx.moveTo(ax, ay);
+  ctx.lineTo(ax + 12 * Math.cos(a2), ay - 12 * Math.sin(a2));
+  ctx.stroke();
+  // Label
+  ctx.fillStyle = '#b84a1e';
+  ctx.font = 'bold 12px JetBrains Mono, monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText(`F = ${F.toFixed(1)} N`, ax + 8, ay);
+}
+
+function drawDim(ctx, x1, y, x2, y2, label, color) {
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(x1, y);
+  ctx.lineTo(x2, y);
+  ctx.stroke();
+  // Endmarkierungen
+  ctx.beginPath();
+  ctx.moveTo(x1, y - 4); ctx.lineTo(x1, y + 4);
+  ctx.moveTo(x2, y - 4); ctx.lineTo(x2, y + 4);
+  ctx.stroke();
+  ctx.fillStyle = color;
+  ctx.font = 'italic 11px Fraunces, serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.fillText(label, (x1 + x2) / 2, y + 6);
+}
+
+/* ============================================================================
+   Animation Loop für alle Hebungen
+   ============================================================================ */
+function animateLift(sim, getTargetAngle, onFinish) {
+  sim.animStart = performance.now();
+  sim.animating = true;
+  const target = getTargetAngle();
+  function frame(now) {
+    const t = Math.min(1, (now - sim.animStart) / sim.duration);
+    const eased = easeInOutCubic(t);
+    sim.angle = target * eased;
+    onFinish(false);
+    if (t < 1 && sim.animating) {
+      requestAnimationFrame(frame);
+    } else {
+      sim.animating = false;
+      onFinish(true);
+    }
+  }
+  requestAnimationFrame(frame);
+}
+function animateProgress(sim, onUpdate) {
+  sim.animStart = performance.now();
+  sim.animating = true;
+  function frame(now) {
+    const t = Math.min(1, (now - sim.animStart) / sim.duration);
+    const eased = easeInOutCubic(t);
+    sim.liftProgress = eased;
+    onUpdate();
+    if (t < 1 && sim.animating) requestAnimationFrame(frame);
+    else sim.animating = false;
+  }
+  requestAnimationFrame(frame);
+}
+function easeInOutCubic(t) {
+  return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
+}
+
+/* ============================================================================
+   Wiring: Sliders, Buttons
+   ============================================================================ */
+['s1-larm','s1-karm','s1-mass'].forEach(id =>
+  document.getElementById(id).addEventListener('input', updateS1));
+
+['s2-larm','s2-karm','s2-mass'].forEach(id =>
+  document.getElementById(id).addEventListener('input', updateS2));
+
+['s3-mass','s3-hub'].forEach(id =>
+  document.getElementById(id).addEventListener('input', updateS3));
+
+document.querySelectorAll('#s3-segments .seg-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#s3-segments .seg-btn').forEach(b => b.classList.toggle('active', b === btn));
+    s3.n = parseInt(btn.dataset.n);
+    s3.liftProgress = 0;
+    updateS3();
+  });
+});
+
+['s4-angle','s4-mass','s4-hub'].forEach(id =>
+  document.getElementById(id).addEventListener('input', updateS4));
+
+// Buttons
+document.getElementById('s1-lift').addEventListener('click', () => {
+  if (s1.animating) return;
+  s1.angle = 0;
+  // Zielwinkel so, dass s_last = 0.1 m (bei größeren Hebeln kleinerer Winkel)
+  const targetS_last = Math.min(0.12, s1.larm * 0.25);
+  const target = Math.asin(Math.min(0.95, targetS_last / s1.larm));
+  animateLift(s1, () => target, () => updateS1());
+});
+document.getElementById('s1-reset').addEventListener('click', () => s1.reset());
+
+document.getElementById('s2-lift').addEventListener('click', () => {
+  if (s2.animating) return;
+  s2.angle = 0;
+  const targetS_last = Math.min(0.08, s2.larm * 0.25);
+  const target = Math.asin(Math.min(0.95, targetS_last / s2.larm));
+  animateLift(s2, () => target, () => updateS2());
+});
+document.getElementById('s2-reset').addEventListener('click', () => s2.reset());
+
+document.getElementById('s3-lift').addEventListener('click', () => {
+  if (s3.animating) return;
+  s3.liftProgress = 0;
+  animateProgress(s3, () => updateS3());
+});
+document.getElementById('s3-reset').addEventListener('click', () => s3.reset());
+
+document.getElementById('s4-lift').addEventListener('click', () => {
+  if (s4.animating) return;
+  s4.liftProgress = 0;
+  animateProgress(s4, () => updateS4());
+});
+document.getElementById('s4-reset').addEventListener('click', () => s4.reset());
+
+/* ============================================================================
+   Resize-Handler
+   ============================================================================ */
+window.addEventListener('resize', () => {
+  ctx1 = fitCanvas(cv1); drawStation1();
+  ctx2 = fitCanvas(cv2); drawStation2();
+  ctx3 = fitCanvas(cv3); drawStation3();
+  ctx4 = fitCanvas(cv4); drawStation4();
+});
+
+/* ============================================================================
+   Init
+   ============================================================================ */
+updateS1();
+updateS2();
+updateS3();
+updateS4();
+
+/* ============================================================================
+   Service Worker registrieren (PWA / Offline)
+   ============================================================================ */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => {
+        // Neues Update gefunden → Nutzer informieren
+        reg.addEventListener('updatefound', () => {
+          const sw = reg.installing;
+          sw.addEventListener('statechange', () => {
+            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+              showUpdateBanner();
+            }
+          });
+        });
+      })
+      .catch(err => console.warn('Service Worker nicht verfügbar:', err));
+  });
+}
+
+function showUpdateBanner() {
+  const banner = document.createElement('div');
+  banner.style.cssText = `
+    position:fixed; bottom:16px; left:50%; transform:translateX(-50%);
+    background:var(--navy); color:var(--paper);
+    padding:12px 20px; border-radius:var(--radius);
+    font-size:0.88rem; display:flex; align-items:center; gap:12px;
+    box-shadow:0 4px 20px rgba(0,0,0,.25); z-index:9999;
+  `;
+  banner.innerHTML = `<span>Update verfügbar</span>
+    <button onclick="location.reload()" style="
+      background:var(--accent);color:#fff;border:none;
+      padding:6px 14px;border-radius:4px;cursor:pointer;font-size:0.88rem;
+    ">Neu laden</button>
+    <button onclick="this.parentElement.remove()" style="
+      background:transparent;color:var(--paper);border:none;
+      cursor:pointer;font-size:1.1rem;line-height:1;
+    ">✕</button>`;
+  document.body.appendChild(banner);
+}
+
+</script>
+</body>
+</html>

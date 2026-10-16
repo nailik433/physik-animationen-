@@ -1,0 +1,50 @@
+{
+  "name": "Goldene Regel der Mechanik",
+  "short_name": "Goldene Regel",
+  "description": "Interaktive Lernstationen zur Goldenen Regel der Mechanik – Klasse 9 Realschule BW",
+  "start_url": "./goldene_regel.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f1e8",
+  "theme_color": "#1c2e4a",
+  "lang": "de",
+  "orientation": "any",
+  "categories": ["education"],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Station 1 – Zweiseitiger Hebel",
+      "url": "./goldene_regel.html#station-1",
+      "description": "Wippe mit Drehpunkt in der Mitte"
+    },
+    {
+      "name": "Station 2 – Schubkarre",
+      "url": "./goldene_regel.html#station-2",
+      "description": "Einseitiger Hebel"
+    },
+    {
+      "name": "Station 3 – Flaschenzug",
+      "url": "./goldene_regel.html#station-3",
+      "description": "n = 1 … 4 tragende Seile"
+    },
+    {
+      "name": "Station 4 – Schiefe Ebene",
+      "url": "./goldene_regel.html#station-4",
+      "description": "Reibungsfreie schiefe Ebene"
+    }
+  ]
+}

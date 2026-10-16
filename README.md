@@ -13,6 +13,7 @@ Reines HTML/CSS/JavaScript – kein Build, keine Installation, keine Internetver
 | Klasse | Thema | Animation |
 |---|---|---|
 | 7 | Magnetismus | Elementarmagnete: Nagel magnetisieren |
+| 8 | Kräfte | Goldene Regel der Mechanik (mit Arbeitsblatt als Word-Datei im Ordner) |
 | 8 | Druck und Gase | Gesetz von Boyle-Mariotte |
 | 9 | Elektrizität | Leiter und Nichtleiter |
 | 9 | Elektrizität | Der Weg durch das Lämpchen |
