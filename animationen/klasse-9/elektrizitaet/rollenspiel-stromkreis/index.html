@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rollenspiel: Wir sind der Stromkreis</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #fff; overflow: hidden;
+    font-family: Arial, Helvetica, sans-serif; color: #1B2A4A; }
+  body { display: flex; align-items: center; justify-content: center; }
+  /* Bühne: immer 16:9, so groß wie möglich */
+  #stage { position: relative; width: min(100vw, calc(100vh * 16 / 9)); aspect-ratio: 16 / 9;
+    container-type: size; background: #fff; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  #bar { position: absolute; left: 1.5cqw; right: 1.5cqw; bottom: 1.2cqh; height: 8.4cqh;
+    display: flex; gap: .8cqw; }
+  #bar button { flex: 1; font: 700 2.4cqh Arial, Helvetica, sans-serif; line-height: 1.15;
+    color: #1B2A4A; background: #fff; border: .35cqh solid #1B2A4A; border-radius: 1cqh;
+    cursor: pointer; padding: 0 .5cqw; }
+  #bar button.wide { flex: 1.35; }
+  #bar button.primaer { background: #FFC145; }
+  #bar button:hover:not(:disabled) { background: #E7ECF5; }
+  #bar button.primaer:hover:not(:disabled) { background: #FFB21A; }
+  #bar button[aria-pressed="true"] { background: #1B2A4A; color: #fff; }
+  #bar button:disabled { opacity: .4; cursor: default; }
+  #bar button:focus-visible { outline: .45cqh solid #C0392B; outline-offset: .3cqh; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="c" role="img" aria-label="Rollenspiel Stromkreis von oben: zwölf Elektronen laufen im Kreis, drei Zählstellen A, B und C zählen mit"></canvas>
+  <div id="bar">
+    <button id="b-schalter" type="button" class="wide"></button>
+    <button id="b-runde" type="button" class="wide primaer">30-Sekunden-Runde starten</button>
+    <button id="b-batterie" type="button"></button>
+    <button id="b-zeitlupe" type="button"></button>
+    <button id="b-karten" type="button"></button>
+    <button id="b-reset" type="button">Zurücksetzen (R)</button>
+    <button id="b-voll" type="button">Vollbild (F)</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ------------------------------------------------------------------
+     Konstanten
+     ------------------------------------------------------------------ */
+  const W = 1600, H = 900;
+  const NAVY = '#1B2A4A', GELB = '#FFC145', BLAU = '#7FD3FF', ROT = '#C0392B', TAPE = '#9AA5B8';
+  const SCHRIFT = 'Arial, Helvetica, sans-serif';
+
+  /* Simulation: ganzzahlig und mit fester Schrittweite (60 Schritte pro Sekunde).
+     Ein Elektronenabstand d entspricht D Einheiten, der Kreis hat C = 12·D Einheiten.
+     Pro Schritt wandern alle Elektronen um k·D/1800 Einheiten. In einer Runde
+     (1800 Schritte = 30 s) legt jedes Elektron also genau k Abstände zurück. */
+  const N = 12;
+  const D = 7200;
+  const C = N * D;
+  const SCHRITTE_PRO_S = 60;
+  const RUNDE_S = 30;
+  const RUNDE_SCHRITTE = RUNDE_S * SCHRITTE_PRO_S;
+  const STUFEN = [12, 18];                                       // k: normal / stärker
+  const SCHRITT_WEG = STUFEN.map(k => k * D / RUNDE_SCHRITTE);   // 48 bzw. 72 Einheiten, ganzzahlig
+  const EFFEKT_SCHRITTE = 72;                                    // Kärtchen am Lämpchen: 1,2 s
+
+  /* ------------------------------------------------------------------
+     Geometrie: Rechteck mit weich gerundeten Ecken (Ansicht von oben)
+     ------------------------------------------------------------------ */
+  const LI = 500, RE = 1100, OB = 190, UN = 640, RAD = 70;
+  const BAT_X = 800;                                  // Batterie unten Mitte
+  const segs = [];
+  let LP = 0;                                         // Länge der Linie in px
+  function gerade(x0, y0, x1, y1) {
+    const len = Math.hypot(x1 - x0, y1 - y0);
+    segs.push({ k: 'g', x0, y0, x1, y1, len, start: LP }); LP += len;
+  }
+  function bogen(cx, cy, a0, a1) {
+    const len = RAD * (a1 - a0);
+    segs.push({ k: 'b', cx, cy, a0, a1, len, start: LP }); LP += len;
+  }
+  /* Laufrichtung im Uhrzeigersinn, Start in der Mitte der Batterie */
+  gerade(BAT_X, UN, LI + RAD, UN);
+  bogen(LI + RAD, UN - RAD, Math.PI / 2, Math.PI);
+  gerade(LI, UN - RAD, LI, OB + RAD);
+  bogen(LI + RAD, OB + RAD, Math.PI, 1.5 * Math.PI);
+  gerade(LI + RAD, OB, RE - RAD, OB);
+  bogen(RE - RAD, OB + RAD, 1.5 * Math.PI, 2 * Math.PI);
+  gerade(RE, OB + RAD, RE, UN - RAD);
+  bogen(RE - RAD, UN - RAD, 2 * Math.PI, 2.5 * Math.PI);
+  gerade(RE - RAD, UN, BAT_X, UN);
+
+  function punktBei(dist) {                           // Ort und Laufrichtung bei Weg dist (px)
+    dist = ((dist % LP) + LP) % LP;
+    let sg = segs[segs.length - 1];
+    for (const q of segs) { if (dist <= q.start + q.len) { sg = q; break; } }
+    const t = dist - sg.start;
+    if (sg.k === 'g') {
+      const f = t / sg.len;
+      return { x: sg.x0 + (sg.x1 - sg.x0) * f, y: sg.y0 + (sg.y1 - sg.y0) * f,
+               tx: (sg.x1 - sg.x0) / sg.len, ty: (sg.y1 - sg.y0) / sg.len };
+    }
+    const a = sg.a0 + t / RAD;
+    return { x: sg.cx + RAD * Math.cos(a), y: sg.cy + RAD * Math.sin(a), tx: -Math.sin(a), ty: Math.cos(a) };
+  }
+
+  /* Wegmarken entlang der Linie (px ab Batteriemitte) */
+  const BOG = RAD * Math.PI / 2;
+  const WEG_MINUS = 60;                               // Minuspol links neben der Batterie
+  const WEG_A = 210;
+  const WEG_SCHALTER = 230 + BOG + 155;
+  const WEG_B = 230 + BOG + 310 + BOG + 230;
+  const WEG_LAMPE = 230 + BOG + 310 + BOG + 460 + BOG + 155;
+  const WEG_C = LP - 210;
+  const WEG_KARTE_FLUG_AN = WEG_LAMPE - 60;           // ab hier wandert das Kärtchen zum Lämpchen
+  const proPx = C / LP;
+  const ZAEHL_U = [WEG_A, WEG_B, WEG_C].map(w => Math.round(w * proPx));
+  const LAMPE_U = Math.round(WEG_LAMPE * proPx);
+
+  /* Zustand eines Elektrons mit Wegstand dist (px): Kärtchen nur zwischen Minuspol und Lämpchen */
+  function karte(dist) {
+    if (dist < WEG_MINUS) return 'vom-stapel';        // Übergabe an der Batterie
+    if (dist < WEG_KARTE_FLUG_AN) return 'hand';
+    if (dist < WEG_LAMPE) return 'zum-laempchen';     // Abgabe am Lämpchen
+    return 'keine';
+  }
+
+  /* ------------------------------------------------------------------
+     Simulation
+     ------------------------------------------------------------------ */
+  let level = 0;                                      // 0 normal, 1 stärker
+  function neuerZustand() {
+    return { s: 0, zu: false, zaehler: [0, 0, 0], kiste: 0, effekte: [], puls: 999,
+             runde: false, rundeSchritte: 0, ergebnis: false };
+  }
+  let sim = neuerZustand();
+
+  function ueberquert(alt, neu, x) {                  // Elektron läuft im halboffenen Intervall (alt, neu] über x
+    return Math.floor((neu - x) / C) - Math.floor((alt - x) / C);
+  }
+
+  function schritt() {
+    if (sim.zu) {
+      const s0 = sim.s, s1 = s0 + SCHRITT_WEG[level];
+      for (let i = 0; i < N; i++) {
+        const alt = s0 + i * D, neu = s1 + i * D;
+        for (let j = 0; j < 3; j++) sim.zaehler[j] += ueberquert(alt, neu, ZAEHL_U[j]);
+        const n = ueberquert(alt, neu, LAMPE_U);
+        for (let m = 0; m < n; m++) { sim.effekte.push({ t: 0 }); sim.puls = 0; }
+      }
+      sim.s = s1;
+      if (sim.runde) {
+        sim.rundeSchritte++;
+        if (sim.rundeSchritte >= RUNDE_SCHRITTE) { sim.runde = false; sim.zu = false; sim.ergebnis = true; }
+      }
+    }
+    sim.puls++;
+    for (const e of sim.effekte) { e.t++; if (e.t >= EFFEKT_SCHRITTE) sim.kiste++; }
+    sim.effekte = sim.effekte.filter(e => e.t < EFFEKT_SCHRITTE);
+  }
+
+  function schalterUmlegen() {
+    sim.zu = !sim.zu;
+    if (sim.zu && !sim.runde) sim.ergebnis = false;
+    aktualisiereKnoepfe();
+  }
+  function rundeStarten() {
+    sim.zaehler = [0, 0, 0];
+    sim.rundeSchritte = 0; sim.runde = true; sim.ergebnis = false; sim.zu = true;
+    aktualisiereKnoepfe();
+  }
+  function zuruecksetzen() { sim = neuerZustand(); aktualisiereKnoepfe(); }
+  function batterieUmschalten() { if (!sim.runde) { level = 1 - level; aktualisiereKnoepfe(); } }
+
+  /* ------------------------------------------------------------------
+     Darstellung
+     ------------------------------------------------------------------ */
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  let scale = 1;
+  new ResizeObserver(() => {
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.clientWidth;
+    if (!w) return;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(w * dpr * H / W);
+    scale = canvas.width / W;
+  }).observe(canvas);
+
+  const reduziert = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let zeitlupe = reduziert;
+  let kaertchenZeigen = true;
+
+  function text(s, x, y, groesse, farbe, ausr, fett) {
+    ctx.font = (fett ? '700 ' : '400 ') + groesse + 'px ' + SCHRIFT;
+    ctx.fillStyle = farbe || NAVY;
+    ctx.textAlign = ausr || 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(s, x, y);
+  }
+  function kaertchen(x, y, winkel, groesse) {
+    ctx.save();
+    ctx.translate(x, y); ctx.rotate(winkel); ctx.scale(groesse || 1, groesse || 1);
+    ctx.fillStyle = GELB; ctx.strokeStyle = NAVY; ctx.lineWidth = 1.8;
+    ctx.fillRect(-9, -6.5, 18, 13); ctx.strokeRect(-9, -6.5, 18, 13);
+    ctx.restore();
+  }
+  function person(x, y, theta, o) {                   // Kopf und Schultern von oben, Blick in Richtung theta
+    ctx.save();
+    ctx.translate(x, y); ctx.rotate(theta);
+    ctx.lineWidth = 2.4; ctx.strokeStyle = NAVY;
+    ctx.save();
+    ctx.rotate(o.schwank || 0);
+    ctx.fillStyle = o.hemd;
+    ctx.beginPath(); ctx.ellipse(0, 0, 10, 22, 0, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle = o.haut;
+    ctx.beginPath(); ctx.arc(1, 0, 12.5, 0, 2 * Math.PI); ctx.fill();
+    ctx.fillStyle = o.haar;
+    ctx.beginPath(); ctx.arc(1, 0, 12.5, Math.PI / 2, 1.5 * Math.PI); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.arc(1, 0, 12.5, 0, 2 * Math.PI); ctx.stroke();
+    if (o.klemmbrett) {
+      ctx.fillStyle = '#fff'; ctx.lineWidth = 2;
+      ctx.fillRect(14, 8, 20, 28); ctx.strokeRect(14, 8, 20, 28);
+      ctx.beginPath(); ctx.moveTo(18, 16); ctx.lineTo(30, 16); ctx.moveTo(18, 22); ctx.lineTo(30, 22); ctx.moveTo(18, 28); ctx.lineTo(30, 28); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  const HAARE = ['#2B2B2B', '#5A3825', '#8B5A2B', '#C9A25A', '#1F1F1F', '#6B4423', '#3A2A1E', '#A5742F', '#2B2B2B', '#4A3020', '#B88A44', '#1F1F1F'];
+  const HAUT = ['#F1C7A3', '#E5B08A', '#D49A72', '#F4D2B4', '#E8BC98', '#C98B63', '#F1C7A3', '#DDA77E', '#F4D2B4', '#E5B08A', '#D49A72', '#EBC3A0'];
+  const HEMD_ELEKTRON = BLAU, HEMD_ANDERE = '#D5DAE5';
+
+  /* Zählzettel mit Strichliste: 4 Striche und ein Querstrich, darunter die Zahl */
+  function zettel(x, y, buchstabe, n) {
+    const w = 220, h = 130;
+    ctx.fillStyle = '#fff'; ctx.strokeStyle = NAVY; ctx.lineWidth = 3;
+    ctx.fillRect(x, y, w, h); ctx.strokeRect(x, y, w, h);
+    text(buchstabe, x + 22, y + 24, 30, ROT, 'center', true);
+    ctx.strokeStyle = NAVY; ctx.lineWidth = 3.2; ctx.lineCap = 'round';
+    const gruppen = Math.floor(n / 5), rest = n % 5;
+    const zeile = g => Math.floor(g / 3), spalte = g => g % 3;
+    for (let g = 0; g < Math.min(gruppen + (rest ? 1 : 0), 6); g++) {
+      const gx = x + 48 + spalte(g) * 56, gy = y + 12 + zeile(g) * 30;
+      const anzahl = g < gruppen ? 4 : rest;
+      for (let j = 0; j < anzahl; j++) {
+        ctx.beginPath(); ctx.moveTo(gx + j * 10, gy); ctx.lineTo(gx + j * 10, gy + 24); ctx.stroke();
+      }
+      if (g < gruppen) { ctx.beginPath(); ctx.moveTo(gx - 5, gy + 20); ctx.lineTo(gx + 35, gy + 4); ctx.stroke(); }
+    }
+    ctx.lineCap = 'butt';
+    text(String(n), x + w / 2, y + 100, 56, NAVY, 'center', true);
+  }
+
+  /* Schaltzeichen auf dem Schild des Schalter-Schülers */
+  function schild(x, y, offen) {
+    ctx.fillStyle = '#fff'; ctx.strokeStyle = NAVY; ctx.lineWidth = 3;
+    ctx.fillRect(x - 80, y - 60, 160, 120); ctx.strokeRect(x - 80, y - 60, 160, 120);
+    ctx.lineWidth = 5; ctx.lineCap = 'round';
+    const l = x - 42, r = x + 42, yy = y + 12;
+    ctx.beginPath(); ctx.moveTo(x - 68, yy); ctx.lineTo(l, yy); ctx.moveTo(r, yy); ctx.lineTo(x + 68, yy); ctx.stroke();
+    ctx.fillStyle = NAVY;
+    ctx.beginPath(); ctx.arc(l, yy, 5.5, 0, 2 * Math.PI); ctx.arc(r, yy, 5.5, 0, 2 * Math.PI); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(l, yy);
+    if (offen) ctx.lineTo(r - 8, yy - 40); else ctx.lineTo(r, yy);
+    ctx.stroke(); ctx.lineCap = 'butt';
+    text('Schaltzeichen', x, y - 38, 20, '#3A4A6B', 'center', false);
+  }
+
+  const ease = t => t * t * (3 - 2 * t);
+  const lerp = (a, b, t) => a + (b - a) * t;
+
+  /* Orte */
+  const STAPEL = { x: BAT_X, y: 712 };
+  const LAMPE_STUDENT = { x: 1175, y: 415 };
+  const LAMPE_HAND = { x: 1150, y: 415 };
+  const LAMPE_HOCH = { x: 1170, y: 372 };
+  const KISTE = { x: 1230, y: 478, w: 200, h: 118 };
+  const KISTE_MAX = 40;                               // Kärtchenzahl, bei der die Kiste "voll" aussieht
+
+  function zeichne(alpha) {
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
+
+    /* Kopf */
+    text('Rollenspiel: Wir sind der Stromkreis', 60, 48, 40, NAVY, 'left', true);
+    text('Elektronen im Kreis: ' + N, 60, 102, 30, '#3A4A6B', 'left', false);
+    const rest = Math.ceil((RUNDE_SCHRITTE - sim.rundeSchritte) / SCHRITTE_PRO_S);
+    const stopFarbe = sim.runde ? NAVY : '#B8C0CF';
+    text(sim.runde ? 'Runde läuft' : 'Stoppuhr', W - 60, 38, 26, sim.runde ? ROT : '#8793A8', 'right', true);
+    text((sim.runde ? rest : RUNDE_S) + ' s', W - 60, 100, 84, stopFarbe, 'right', true);
+
+    /* Kreppband */
+    ctx.beginPath();
+    segs.forEach((q, i) => {
+      if (q.k === 'g') { if (i === 0) ctx.moveTo(q.x0, q.y0); ctx.lineTo(q.x1, q.y1); }
+      else ctx.arc(q.cx, q.cy, RAD, q.a0, q.a1);
+    });
+    ctx.closePath();
+    ctx.strokeStyle = TAPE; ctx.lineWidth = 50; ctx.lineJoin = 'round'; ctx.stroke();
+
+    /* Laufrichtung: kleine Pfeile auf der Innenseite */
+    ctx.fillStyle = NAVY;
+    for (let k = 0; k < 10; k++) {
+      const p = punktBei(100 + k * (LP / 10));
+      const nx = -p.ty, ny = p.tx;                    // nach innen
+      const x = p.x + nx * 40, y = p.y + ny * 40;
+      ctx.beginPath();
+      ctx.moveTo(x + p.tx * 13, y + p.ty * 13);
+      ctx.lineTo(x - p.tx * 9 + nx * 9, y - p.ty * 9 + ny * 9);
+      ctx.lineTo(x - p.tx * 9 - nx * 9, y - p.ty * 9 - ny * 9);
+      ctx.closePath(); ctx.fill();
+    }
+
+    /* Zähllinien quer über das Band */
+    ctx.strokeStyle = ROT; ctx.lineWidth = 4;
+    [WEG_A, WEG_B, WEG_C].forEach(w => {
+      const p = punktBei(w);
+      ctx.beginPath();
+      ctx.moveTo(p.x - p.ty * 30, p.y + p.tx * 30); ctx.lineTo(p.x + p.ty * 30, p.y - p.tx * 30);
+      ctx.stroke();
+    });
+
+    /* Batterie: Tisch mit Stapel Energiekärtchen */
+    text('Batterie', BAT_X, 596, 26, NAVY, 'center', true);
+    ctx.fillStyle = '#E6EAF2'; ctx.strokeStyle = NAVY; ctx.lineWidth = 3;
+    ctx.fillRect(BAT_X - 45, 688, 90, 52); ctx.strokeRect(BAT_X - 45, 688, 90, 52);
+    for (let i = 0; i < 4; i++) kaertchen(STAPEL.x + (i - 1.5) * 2, STAPEL.y - i * 3, (i - 1.5) * 0.05, 1.5);
+    text('−', BAT_X - 100, 708, 52, NAVY, 'center', true);
+    text('Minuspol', BAT_X - 100, 748, 22, NAVY, 'center', false);
+    text('+', BAT_X + 100, 708, 52, NAVY, 'center', true);
+    text('Pluspol', BAT_X + 100, 748, 22, NAVY, 'center', false);
+
+    /* Stationen: Schüler an Batterie, Schalter, Lämpchen und Zählstellen */
+    person(BAT_X, 778, -Math.PI / 2, { hemd: HEMD_ANDERE, haut: HAUT[3], haar: HAARE[1] });
+    person(395, 415, 0, { hemd: HEMD_ANDERE, haut: HAUT[2], haar: HAARE[0] });
+    person(LAMPE_STUDENT.x, LAMPE_STUDENT.y, Math.PI, { hemd: HEMD_ANDERE, haut: HAUT[1], haar: HAARE[2] });
+
+    schild(270, 415, !sim.zu);
+    text('Schalter', 270, 335, 28, NAVY, 'center', true);
+    text(sim.zu ? 'zu' : 'offen', 270, 500, 44, sim.zu ? NAVY : ROT, 'center', true);
+
+    const stationen = [
+      { b: 'A', n: sim.zaehler[0], m: { x: 590, y: 704 }, p: { x: 590, y: 764, t: -Math.PI / 2 }, z: { x: 310, y: 672 } },
+      { b: 'B', n: sim.zaehler[1], m: { x: 800, y: 128 }, p: { x: 800, y: 70, t: Math.PI / 2 }, z: { x: 860, y: 24 } },
+      { b: 'C', n: sim.zaehler[2], m: { x: 1010, y: 704 }, p: { x: 1010, y: 764, t: -Math.PI / 2 }, z: { x: 1070, y: 672 } }
+    ];
+    stationen.forEach((s, i) => {
+      person(s.p.x, s.p.y, s.p.t, { hemd: HEMD_ANDERE, haut: HAUT[(i * 3 + 4) % 12], haar: HAARE[(i * 2 + 4) % 12], klemmbrett: true });
+      ctx.beginPath(); ctx.arc(s.m.x, s.m.y, 24, 0, 2 * Math.PI);
+      ctx.fillStyle = ROT; ctx.fill();
+      text(s.b, s.m.x, s.m.y + 1, 32, '#fff', 'center', true);
+      zettel(s.z.x, s.z.y, s.b, s.n);
+    });
+
+    /* Elektronen */
+    const bewegt = sim.zu;
+    const sDraw = sim.s + (bewegt ? SCHRITT_WEG[level] * alpha : 0);
+    for (let i = 0; i < N; i++) {
+      const dist = (((sDraw + i * D) % C) + C) % C / proPx;
+      const p = punktBei(dist);
+      const theta = Math.atan2(p.ty, p.tx);
+      const schwank = (bewegt && !reduziert) ? 0.09 * Math.sin((sDraw / proPx) / 55 * 2 * Math.PI + i * 1.3) : 0;
+      person(p.x, p.y, theta, { hemd: HEMD_ELEKTRON, haut: HAUT[i], haar: HAARE[i], schwank });
+      const st = karte(dist);
+      const hx = p.x + 4 * p.tx + 31 * p.ty, hy = p.y + 4 * p.ty - 31 * p.tx;   // linke Hand = Außenseite
+      if (kaertchenZeigen) {
+        if (st === 'hand') kaertchen(hx, hy, theta, 1.15);
+        else if (st === 'vom-stapel') kaertchen(lerp(STAPEL.x, hx, ease(dist / WEG_MINUS)), lerp(STAPEL.y, hy, ease(dist / WEG_MINUS)), theta * ease(dist / WEG_MINUS), 1.15);
+        else if (st === 'zum-laempchen') {
+          const t = ease((dist - WEG_KARTE_FLUG_AN) / (WEG_LAMPE - WEG_KARTE_FLUG_AN));
+          kaertchen(lerp(hx, LAMPE_HAND.x, t), lerp(hy, LAMPE_HAND.y, t), theta, 1.15);
+        }
+      }
+    }
+
+    /* Lämpchen: leuchtet, solange der Stromkreis geschlossen ist und Energie ankommt */
+    const lx = 1270, ly = 296, lr = 46;
+    if (sim.zu) {
+      ctx.fillStyle = 'rgba(255,193,69,0.30)';
+      ctx.beginPath(); ctx.arc(lx, ly, lr + 30, 0, 2 * Math.PI); ctx.fill();
+      ctx.fillStyle = 'rgba(255,193,69,0.30)';
+      ctx.beginPath(); ctx.arc(lx, ly, lr + 16, 0, 2 * Math.PI); ctx.fill();
+    }
+    if (sim.puls < 30) {
+      ctx.strokeStyle = 'rgba(255,193,69,' + (0.9 * (1 - sim.puls / 30)) + ')'; ctx.lineWidth = 6;
+      ctx.beginPath(); ctx.arc(lx, ly, lr + 18 + sim.puls * 1.1, 0, 2 * Math.PI); ctx.stroke();
+    }
+    ctx.fillStyle = sim.zu ? GELB : '#fff'; ctx.strokeStyle = NAVY; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.arc(lx, ly, lr, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+    const dd = lr * 0.7071;
+    ctx.beginPath(); ctx.moveTo(lx - dd, ly - dd); ctx.lineTo(lx + dd, ly + dd); ctx.moveTo(lx - dd, ly + dd); ctx.lineTo(lx + dd, ly - dd); ctx.stroke();
+    text('Lämpchen', lx, ly + 78, 28, NAVY, 'center', true);
+
+    /* Kiste "Licht und Wärme" */
+    text('Licht und Wärme', KISTE.x + KISTE.w / 2, KISTE.y - 20, 28, NAVY, 'center', true);
+    const fuell = Math.min(1, sim.kiste / KISTE_MAX) * (KISTE.h - 8);
+    ctx.fillStyle = GELB; ctx.fillRect(KISTE.x + 4, KISTE.y + KISTE.h - 4 - fuell, KISTE.w - 8, fuell);
+    ctx.strokeStyle = NAVY; ctx.lineWidth = 4; ctx.strokeRect(KISTE.x, KISTE.y, KISTE.w, KISTE.h);
+    text(String(sim.kiste), KISTE.x + KISTE.w / 2, KISTE.y + KISTE.h / 2 + 2, 60, NAVY, 'center', true);
+    text('Kärtchen abgegeben', KISTE.x + KISTE.w / 2, KISTE.y + KISTE.h + 28, 22, '#3A4A6B', 'center', false);
+
+    /* Kärtchen am Lämpchen: hochhalten, dann in die Kiste fallen lassen */
+    if (kaertchenZeigen) {
+      for (const e of sim.effekte) {
+        const t = e.t + (sim.zu || sim.effekte.length ? alpha : 0);
+        let x, y, g;
+        if (t < 18) { const f = ease(t / 18); x = lerp(LAMPE_HAND.x, LAMPE_HOCH.x, f); y = lerp(LAMPE_HAND.y, LAMPE_HOCH.y, f); g = lerp(1.15, 1.9, f); }
+        else if (t < 42) { x = LAMPE_HOCH.x; y = LAMPE_HOCH.y; g = 1.9; }
+        else { const f = ease(Math.min(1, (t - 42) / 30)); x = lerp(LAMPE_HOCH.x, KISTE.x + KISTE.w / 2, f); y = lerp(LAMPE_HOCH.y, KISTE.y + 18, f); g = lerp(1.9, 1.0, f); }
+        kaertchen(x, y, 0, g);
+      }
+    }
+
+    /* Ergebnis nach einer Runde */
+    if (sim.ergebnis) {
+      const bx = 560, by = 300, bw = 480, bh = 240;
+      ctx.fillStyle = '#fff'; ctx.strokeStyle = NAVY; ctx.lineWidth = 4;
+      ctx.fillRect(bx, by, bw, bh); ctx.strokeRect(bx, by, bw, bh);
+      text('A: ' + sim.zaehler[0] + '    B: ' + sim.zaehler[1] + '    C: ' + sim.zaehler[2], bx + bw / 2, by + 48, 42, NAVY, 'center', true);
+      text('An jeder Stelle kamen in 30 Sekunden', bx + bw / 2, by + 114, 25, NAVY, 'center', false);
+      text('gleich viele Elektronen vorbei.', bx + bw / 2, by + 148, 25, NAVY, 'center', false);
+      text('Die Stromstärke ist überall gleich.', bx + bw / 2, by + 200, 26, ROT, 'center', true);
+    }
+  }
+
+  /* ------------------------------------------------------------------
+     Bedienung
+     ------------------------------------------------------------------ */
+  const el = id => document.getElementById(id);
+  function aktualisiereKnoepfe() {
+    el('b-schalter').textContent = sim.zu ? 'Schalter offen' : 'Schalter zu';
+    el('b-batterie').textContent = 'Batterie: ' + (level ? 'stärker' : 'normal');
+    el('b-batterie').disabled = sim.runde;
+    el('b-zeitlupe').textContent = 'Zeitlupe: ' + (zeitlupe ? 'an' : 'aus');
+    el('b-zeitlupe').setAttribute('aria-pressed', String(zeitlupe));
+    el('b-karten').textContent = 'Kärtchen zeigen: ' + (kaertchenZeigen ? 'an' : 'aus');
+    el('b-karten').setAttribute('aria-pressed', String(kaertchenZeigen));
+  }
+  el('b-schalter').addEventListener('click', schalterUmlegen);
+  el('b-runde').addEventListener('click', rundeStarten);
+  el('b-batterie').addEventListener('click', batterieUmschalten);
+  el('b-zeitlupe').addEventListener('click', () => { zeitlupe = !zeitlupe; aktualisiereKnoepfe(); });
+  el('b-karten').addEventListener('click', () => { kaertchenZeigen = !kaertchenZeigen; aktualisiereKnoepfe(); });
+  el('b-reset').addEventListener('click', zuruecksetzen);
+  function vollbild() {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+  }
+  el('b-voll').addEventListener('click', vollbild);
+
+  window.addEventListener('keydown', e => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.code === 'Space') { e.preventDefault(); if (!e.repeat) schalterUmlegen(); }
+    else if (e.key === 'r' || e.key === 'R') zuruecksetzen();
+    else if (e.key === 'f' || e.key === 'F') vollbild();
+  });
+  window.addEventListener('keyup', e => { if (e.code === 'Space') e.preventDefault(); });   // verhindert Doppelauslösung auf fokussierten Knöpfen
+
+  /* Hauptschleife: feste Simulationsschritte, unabhängig von der Bildrate */
+  const SCHRITT_S = 1 / SCHRITTE_PRO_S;
+  let acc = 0, letzte = performance.now();
+  function runde(jetzt) {
+    const dt = Math.min(0.1, (jetzt - letzte) / 1000);
+    letzte = jetzt;
+    acc += dt * (zeitlupe ? 0.5 : 1);
+    let n = 0;
+    while (acc >= SCHRITT_S && n < 12) { schritt(); acc -= SCHRITT_S; n++; }
+    if (n === 12) acc = 0;
+    zeichne(acc / SCHRITT_S);
+    requestAnimationFrame(runde);
+  }
+  aktualisiereKnoepfe();
+  requestAnimationFrame(runde);
+
+  /* Prüfschnittstelle für automatische Tests (ändert nichts am Verhalten) */
+  window.__rollenspiel = {
+    get sim() { return sim; },
+    N, D, C, LP, LAMPE_U, ZAEHL_U, WEG_MINUS, WEG_LAMPE, STUFEN,
+    schritte(n) { for (let i = 0; i < n; i++) schritt(); },
+    setLevel(l) { level = l; aktualisiereKnoepfe(); },
+    rundeStarten, schalterUmlegen, zuruecksetzen, karte,
+    elektronenWege() { const a = []; for (let i = 0; i < N; i++) a.push((((sim.s + i * D) % C) + C) % C / proPx); return a; }
+  };
+})();
+</script>
+</body>
+</html>

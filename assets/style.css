@@ -1,0 +1,203 @@
+/* ==========================================================
+   Gemeinsames Design für Übersicht und alle Animationen
+   Hell/Dunkel folgt automatisch dem System.
+   ========================================================== */
+:root {
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --flaeche: #eef1f8;
+  --text: #1a2232;
+  --muted: #586277;
+  --border: #dde2ec;
+  --gitter: #e3e7f0;
+  --accent: #2f5fe3;
+  --accent-weich: #e8eefc;
+  --auf-accent: #ffffff;
+
+  /* Physikalische Größen – in allen Animationen gleich eingefärbt */
+  --draht: #3b4558;
+  --elektron: #2f6fed;     /* Elektronen / Minuspol */
+  --plus: #d63a3a;         /* Pluspol */
+  --strom: #0d9488;        /* Stromstärke I */
+  --spannung: #7c3aed;     /* Spannung U */
+  --widerstand: #c26a05;   /* Widerstand R */
+  --leistung: #dc2626;     /* Leistung P / Energie E */
+  --gluehen: #ffb300;
+
+  --radius: 14px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f131b;
+    --surface: #181e2a;
+    --flaeche: #1f2635;
+    --text: #e7ebf3;
+    --muted: #9aa5ba;
+    --border: #2b3446;
+    --gitter: #262f42;
+    --accent: #7ba0ff;
+    --accent-weich: #1c2848;
+    --auf-accent: #0b1020;
+
+    --draht: #c4cde0;
+    --elektron: #5b9bff;
+    --plus: #f87171;
+    --strom: #2dd4bf;
+    --spannung: #a78bfa;
+    --widerstand: #fbbf24;
+    --leistung: #f87171;
+  }
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+a { color: var(--accent); }
+h1, h2, h3, h4 { line-height: 1.25; }
+
+/* ---------- Kopfzeile der Animationsseiten ---------- */
+.kopf {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px;
+  padding: 10px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.zurueck {
+  font-weight: 600; text-decoration: none;
+  padding: 6px 12px; border-radius: 999px;
+  background: var(--accent-weich);
+}
+.zurueck:hover { text-decoration: underline; }
+.krumen { color: var(--muted); font-size: .92rem; }
+
+.seite { max-width: 1240px; margin: 0 auto; padding: 24px 16px 64px; }
+.seite h1 { font-size: clamp(1.5rem, 3vw, 2.1rem); margin: 0 0 .3em; }
+.lead { color: var(--muted); max-width: 72ch; margin: 0 0 20px; }
+
+/* ---------- Karten & Layout ---------- */
+.karte {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+.karte h2 { font-size: 1.05rem; margin: 0 0 10px; }
+.buehne {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 16px; align-items: start;
+}
+.haupt { display: grid; gap: 16px; min-width: 0; }
+.zwei { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 980px) {
+  .buehne, .zwei { grid-template-columns: 1fr; }
+}
+canvas { display: block; width: 100%; height: auto; }
+
+.steuerung { display: grid; gap: 16px; }
+@media (min-width: 981px) { .steuerung { position: sticky; top: 72px; } }
+
+/* ---------- Bedienelemente ---------- */
+.regler {
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 2px 10px; align-items: center;
+}
+.regler label { font-weight: 600; font-size: .94rem; }
+.regler output { font-weight: 700; font-variant-numeric: tabular-nums; }
+.regler input[type=range] {
+  grid-column: 1 / -1; width: 100%; height: 32px;
+  accent-color: var(--accent); margin: 0;
+}
+.knopf {
+  font: inherit; font-weight: 600; min-height: 44px;
+  padding: 8px 16px; border-radius: 10px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text);
+}
+.knopf:hover { border-color: var(--accent); }
+.knopf.primaer { background: var(--accent); border-color: var(--accent); color: var(--auf-accent); }
+.knopf:focus-visible, .segment button:focus-visible, .chip:focus-visible {
+  outline: 3px solid var(--accent); outline-offset: 2px;
+}
+.knopfreihe { display: flex; flex-wrap: wrap; gap: 8px; }
+.knopfreihe .knopf { flex: 1; }
+
+.segment { display: flex; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.segment button {
+  flex: 1; font: inherit; font-weight: 600; min-height: 44px; padding: 8px;
+  border: 0; background: var(--surface); color: var(--text); cursor: pointer;
+}
+.segment button + button { border-left: 1px solid var(--border); }
+.segment button.aktiv { background: var(--accent); color: var(--auf-accent); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  font: inherit; font-size: .88rem; font-weight: 600; cursor: pointer;
+  padding: 6px 12px; border-radius: 999px; min-height: 36px;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text);
+}
+.chip.aktiv { background: var(--accent); border-color: var(--accent); color: var(--auf-accent); }
+
+fieldset.anzeige { border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px 10px; margin: 0; }
+fieldset.anzeige legend { font-weight: 600; font-size: .9rem; padding: 0 6px; }
+fieldset.anzeige label { display: flex; align-items: center; gap: 10px; min-height: 36px; cursor: pointer; }
+fieldset.anzeige input { width: 20px; height: 20px; accent-color: var(--accent); }
+
+input[type=number] {
+  font: inherit; width: 100%; min-height: 40px; padding: 4px 10px;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--surface); color: var(--text);
+}
+
+/* ---------- Messwert-Kacheln ---------- */
+.messwerte { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.wert {
+  border-radius: 10px; padding: 8px 12px;
+  background: var(--flaeche); border-left: 5px solid var(--c, var(--accent));
+}
+.wert small { display: block; color: var(--muted); font-size: .78rem; }
+.wert strong { font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+.wert.u { --c: var(--spannung); }
+.wert.i { --c: var(--strom); }
+.wert.r { --c: var(--widerstand); }
+.wert.p { --c: var(--leistung); }
+
+/* ---------- Tabellen, Merkkästen, Formeln ---------- */
+.tabelle { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: .95rem; }
+.tabelle th, .tabelle td { padding: 6px 8px; text-align: right; border-bottom: 1px solid var(--border); }
+.tabelle th:first-child, .tabelle td:first-child { text-align: left; }
+.tabelle thead th { color: var(--muted); font-size: .82rem; font-weight: 600; }
+.tabelle.kompakt { font-size: .86rem; }
+.tabelle.kompakt th, .tabelle.kompakt td { padding: 6px 4px; white-space: nowrap; }
+.tabelle td.gleich { background: var(--accent-weich); font-weight: 700; }
+.tabelle tr.summe td { border-top: 2px solid var(--border); font-weight: 700; }
+.leer { color: var(--muted); font-style: italic; text-align: center !important; }
+
+.merke {
+  border-left: 5px solid var(--accent); background: var(--accent-weich);
+  border-radius: 0 var(--radius) var(--radius) 0; padding: 14px 18px;
+}
+.merke h2 { margin: 0 0 6px; font-size: 1.05rem; }
+.merke ul { margin: 6px 0 0; padding-left: 1.2em; }
+.merke li { margin: 4px 0; }
+.formel { font-family: ui-serif, Georgia, "Times New Roman", serif; font-size: 1.12rem; }
+.rechnung { font-variant-numeric: tabular-nums; line-height: 1.9; font-size: .95rem; }
+.rechnung .formel { display: block; }
+.klein { font-size: .85rem; color: var(--muted); margin: 8px 0 0; }
+.u-farbe { color: var(--spannung); font-weight: 700; }
+.i-farbe { color: var(--strom); font-weight: 700; }
+.r-farbe { color: var(--widerstand); font-weight: 700; }
+.p-farbe { color: var(--leistung); font-weight: 700; }
+
+.auftraege ol { margin: 6px 0 0; padding-left: 1.3em; }
+.auftraege li { margin: 6px 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { scroll-behavior: auto !important; }
+}

@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Physik-Animationen</title>
+<meta name="description" content="Interaktive Physik-Animationen für den Unterricht, Klasse 7 bis 10.">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .hero { padding: 40px 0 8px; }
+  .hero h1 { font-size: clamp(2rem, 5vw, 3rem); margin: 0 0 8px; letter-spacing: -.02em; }
+  .hero p { margin: 0; color: var(--muted); font-size: 1.1rem; max-width: 60ch; }
+
+  .werkzeug {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center;
+    margin: 20px -16px 0; padding: 12px 16px;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .pillen { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pille {
+    display: inline-flex; align-items: center; gap: 8px;
+    min-height: 44px; padding: 6px 16px; border-radius: 999px;
+    text-decoration: none; font-weight: 700; color: var(--text);
+    background: var(--surface); border: 2px solid var(--kl);
+  }
+  .pille:hover { background: var(--kl); color: #fff; }
+  .pille .zaehler {
+    font-size: .8rem; min-width: 24px; text-align: center; padding: 1px 7px;
+    border-radius: 999px; background: var(--flaeche); color: var(--muted);
+  }
+  .pille.leer { border-style: dashed; opacity: .6; }
+  .suche { flex: 1 1 240px; max-width: 420px; margin-left: auto; }
+  .suche input {
+    width: 100%; min-height: 44px; font: inherit; padding: 6px 16px;
+    border-radius: 999px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text);
+  }
+  .suche input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  .klasse { margin-top: 40px; scroll-margin-top: 90px; --kl: var(--accent); }
+  .klasse[data-klasse="7"]  { --kl: #1f9d55; }
+  .klasse[data-klasse="8"]  { --kl: #2f6fed; }
+  .klasse[data-klasse="9"]  { --kl: #8b4de0; }
+  .klasse[data-klasse="10"] { --kl: #d9730d; }
+  .pille[data-klasse="7"]   { --kl: #1f9d55; }
+  .pille[data-klasse="8"]   { --kl: #2f6fed; }
+  .pille[data-klasse="9"]   { --kl: #8b4de0; }
+  .pille[data-klasse="10"]  { --kl: #d9730d; }
+
+  .klasse > header { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+  .klasse .nummer {
+    display: grid; place-items: center; flex: none;
+    width: 56px; height: 56px; border-radius: 16px;
+    background: var(--kl); color: #fff; font-size: 1.5rem; font-weight: 800;
+  }
+  .klasse h2 { margin: 0; font-size: 1.6rem; }
+  .klasse header small { color: var(--muted); font-size: .95rem; }
+
+  .thema { margin-top: 20px; }
+  .thema h3 {
+    display: flex; align-items: center; gap: 10px;
+    margin: 0 0 10px; font-size: 1.1rem;
+    padding-bottom: 6px; border-bottom: 2px solid var(--kl);
+  }
+  .thema h3 small { color: var(--muted); font-weight: 500; font-size: .85rem; }
+
+  .raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+  .anim {
+    display: flex; flex-direction: column; gap: 6px;
+    padding: 16px; border-radius: var(--radius); text-decoration: none; color: var(--text);
+    background: var(--surface); border: 1px solid var(--border);
+    border-top: 5px solid var(--kl);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .anim:hover, .anim:focus-visible { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(0,0,0,.14); }
+  .anim:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .anim .symbol { font-size: 2rem; line-height: 1; }
+  .anim h4 { margin: 4px 0 0; font-size: 1.1rem; }
+  .anim p { margin: 0; color: var(--muted); font-size: .94rem; flex: 1; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .tags span { font-size: .75rem; padding: 2px 9px; border-radius: 999px; background: var(--flaeche); color: var(--muted); }
+
+  .platzhalter {
+    padding: 22px; border: 2px dashed var(--border); border-radius: var(--radius);
+    color: var(--muted); text-align: center;
+  }
+  .keine { display: none; margin-top: 40px; text-align: center; color: var(--muted); }
+  footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: .9rem; }
+</style>
+</head>
+<body>
+<main class="seite">
+  <div class="hero">
+    <h1>Physik-Animationen</h1>
+    <p id="untertitel">Interaktive Simulationen für den Unterricht, sortiert nach Klasse und Thema.</p>
+  </div>
+
+  <div class="werkzeug">
+    <nav class="pillen" id="pillen" aria-label="Klassenstufen"></nav>
+    <div class="suche">
+      <input id="suche" type="search" placeholder="Suchen, z. B. Ohm, Reihenschaltung …" aria-label="Animationen durchsuchen">
+    </div>
+  </div>
+
+  <div id="inhalt"></div>
+  <p class="keine" id="keine">Keine Animation gefunden. Versuche einen anderen Suchbegriff.</p>
+  <noscript><p class="platzhalter">Die Übersicht braucht JavaScript.</p></noscript>
+
+  <footer>
+    Neue Animation hinzufügen: HTML-Datei aus <code>animationen/_vorlage.html</code> kopieren und in
+    <code>daten/animationen.js</code> eintragen – siehe <code>README.md</code>.
+  </footer>
+</main>
+
+<script src="daten/animationen.js"></script>
+<script>
+(function () {
+  'use strict';
+  const D = window.PHYSIK;
+  const inhalt = document.getElementById('inhalt');
+  const pillen = document.getElementById('pillen');
+  const suche = document.getElementById('suche');
+  const keine = document.getElementById('keine');
+
+  function el(tag, klasse, text) {
+    const e = document.createElement(tag);
+    if (klasse) e.className = klasse;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+  const anzahl = (n, e, m) => n + ' ' + (n === 1 ? e : m);
+  const zaehle = k => D.animationen.filter(a => a.klasse === k).length;
+
+  /* Klassen: die festen 7–10 plus alles, was in den Daten sonst noch vorkommt */
+  const klassen = Array.from(new Set(D.klassen.concat(D.animationen.map(a => a.klasse)))).sort((a, b) => a - b);
+
+  document.getElementById('untertitel').textContent =
+    anzahl(D.animationen.length, 'Animation', 'Animationen') + ' · interaktive Simulationen für den Unterricht, sortiert nach Klasse und Thema.';
+
+  /* Navigation */
+  klassen.forEach(k => {
+    const n = zaehle(k);
+    const a = el('a', 'pille' + (n ? '' : ' leer'));
+    a.href = '#klasse-' + k;
+    a.dataset.klasse = k;
+    a.append('Klasse ' + k, el('span', 'zaehler', n));
+    pillen.append(a);
+  });
+
+  function passt(a, q) {
+    if (!q) return true;
+    const text = [a.titel, a.beschreibung, a.thema, 'klasse ' + a.klasse].concat(a.tags || []).join(' ').toLowerCase();
+    return q.split(/\s+/).every(w => text.includes(w));
+  }
+
+  function karte(a) {
+    const l = el('a', 'anim');
+    l.href = a.datei;
+    l.append(el('span', 'symbol', a.icon || '🔬'), el('h4', '', a.titel), el('p', '', a.beschreibung));
+    if (a.tags && a.tags.length) {
+      const t = el('div', 'tags');
+      a.tags.forEach(x => t.append(el('span', '', x)));
+      l.append(t);
+    }
+    return l;
+  }
+
+  function zeichne() {
+    const q = suche.value.trim().toLowerCase();
+    inhalt.replaceChildren();
+    let treffer = 0;
+
+    klassen.forEach(k => {
+      const liste = D.animationen.filter(a => a.klasse === k && passt(a, q));
+      if (q && !liste.length) return;               // bei der Suche leere Klassen ausblenden
+      treffer += liste.length;
+
+      const sec = el('section', 'klasse');
+      sec.id = 'klasse-' + k;
+      sec.dataset.klasse = k;
+
+      const kopf = el('header');
+      const titel = el('div');
+      titel.append(el('h2', '', 'Klasse ' + k));
+      titel.append(el('small', '', liste.length ? anzahl(liste.length, 'Animation', 'Animationen') : 'noch keine Animationen'));
+      kopf.append(el('div', 'nummer', k), titel);
+      sec.append(kopf);
+
+      if (!liste.length) {
+        sec.append(el('div', 'platzhalter', 'Hier entstehen bald neue Animationen.'));
+      } else {
+        /* Unterkategorien automatisch aus den Daten, alphabetisch */
+        const themen = Array.from(new Set(liste.map(a => a.thema))).sort((a, b) => a.localeCompare(b, 'de'));
+        themen.forEach(t => {
+          const eintraege = liste.filter(a => a.thema === t);
+          const blk = el('div', 'thema');
+          const h = el('h3', '', t);
+          h.append(el('small', '', anzahl(eintraege.length, 'Animation', 'Animationen')));
+          const raster = el('div', 'raster');
+          eintraege.forEach(a => raster.append(karte(a)));
+          blk.append(h, raster);
+          sec.append(blk);
+        });
+      }
+      inhalt.append(sec);
+    });
+    keine.style.display = q && !treffer ? 'block' : 'none';
+  }
+
+  suche.addEventListener('input', zeichne);
+  zeichne();
+  if (location.hash) {                              // Sprung zu #klasse-9 nach dem Aufbau
+    const z = document.getElementById(location.hash.slice(1));
+    if (z) z.scrollIntoView();
+  }
+})();
+</script>
+</body>
+</html>
