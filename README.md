@@ -12,10 +12,7 @@ Reines HTML/CSS/JavaScript – kein Build, keine Installation, keine Internetver
 
 | Klasse | Thema | Animation |
 |---|---|---|
-| 9 | Elektrizität | Der einfache Stromkreis |
-| 9 | Elektrizität | Ohmsches Gesetz |
-| 9 | Elektrizität | Reihen- und Parallelschaltung |
-| 9 | Elektrizität | Elektrische Leistung und Energie |
+| 9 | Elektrizität | Rollenspiel: Wir sind der Stromkreis |
 
 Klasse 7, 8 und 10 sind angelegt und warten auf Inhalte.
 

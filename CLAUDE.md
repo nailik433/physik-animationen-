@@ -2,9 +2,13 @@
 
 Statische Seite mit interaktiven Physik-Animationen für den Unterricht (Klasse 7–10). Sprache: **Deutsch**. Kein Build, keine externen Bibliotheken oder CDNs – muss offline per Doppelklick laufen.
 
+## Wichtigste Regel
+
+**Nur die Animationen bauen, die der Nutzer ausdrücklich vorgibt** (meist als Prompt-Datei). Keine eigenen Animationen oder „Beispiele“ ergänzen.
+
 ## Wenn eine neue Animation entsteht (immer alle Schritte)
 
-1. Datei aus `animationen/_vorlage.html` ableiten, Ablage: `animationen/klasse-<N>/<thema-slug>/<name>.html` (Slug: Kleinbuchstaben, Umlaute ausgeschrieben, z. B. `elektrizitaet`).
+1. Datei aus `animationen/_vorlage.html` ableiten (oder, wenn der Prompt eine eigenständige Einzeldatei verlangt, als `…/<name>/index.html` mit eingebettetem CSS/JS ohne `assets/`), Ablage: `animationen/klasse-<N>/<thema-slug>/<name>.html` (Slug: Kleinbuchstaben, Umlaute ausgeschrieben, z. B. `elektrizitaet`).
 2. **Eintrag in `daten/animationen.js` ergänzen.** Nur dadurch erscheint die Animation in der Übersicht. Unterkategorien (`thema`) entstehen automatisch; vorhandene Schreibweise exakt wiederverwenden (z. B. `Elektrizität`), neue Themen nur, wenn wirklich keins passt.
 3. Tabelle „Aktueller Stand“ in `README.md` aktualisieren.
 4. Testen (siehe unten), erst dann committen.

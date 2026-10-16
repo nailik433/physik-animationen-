@@ -12,38 +12,11 @@ window.PHYSIK = {
     {
       klasse: 9,
       thema: 'Elektrizität',
-      titel: 'Der einfache Stromkreis',
-      beschreibung: 'Elektronenfluss und technische Stromrichtung im geschlossenen Stromkreis – mit Schalter und Spannungsregler.',
-      datei: 'animationen/klasse-9/elektrizitaet/stromkreis.html',
-      icon: '💡',
-      tags: ['Stromkreis', 'Stromstärke', 'Elektronen', 'Stromrichtung', 'Schalter']
-    },
-    {
-      klasse: 9,
-      thema: 'Elektrizität',
-      titel: 'Ohmsches Gesetz',
-      beschreibung: 'Spannung und Widerstand verändern, Messwerte aufnehmen und die U-I-Kennlinie entdecken: R = U / I.',
-      datei: 'animationen/klasse-9/elektrizitaet/ohmsches-gesetz.html',
-      icon: '📈',
-      tags: ['Ohm', 'Widerstand', 'Kennlinie', 'Spannung', 'Stromstärke', 'Diagramm']
-    },
-    {
-      klasse: 9,
-      thema: 'Elektrizität',
-      titel: 'Reihen- und Parallelschaltung',
-      beschreibung: 'Zwei Widerstände im Vergleich: Wie verteilen sich Strom und Spannung, und wie groß ist der Gesamtwiderstand?',
-      datei: 'animationen/klasse-9/elektrizitaet/reihen-parallelschaltung.html',
-      icon: '🔀',
-      tags: ['Reihenschaltung', 'Parallelschaltung', 'Gesamtwiderstand', 'Teilspannung', 'Teilstrom']
-    },
-    {
-      klasse: 9,
-      thema: 'Elektrizität',
-      titel: 'Elektrische Leistung und Energie',
-      beschreibung: 'Der Stromzähler im Zeitraffer: P = U · I, E = P · t und die Stromkosten verschiedener Geräte.',
-      datei: 'animationen/klasse-9/elektrizitaet/leistung-energie.html',
-      icon: '⚡',
-      tags: ['Leistung', 'Energie', 'Kilowattstunde', 'Stromzähler', 'Kosten']
+      titel: 'Rollenspiel: Wir sind der Stromkreis',
+      beschreibung: 'Zwölf Elektronen laufen im Kreis, die Zählstellen A, B und C zählen mit: Überall kommen gleich viele vorbei – die Stromstärke ist überall gleich.',
+      datei: 'animationen/klasse-9/elektrizitaet/rollenspiel-stromkreis/index.html',
+      icon: '🚶',
+      tags: ['Stromstärke', 'Stromkreis', 'Elektronen', 'Rollenspiel', 'Energie']
     }
   ]
 };
