@@ -1,0 +1,680 @@
+<!doctype html><html lang="de"><head><title>Transformator-Labor – Physik-Animationen</title><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<meta name="description" content="Interaktive Einstiegs-Animation: Warum braucht ein Transformator Wechselspannung?">
+<style>
+/* Layout: Experimentiertisch – Bühne mit Steuerpult rechts, darüber drei Versuchsschritte, darunter Wirkungskette und Diagramm */
+:root{
+  --bg:#eceff2; --panel:#ffffff; --ink:#18212c; --muted:#5b6777; --line:#d3dae2; --chip:#f3f5f8;
+  --bench:#e3dccf; --bench-edge:#c9bfae;
+  --steel1:#b9c1ca; --steel2:#8d97a3; --steel-edge:#6d7783;
+  --plastic:#2d333b; --copper:#b8642a; --copper-hi:#f0b07a; --copper-back:#7c4219;
+  --box:#3a4553; --box-face:#4a5768; --lcd:#1d2a22; --lcd-ink:#7cf0a3;
+  --red:#d32f2f; --blue:#1f5fc4; --cable-dark:#2a2e34;
+  --north:#d8352a; --south:#2e9a48;
+  --current:#f2a900; --electron:#2e6be6; --u2:#a3359f;
+  --glass:rgba(210,225,240,.35); --glow:255,196,60;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#10151b; --panel:#19212b; --ink:#e7edf4; --muted:#9ba8b7; --line:#2c3746; --chip:#202a36;
+    --bench:#2a2620; --bench-edge:#3b352c;
+    --steel1:#7d8792; --steel2:#555f6b; --steel-edge:#8a95a1;
+    --plastic:#0e1115; --copper:#d9844a; --copper-hi:#ffc596; --copper-back:#7c4219;
+    --box:#2a333e; --box-face:#36424f; --lcd:#0d1611; --lcd-ink:#7cf0a3;
+    --red:#e5483f; --blue:#4a86ec; --cable-dark:#0c0e11;
+    --north:#e5483f; --south:#3cb35a;
+    --current:#ffc233; --electron:#7aa8ff; --u2:#dc7fd9;
+    --glass:rgba(200,215,235,.18); --glow:255,206,80; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10151b; --panel:#19212b; --ink:#e7edf4; --muted:#9ba8b7; --line:#2c3746; --chip:#202a36;
+  --bench:#2a2620; --bench-edge:#3b352c;
+  --steel1:#7d8792; --steel2:#555f6b; --steel-edge:#8a95a1;
+  --plastic:#0e1115; --copper:#d9844a; --copper-hi:#ffc596; --copper-back:#7c4219;
+  --box:#2a333e; --box-face:#36424f; --lcd:#0d1611; --lcd-ink:#7cf0a3;
+  --red:#e5483f; --blue:#4a86ec; --cable-dark:#0c0e11;
+  --north:#e5483f; --south:#3cb35a;
+  --current:#ffc233; --electron:#7aa8ff; --u2:#dc7fd9;
+  --glass:rgba(200,215,235,.18); --glow:255,206,80; color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;padding-inline:16px;padding-block:24px 48px;margin:0}
+.wrap{max-width:1180px;margin-inline:auto;display:grid;gap:18px}
+h1,h2{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(1.7rem,3.5vw,2.4rem);font-weight:800;letter-spacing:-.01em}
+h2{font-size:1.15rem;font-weight:600}
+.lead{margin:6px 0 0;color:var(--muted);max-width:66ch}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:640px){.steps{grid-template-columns:minmax(0,1fr)}}
+.step{display:flex;gap:12px;align-items:center;text-align:left;border:2px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:12px 14px;font:inherit;cursor:pointer}
+.step .n{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--chip);font-family:var(--f-display);font-weight:800}
+.step b{display:block;font-size:1rem}
+.step small{color:var(--muted);font-size:.85rem}
+.step[aria-pressed="true"]{border-color:var(--ink)}
+.step[aria-pressed="true"] .n{background:var(--ink);color:var(--panel)}
+.lab{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:18px;align-items:start}
+@media (max-width:920px){.lab{grid-template-columns:minmax(0,1fr)}}
+.stage{padding:10px;min-width:0}
+canvas{display:block;width:100%;height:auto;border-radius:8px}
+.status{margin:8px 4px 2px;padding:12px 16px;border-radius:8px;background:var(--chip);min-height:3.3em;font-size:1.05rem}
+.status b{color:var(--u2)}
+.side{padding:18px;display:grid;gap:18px}
+.group{display:grid;gap:8px}
+.label{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:transparent;color:var(--ink);padding:9px 6px;font:inherit;font-size:.9rem;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel);font-weight:700}
+.btn{border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:8px;padding:11px 12px;font:inherit;font-weight:700;cursor:pointer;width:100%}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--current);border-color:var(--current);color:#1b1300;font-size:1.05rem}
+.btn:disabled{opacity:.5;cursor:default}
+button:focus-visible,input:focus-visible{outline:3px solid var(--electron);outline-offset:2px}
+input[type=range]{width:100%;accent-color:var(--u2)}
+.val{font-size:.9rem;color:var(--muted)}
+.hint{font-size:.88rem;color:var(--muted);margin:0}
+.legend{display:grid;gap:6px;font-size:.88rem;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;margin-right:8px;vertical-align:-2px}
+.chain{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px;padding:16px}
+@media (max-width:720px){.chain{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.chip::after{display:none}}
+.chip{border:2px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--chip);position:relative;transition:border-color .2s,opacity .2s;opacity:.4;min-width:0}
+.chip.on{opacity:1;border-color:var(--c)}
+.chip::after{content:"→";position:absolute;right:-22px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:700}
+.chip:last-child::after{display:none}
+.chip .t{font-weight:700;font-size:.95rem}
+.chip .v{font-size:.85rem;color:var(--muted)}
+.graphs{padding:14px 14px 8px}
+.graphs h2{margin-bottom:6px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+@media (max-width:820px){.two{grid-template-columns:minmax(0,1fr)}}
+.merk{padding:18px;border-left:5px solid var(--u2)}
+.merk p{margin:8px 0 0}
+.quiz{padding:18px;display:grid;gap:14px}
+.q{display:grid;gap:8px}
+.q p{margin:0;font-weight:700}
+.opts{display:grid;gap:6px}
+.opt{text-align:left;border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:8px;padding:8px 12px;font:inherit;cursor:pointer}
+.opt.right{border-color:var(--south);background:color-mix(in srgb,var(--south) 15%,var(--chip))}
+.opt.wrong{border-color:var(--north);opacity:.75}
+.fb{font-size:.9rem;color:var(--muted);margin:0}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Transformator-Labor</h1>
+    <p class="lead">Links fließt Strom durch die Primärspule, rechts hängt eine Lampe an der Sekundärspule. Wann leuchtet die Lampe? Probiere die drei Schritte nacheinander aus.</p>
+  </header>
+
+  <nav class="steps" aria-label="Versuchsschritte">
+    <button class="step" id="st1" aria-pressed="true"><span class="n">1</span><span><b>Gleichspannung</b><small>Kabel einmal umstecken</small></span></button>
+    <button class="step" id="st2" aria-pressed="false"><span class="n">2</span><span><b>Ganz oft umstecken</b><small>immer wieder umpolen</small></span></button>
+    <button class="step" id="st3" aria-pressed="false"><span class="n">3</span><span><b>Wechselspannung</b><small>polt sich von selbst um</small></span></button>
+  </nav>
+
+  <section class="lab">
+    <div class="card stage">
+      <canvas id="stage" width="960" height="460" aria-label="Transformator mit Netzgerät, Eisenkern, zwei Spulen und Lampe"></canvas>
+      <div class="status" id="status" aria-live="polite"></div>
+    </div>
+
+    <aside class="card side" aria-label="Steuerung">
+      <div class="group" id="ctl1">
+        <div class="label">Netzgerät</div>
+        <button class="btn primary" id="swap">Kabel umstecken</button>
+        <p class="hint">Achte auf die Lampe und auf die Pole im Eisenkern.</p>
+      </div>
+
+      <div class="group" id="ctl2" hidden>
+        <div class="label">Automatisch umstecken</div>
+        <button class="btn primary" id="auto">Stopp</button>
+        <input type="range" id="rate" min="0.6" max="3" step="0.1" value="1.8" aria-label="Tempo">
+        <div class="val" id="rateVal"></div>
+      </div>
+
+      <div class="group" id="ctl3" hidden>
+        <div class="label">Zeitlupe</div>
+        <input type="range" id="speed" min="1" max="8" step="0.5" value="3" aria-label="Zeitlupe">
+        <div class="val" id="speedVal"></div>
+        <p class="hint">In Wirklichkeit polt die Steckdose 50-mal pro Sekunde um. So schnell sieht unser Auge kein Flackern.</p>
+      </div>
+
+      <div class="group">
+        <div class="label">Bewegung zeigen als</div>
+        <div class="seg" role="group">
+          <button id="dTech" aria-pressed="true">Strom (+ → −)</button>
+          <button id="dEl" aria-pressed="false">Elektronen</button>
+        </div>
+      </div>
+
+      <button class="btn" id="play">Pause</button>
+
+      <div class="legend">
+        <div><i style="background:var(--north)"></i>Nordpol</div>
+        <div><i style="background:var(--south)"></i>Südpol</div>
+        <div><i style="background:var(--current)"></i>Stromrichtung</div>
+        <div><i style="background:var(--electron)"></i>Elektronen</div>
+      </div>
+    </aside>
+  </section>
+
+  <section class="card chain" aria-label="Was passiert nacheinander?">
+    <div class="chip" id="c1" style="--c:var(--current)"><div class="t">Strom fließt</div><div class="v" id="v1"></div></div>
+    <div class="chip" id="c2" style="--c:var(--north)"><div class="t">Eisenkern wird Magnet</div><div class="v" id="v2"></div></div>
+    <div class="chip" id="c3" style="--c:var(--u2)"><div class="t">Magnet wird umgepolt</div><div class="v" id="v3"></div></div>
+    <div class="chip" id="c4" style="--c:var(--current)"><div class="t">Lampe leuchtet</div><div class="v" id="v4"></div></div>
+  </section>
+
+  <section class="card graphs">
+    <h2>Was passiert über die Zeit?</h2>
+    <canvas id="graph" width="960" height="250" aria-label="Diagramm: Strom in der Primärspule und Spannung an der Lampe"></canvas>
+  </section>
+
+  <section class="two">
+    <div class="card merk">
+      <h2>Merksatz</h2>
+      <p>Die Lampe leuchtet nur, solange sich das Magnetfeld im Eisenkern <strong>ändert</strong>.</p>
+      <p>Bei Gleichspannung bleibt der Magnet gleich, also bleibt die Lampe dunkel. Steckt man um, wird der Magnet umgepolt und die Lampe blitzt kurz auf.</p>
+      <p>Wechselspannung polt sich von selbst ständig um. Deshalb funktioniert ein Transformator nur mit Wechselspannung.</p>
+    </div>
+    <div class="card quiz" id="quiz"><h2>Teste dich</h2></div>
+  </section>
+</div>
+
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const cv = $('#stage'), ctx = cv.getContext('2d');
+const gv = $('#graph'), gctx = gv.getContext('2d');
+const W = 960, H = 460, GW = 960, GH = 250;
+function fit(c, w, h){ const d = Math.min(2, window.devicePixelRatio || 1); c.width = w*d; c.height = h*d; c.getContext('2d').setTransform(d,0,0,d,0,0); }
+fit(cv, W, H); fit(gv, GW, GH);
+
+const TAU = 0.22;     // s, so schnell baut sich das Magnetfeld auf bzw. ab
+const WIN = 8;        // s, sichtbares Zeitfenster im Diagramm
+const BENCH = 392;    // Tischkante
+
+const S = {
+  step:1, t:0, phase:0, phi:1, dphi:0, u2:0,
+  redAt:0,            // 0 = rotes Kabel steckt im Pluspol
+  swap:null, auto:true, rate:1.8, autoTimer:0,
+  period:3, electrons:false,
+  paused: matchMedia('(prefers-reduced-motion: reduce)').matches,
+  hist:[], off1:0, off2:0
+};
+
+/* ---------- Farben ---------- */
+let C = {};
+function readTokens(){
+  const cs = getComputedStyle(document.documentElement);
+  for(const k of ['panel','ink','muted','line','chip','bench','bench-edge','steel1','steel2','steel-edge','plastic','copper','copper-hi','copper-back','box','box-face','lcd','lcd-ink','red','blue','cable-dark','north','south','current','electron','u2','glass','glow','f-display','f-body'])
+    C[k] = cs.getPropertyValue('--'+k).trim();
+}
+readTokens();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readTokens);
+new MutationObserver(readTokens).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+
+/* ---------- Geometrie ---------- */
+const core = {x0:330, x1:630, y0:72, y1:BENCH, t:64};
+const SOCK = [{x:166, y:300}, {x:206, y:300}];  // 0 = Plus (rot), 1 = Minus (blau)
+const PPOST = {top:[300,146], bot:[300,318]};
+const SPOST = {top:[660,146], bot:[660,318]};
+const LAMP = {x:840, y:244, r:36, tL:[800,380], tR:[880,380]};
+
+function coil(xL, xR, yT, yB, n, ltr){
+  const segs = [], dy = (yB - yT)/n;
+  for(let i=0;i<n;i++){
+    const y = yT + i*dy;
+    if(ltr){ segs.push({a:[xL,y], b:[xR,y+dy/2], l:'front'}); segs.push({a:[xR,y+dy/2], b:[xL,y+dy], l:'back'}); }
+    else   { segs.push({a:[xR,y], b:[xL,y+dy/2], l:'front'}); segs.push({a:[xL,y+dy/2], b:[xR,y+dy], l:'back'}); }
+  }
+  return segs;
+}
+const PCOIL = coil(318, 406, 162, 302, 12, true);
+const SCOIL = coil(554, 642, 162, 302, 12, false);   // gegensinnig gewickelt, damit beide Spulen dasselbe Feld umlaufen
+
+function bez(p0, c1, c2, p1, n=26){
+  const pts = [];
+  for(let i=0;i<=n;i++){
+    const t = i/n, u = 1-t;
+    pts.push([u*u*u*p0[0] + 3*u*u*t*c1[0] + 3*u*t*t*c2[0] + t*t*t*p1[0],
+              u*u*u*p0[1] + 3*u*u*t*c1[1] + 3*u*t*t*c2[1] + t*t*t*p1[1]]);
+  }
+  return pts;
+}
+function poly(pts, l){ const s=[]; for(let i=0;i<pts.length-1;i++) s.push({a:pts[i], b:pts[i+1], l}); return s; }
+function build(segs){ let L=0; for(const s of segs){ s.s0=L; s.len=Math.hypot(s.b[0]-s.a[0], s.b[1]-s.a[1]); L+=s.len; } return {segs, L}; }
+
+/* Stecker-Positionen (mit Umsteck-Animation) */
+function plugPos(){
+  const r = SOCK[S.redAt], b = SOCK[1-S.redAt];
+  if(!S.swap) return {red:{x:r.x, y:r.y, lift:0}, blue:{x:b.x, y:b.y, lift:0}};
+  const u = S.swap.u;
+  const ease = v => v<.5 ? 2*v*v : 1 - Math.pow(-2*v+2,2)/2;
+  const lift = (h) => u < .3 ? h*ease(u/.3) : u < .7 ? h : h*(1 - ease((u-.7)/.3));
+  const mv = u < .3 ? 0 : u < .7 ? ease((u-.3)/.4) : 1;
+  return {
+    red:  {x: r.x + (b.x - r.x)*mv, y: r.y - lift(46), lift: lift(46)},
+    blue: {x: b.x + (r.x - b.x)*mv, y: b.y - lift(26), lift: lift(26)}
+  };
+}
+function cableRed(p){ return bez([p.x, p.y-26], [p.x, 200], [220, PPOST.top[1]], PPOST.top); }
+function cableBlue(p){ return bez([p.x, p.y-26], [p.x, 250], [250, PPOST.bot[1]], PPOST.bot); }
+const SC_TOP = bez(LAMP.tL, [LAMP.tL[0]-40, 380], [740, SPOST.top[1]], SPOST.top);
+const SC_BOT = bez(SPOST.bot, [720, 440], [LAMP.tR[0], 440], LAMP.tR);
+
+function primaryPath(pp){
+  // positive Richtung: rotes Kabel → obere Klemme → Spule → untere Klemme → blaues Kabel
+  return build([
+    ...poly(cableRed(pp.red), 'wire'),
+    ...poly([PPOST.top, [318,162]], 'wire'),
+    ...PCOIL,
+    ...poly([[318,302], PPOST.bot], 'wire'),
+    ...poly(cableBlue(pp.blue).slice().reverse(), 'wire'),
+    ...poly([[pp.blue.x, pp.blue.y-26], [pp.red.x, pp.red.y-26]], 'hidden')
+  ]);
+}
+const SPATH = build([
+  ...poly([SPOST.top, [642,162]], 'wire'),
+  ...SCOIL,
+  ...poly([[642,302], SPOST.bot], 'wire'),
+  ...poly(SC_BOT, 'wire'),
+  ...poly([LAMP.tR, LAMP.tL], 'hidden'),
+  ...poly(SC_TOP, 'wire')
+]);
+
+/* ---------- Physik ---------- */
+const pol = () => S.redAt === 0 ? 1 : -1;
+function startSwap(){
+  if(S.swap || S.step === 3) return;
+  const dur = S.step === 2 ? Math.min(0.9, S.rate*0.55) : 1.1;
+  S.swap = {u:0, dur};
+}
+function step(dt){
+  S.t += dt;
+  if(S.step === 3){
+    S.phase += dt / S.period;
+    const w = 2*Math.PI*S.phase;
+    S.phi = Math.sin(w);
+    S.dphi = Math.cos(w) * 2*Math.PI / S.period;
+    S.u2 = -Math.cos(w);                     // Scheitelwert 1 (Zeitlupe ändert nur die Darstellung)
+  } else {
+    if(S.step === 2 && S.auto && !S.swap){
+      S.autoTimer += dt;
+      if(S.autoTimer >= S.rate){ S.autoTimer = 0; startSwap(); }
+    }
+    if(S.swap){
+      S.swap.u += dt / S.swap.dur;
+      if(S.swap.u >= 1){ S.swap = null; S.redAt = 1 - S.redAt; }
+    }
+    const target = S.swap ? 0 : pol();       // ausgesteckt: kein Strom
+    S.phi = target + (S.phi - target)*Math.exp(-dt/TAU);
+    S.dphi = (target - S.phi)/TAU;
+    S.u2 = -S.dphi * TAU * 0.95;
+  }
+  S.hist.push({t:S.t, i:S.phi, u:S.u2});
+  while(S.hist.length && S.hist[0].t < S.t - WIN - 0.2) S.hist.shift();
+}
+
+/* ---------- Zeichenhilfen ---------- */
+function line(c, a, b){ c.beginPath(); c.moveTo(a[0],a[1]); c.lineTo(b[0],b[1]); c.stroke(); }
+function strokePts(pts){ ctx.beginPath(); pts.forEach((p,i)=> i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.stroke(); }
+function rr(c, x, y, w, h, r){ c.beginPath(); c.roundRect ? c.roundRect(x,y,w,h,r) : c.rect(x,y,w,h); }
+function hexA(hex, a){
+  const m = hex.match(/^#([0-9a-f]{6})$/i); if(!m) return hex;
+  const n = parseInt(m[1],16); return `rgba(${n>>16},${(n>>8)&255},${n&255},${a})`;
+}
+
+/* ---------- Szene ---------- */
+function drawBench(){
+  ctx.fillStyle = C.panel; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle = C.bench; ctx.fillRect(0, BENCH, W, H-BENCH);
+  ctx.fillStyle = C['bench-edge']; ctx.fillRect(0, BENCH, W, 3);
+}
+
+function drawCore(){
+  const {x0,x1,y0,y1,t} = core;
+  const g = ctx.createLinearGradient(x0, y0, x1, y1);
+  g.addColorStop(0, C.steel1); g.addColorStop(.5, C.steel2); g.addColorStop(1, C.steel1);
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.rect(x0,y0,x1-x0,y1-y0); ctx.rect(x0+t,y0+t,x1-x0-2*t,y1-y0-2*t); ctx.fill('evenodd');
+
+  // Magnetpole: beide Schenkel als Stabmagnete, Farbe nach Feldstärke
+  const a = Math.min(1, Math.abs(S.phi)) * 0.85;
+  if(a > 0.01){
+    const up = S.phi > 0;   // positiver Strom → Feld im linken Schenkel nach oben
+    const legs = [{x:x0, top: up ? C.north : C.south, bot: up ? C.south : C.north},
+                  {x:x1-t, top: up ? C.south : C.north, bot: up ? C.north : C.south}];
+    const ym = (y0+y1)/2;
+    for(const L of legs){
+      ctx.fillStyle = hexA(L.top, a); ctx.fillRect(L.x, y0, t, ym-y0);
+      ctx.fillStyle = hexA(L.bot, a); ctx.fillRect(L.x, ym, t, y1-ym);
+    }
+  }
+  // Blechung andeuten
+  ctx.strokeStyle = 'rgba(0,0,0,.12)'; ctx.lineWidth = 1;
+  for(let x = x0+8; x < x0+t; x += 8){ line(ctx,[x,y0+t],[x,y1-t]); line(ctx,[x+x1-x0-t,y0+t],[x+x1-x0-t,y1-t]); }
+  for(let y = y0+8; y < y0+t; y += 8){ line(ctx,[x0,y],[x1,y]); line(ctx,[x0,y+y1-y0-t],[x1,y+y1-y0-t]); }
+  ctx.strokeStyle = C['steel-edge']; ctx.lineWidth = 1.5;
+  ctx.strokeRect(x0,y0,x1-x0,y1-y0); ctx.strokeRect(x0+t,y0+t,x1-x0-2*t,y1-y0-2*t);
+
+  // Feldlinien
+  const fa = Math.min(1, Math.abs(S.phi));
+  if(fa > 0.02){
+    const cw = S.phi > 0;
+    ctx.strokeStyle = `rgba(255,255,255,${0.75*fa})`; ctx.lineWidth = 1.6; ctx.setLineDash([]);
+    for(const d of [22, 42]){
+      ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x0+d, y0+d, x1-x0-2*d, y1-y0-2*d, 12) : ctx.rect(x0+d, y0+d, x1-x0-2*d, y1-y0-2*d); ctx.stroke();
+      const xl=x0+d, xr=x1-d, yt=y0+d, yb=y1-d, xm=(x0+x1)/2;
+      const arr = (x,y,ang) => { ctx.save(); ctx.translate(x,y); ctx.rotate(ang); ctx.fillStyle = `rgba(255,255,255,${0.9*fa})`; ctx.beginPath(); ctx.moveTo(6,0); ctx.lineTo(-5,-5); ctx.lineTo(-5,5); ctx.closePath(); ctx.fill(); ctx.restore(); };
+      arr(xm, yt, cw?0:Math.PI); arr(xm, yb, cw?Math.PI:0);
+      arr(xl, 120, cw?-Math.PI/2:Math.PI/2); arr(xr, 120, cw?Math.PI/2:-Math.PI/2);
+      arr(xl, 350, cw?-Math.PI/2:Math.PI/2); arr(xr, 350, cw?Math.PI/2:-Math.PI/2);
+    }
+  }
+  // Polbuchstaben
+  if(a > 0.05){
+    const up = S.phi > 0;
+    ctx.globalAlpha = Math.min(1, a*1.3);
+    ctx.font = `800 26px ${C['f-display']}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.fillStyle = '#fff';
+    const put = (s,x,y) => { ctx.strokeText(s,x,y); ctx.fillText(s,x,y); };
+    put(up?'N':'S', x0+t/2, 108); put(up?'S':'N', x0+t/2, 358);
+    put(up?'S':'N', x1-t/2, 108); put(up?'N':'S', x1-t/2, 358);
+    ctx.globalAlpha = 1; ctx.textBaseline = 'alphabetic';
+  }
+}
+
+function drawCoilBack(segs){
+  ctx.lineCap = 'round'; ctx.strokeStyle = C['copper-back']; ctx.lineWidth = 7;
+  for(const s of segs) if(s.l === 'back') line(ctx, s.a, s.b);
+}
+function drawCoilFront(segs, xL, xR){
+  // Spulenkörper (Flansche)
+  ctx.fillStyle = C.plastic;
+  rr(ctx, xL-10, 150, xR-xL+20, 10, 3); ctx.fill();
+  rr(ctx, xL-10, 304, xR-xL+20, 10, 3); ctx.fill();
+  ctx.lineCap = 'round';
+  for(const s of segs){
+    if(s.l !== 'front') continue;
+    ctx.strokeStyle = C.copper; ctx.lineWidth = 7; line(ctx, s.a, s.b);
+    ctx.strokeStyle = C['copper-hi']; ctx.lineWidth = 1.6; line(ctx, [s.a[0]+2, s.a[1]-2], [s.b[0]-2, s.b[1]-2]);
+  }
+}
+function drawPost(p){
+  ctx.fillStyle = C.plastic; ctx.beginPath(); ctx.arc(p[0], p[1], 7, 0, 2*Math.PI); ctx.fill();
+  ctx.fillStyle = '#c9a65a'; ctx.beginPath(); ctx.arc(p[0], p[1], 3, 0, 2*Math.PI); ctx.fill();
+}
+function drawLeads(){
+  ctx.strokeStyle = C.copper; ctx.lineWidth = 3; ctx.lineCap = 'round';
+  line(ctx, PPOST.top, [318,162]); line(ctx, [318,302], PPOST.bot);
+  line(ctx, SPOST.top, [642,162]); line(ctx, [642,302], SPOST.bot);
+}
+function drawCable(pts, col){
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = 9; strokePts(pts);
+  ctx.strokeStyle = col; ctx.lineWidth = 7; strokePts(pts);
+  ctx.strokeStyle = 'rgba(255,255,255,.28)'; ctx.lineWidth = 2; strokePts(pts.map(p=>[p[0]-1.5,p[1]-1.5]));
+}
+
+function drawSupply(pp){
+  const x = 24, y = 222, w = 210, h = BENCH - y;
+  // Gehäuse
+  ctx.fillStyle = C.box; rr(ctx, x, y, w, h, 10); ctx.fill();
+  ctx.fillStyle = C['box-face']; rr(ctx, x+8, y+8, w-16, h-16, 7); ctx.fill();
+  ctx.fillStyle = '#ffffffcc'; ctx.font = `700 12px ${C['f-body']}`; ctx.textAlign = 'left';
+  ctx.fillText('Netzgerät', x+18, y+30);
+  // Anzeige
+  ctx.fillStyle = C.lcd; rr(ctx, x+18, y+40, 100, 40, 5); ctx.fill();
+  ctx.fillStyle = C['lcd-ink']; ctx.font = `700 22px ${C['f-body']}`; ctx.textAlign = 'center';
+  ctx.fillText(S.step === 3 ? '~ 12 V' : '= 12 V', x+68, y+68);
+  // Drehknopf
+  ctx.fillStyle = '#1b2026'; ctx.beginPath(); ctx.arc(x+68, y+120, 18, 0, 2*Math.PI); ctx.fill();
+  ctx.strokeStyle = '#cfd6de'; ctx.lineWidth = 3; line(ctx, [x+68, y+120], [x+80, y+108]);
+  // Buchsen
+  const ac = S.step === 3;
+  const plusTop = ac ? S.phi >= 0 : true;
+  SOCK.forEach((s, i) => {
+    ctx.fillStyle = ac ? '#d9b52c' : (i===0 ? C.red : C.blue);
+    ctx.beginPath(); ctx.arc(s.x, s.y, 11, 0, 2*Math.PI); ctx.fill();
+    ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(s.x, s.y, 5, 0, 2*Math.PI); ctx.fill();
+    let lab = i===0 ? '+' : '−';
+    if(ac) lab = Math.abs(S.phi) < 0.08 ? '' : ((i===0) === plusTop ? '+' : '−');
+    ctx.fillStyle = '#fff'; ctx.font = `800 20px ${C['f-display']}`; ctx.textAlign = 'center';
+    ctx.fillText(lab, s.x, s.y + 36);
+  });
+  if(ac){ ctx.fillStyle = '#ffffffaa'; ctx.font = `700 11px ${C['f-body']}`; ctx.fillText('Pole wechseln', 186, y+42); }
+}
+
+function drawPlug(p, col){
+  // Stecker: Griff + Stift
+  if(p.lift > 1){ ctx.fillStyle = '#c9ccd1'; ctx.fillRect(p.x-2.5, p.y-2, 5, 12); }
+  ctx.fillStyle = col; rr(ctx, p.x-7, p.y-28, 14, 26, 4); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,.25)'; ctx.fillRect(p.x-4, p.y-25, 3, 20);
+}
+
+function drawLamp(){
+  const {x, y, r} = LAMP;
+  const b = Math.min(1, Math.abs(S.u2));
+  // Fuß mit Fassung
+  ctx.fillStyle = C.plastic; rr(ctx, 784, 366, 112, 26, 5); ctx.fill();
+  ctx.fillStyle = C.box; rr(ctx, 818, 314, 44, 54, 4); ctx.fill();
+  [LAMP.tL, LAMP.tR].forEach(p => { ctx.fillStyle = '#1a1a1a'; ctx.beginPath(); ctx.arc(p[0], p[1], 7, 0, 2*Math.PI); ctx.fill(); ctx.fillStyle = '#c9a65a'; ctx.beginPath(); ctx.arc(p[0], p[1], 3, 0, 2*Math.PI); ctx.fill(); });
+  // Gewinde
+  ctx.fillStyle = '#b9a06a'; ctx.fillRect(826, 288, 28, 28);
+  ctx.strokeStyle = 'rgba(0,0,0,.3)'; ctx.lineWidth = 1.5;
+  for(let yy = 292; yy < 316; yy += 6) line(ctx, [826, yy], [854, yy+3]);
+  // Leuchten
+  if(b > 0.02){
+    const g = ctx.createRadialGradient(x, y, 6, x, y, r*3.6);
+    g.addColorStop(0, `rgba(${C.glow},${0.9*b})`); g.addColorStop(1, `rgba(${C.glow},0)`);
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r*3.6, 0, 2*Math.PI); ctx.fill();
+  }
+  // Glaskolben
+  ctx.beginPath();
+  ctx.arc(x, y, r, Math.PI*0.72, Math.PI*2.28);
+  ctx.lineTo(854, 290); ctx.lineTo(826, 290); ctx.closePath();
+  ctx.fillStyle = b > 0.02 ? `rgba(${C.glow},${0.25 + 0.7*b})` : C.glass; ctx.fill();
+  ctx.strokeStyle = 'rgba(120,140,160,.8)'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.arc(x, y, r-8, Math.PI*1.1, Math.PI*1.4); ctx.stroke();
+  // Glühwendel
+  ctx.strokeStyle = '#6b6f75'; ctx.lineWidth = 1.5;
+  line(ctx, [832, 290], [826, y]); line(ctx, [848, 290], [854, y]);
+  ctx.strokeStyle = b > 0.05 ? `rgb(255,${200+55*b|0},${120+100*b|0})` : '#555';
+  ctx.lineWidth = b > 0.05 ? 2.5 : 1.8;
+  ctx.beginPath(); ctx.moveTo(826, y);
+  for(let i=1;i<=8;i++) ctx.lineTo(826 + i*3.5, y + (i%2 ? -5 : 0));
+  ctx.stroke();
+}
+
+function drawCarriers(path, offset, I, layer){
+  const spacing = 24, n = Math.floor(path.L / spacing);
+  const vis = Math.min(1, Math.abs(I)*2.2);
+  if(vis < 0.03) return;
+  const sign = S.electrons ? -1 : 1;
+  for(let k=0;k<n;k++){
+    const s = ((k*spacing + offset) % path.L + path.L) % path.L;
+    let seg = path.segs[0];
+    for(const g of path.segs){ if(s >= g.s0 && s < g.s0 + g.len){ seg = g; break; } }
+    if(seg.l === 'hidden') continue;
+    if((seg.l === 'back') !== (layer === 'back')) continue;
+    const f = (s - seg.s0)/seg.len;
+    const x = seg.a[0] + (seg.b[0]-seg.a[0])*f, y = seg.a[1] + (seg.b[1]-seg.a[1])*f;
+    let ang = Math.atan2(seg.b[1]-seg.a[1], seg.b[0]-seg.a[0]);
+    if((I >= 0 ? 1 : -1)*sign < 0) ang += Math.PI;
+    ctx.globalAlpha = vis * (layer === 'back' ? 0.45 : 1);
+    ctx.save(); ctx.translate(x, y);
+    ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(0,0,0,.55)';
+    if(S.electrons){
+      ctx.fillStyle = C.electron; ctx.beginPath(); ctx.arc(0, 0, 4.2, 0, 2*Math.PI); ctx.fill(); ctx.stroke();
+    } else {
+      ctx.rotate(ang); ctx.fillStyle = C.current;
+      ctx.beginPath(); ctx.moveTo(7,0); ctx.lineTo(-5,-5.5); ctx.lineTo(-2,0); ctx.lineTo(-5,5.5); ctx.closePath(); ctx.fill(); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawLabels(){
+  ctx.textAlign = 'center'; ctx.fillStyle = C.muted; ctx.font = `700 13px ${C['f-body']}`;
+  ctx.fillText('Eisenkern', 480, 62);
+  ctx.fillStyle = C.ink; ctx.font = `600 15px ${C['f-display']}`;
+  ctx.fillText('Primärspule', 362, 430); ctx.fillText('Sekundärspule', 598, 430);
+  ctx.fillText('Lampe', 840, 190);
+}
+
+function drawStage(){
+  const pp = plugPos();
+  const ppath = primaryPath(pp);
+  drawBench();
+  drawCoilBack(PCOIL); drawCoilBack(SCOIL);
+  drawCarriers(ppath, S.off1, S.phi, 'back'); drawCarriers(SPATH, S.off2, S.u2, 'back');
+  drawCore();
+  drawCoilFront(PCOIL, 318, 406); drawCoilFront(SCOIL, 554, 642);
+  drawLeads(); drawPost(PPOST.top); drawPost(PPOST.bot); drawPost(SPOST.top); drawPost(SPOST.bot);
+  drawSupply(pp); drawLamp();
+  drawCable(SC_BOT, C['cable-dark']); drawCable(SC_TOP, C['cable-dark']);
+  // Das angehobene Kabel liegt oben
+  const order = pp.red.lift >= pp.blue.lift ? [['blue',cableBlue],['red',cableRed]] : [['red',cableRed],['blue',cableBlue]];
+  for(const [k, fn] of order){ drawCable(fn(pp[k]), C[k]); drawPlug(pp[k], C[k]); }
+  drawCarriers(ppath, S.off1, S.phi, 'front'); drawCarriers(SPATH, S.off2, S.u2, 'front');
+  drawLabels();
+}
+
+/* ---------- Diagramm ---------- */
+function drawGraph(){
+  const c = gctx;
+  c.fillStyle = C.panel; c.fillRect(0,0,GW,GH);
+  const X0 = 190, X1 = 945, t1 = S.t, t0 = t1 - WIN;
+  const tx = t => X0 + (t - t0)/WIN*(X1-X0);
+  const rows = [
+    {y0:14, y1:104, key:'i', max:1.3, col:C.current, title:'Strom in der', title2:'Primärspule'},
+    {y0:132, y1:222, key:'u', max:1.3, col:C.u2, title:'Spannung an', title2:'der Lampe'}
+  ];
+  for(const r of rows){
+    const ym = (r.y0 + r.y1)/2, sc = (r.y1 - r.y0)/2/r.max, ty = v => ym - v*sc;
+    c.fillStyle = C.ink; c.font = `600 15px ${C['f-display']}`; c.textAlign = 'left';
+    c.fillText(r.title, 0, ym-4); c.fillText(r.title2, 0, ym+14);
+    c.strokeStyle = C.line; c.lineWidth = 1;
+    c.beginPath(); c.moveTo(X0, ym); c.lineTo(X1, ym); c.stroke();
+    c.fillStyle = C.muted; c.font = `400 12px ${C['f-body']}`; c.textAlign = 'right';
+    c.fillText('0', X0-8, ym+4);
+    c.save(); c.beginPath(); c.rect(X0, r.y0-8, X1-X0+8, r.y1-r.y0+16); c.clip();
+    c.strokeStyle = r.col; c.lineWidth = 3; c.lineJoin = 'round'; c.beginPath();
+    S.hist.forEach((p, i) => { const x = tx(p.t), y = ty(Math.max(-r.max, Math.min(r.max, p[r.key]))); i ? c.lineTo(x,y) : c.moveTo(x,y); });
+    c.stroke();
+    const last = S.hist[S.hist.length-1];
+    if(last){ c.fillStyle = r.col; c.beginPath(); c.arc(tx(t1), ty(last[r.key]), 5, 0, 2*Math.PI); c.fill(); }
+    c.restore();
+  }
+  c.fillStyle = C.muted; c.font = `400 12px ${C['f-body']}`; c.textAlign = 'right';
+  c.fillText('Zeit →', X1, 244);
+}
+
+/* ---------- Texte ---------- */
+let lastStatus = '';
+function statusText(){
+  const flash = Math.abs(S.u2) > 0.12;
+  if(S.step === 1){
+    if(flash) return 'Der Magnet im Eisenkern wird umgepolt. <b>Genau jetzt blitzt die Lampe auf!</b> Danach bleibt sie wieder dunkel.';
+    if(S.swap) return 'Die Kabel werden umgesteckt …';
+    return 'Gleichstrom fließt. Der Eisenkern ist ein Magnet mit Nord- und Südpol, aber er <b>ändert sich nicht</b>. Die Lampe bleibt dunkel. Stecke die Kabel um!';
+  }
+  if(S.step === 2){
+    if(!S.auto) return 'Starte das automatische Umstecken und beobachte die Lampe.';
+    return 'Bei jedem Umstecken wird der Magnet umgepolt und <b>die Lampe blitzt auf</b>. Je schneller man umsteckt, desto öfter leuchtet sie. Von Hand ist das aber sehr mühsam …';
+  }
+  return 'Die Wechselspannung polt sich <b>von selbst ständig um</b>. Der Magnet im Eisenkern wechselt dauernd zwischen Nord und Süd, deshalb leuchtet die Lampe immer wieder.';
+}
+function updateChain(){
+  const set = (id, on, txt) => { $('#c'+id).classList.toggle('on', on); $('#v'+id).textContent = txt; };
+  const I = S.phi, flowing = Math.abs(I) > 0.05, ch = Math.abs(S.u2) > 0.12;
+  set(1, flowing, flowing ? 'durch die Primärspule' : 'kein Strom');
+  set(2, flowing, flowing ? (I > 0 ? 'links: Nordpol oben' : 'links: Nordpol unten') : 'kein Magnet');
+  set(3, ch, ch ? 'das Magnetfeld ändert sich' : 'bleibt gleich');
+  set(4, ch, ch ? 'Spannung wird erzeugt' : 'bleibt dunkel');
+  const st = statusText();
+  if(st !== lastStatus){ $('#status').innerHTML = st; lastStatus = st; }
+}
+
+/* ---------- Schleife ---------- */
+let last = performance.now();
+function frame(now){
+  const dt = Math.min(0.05, (now - last)/1000); last = now;
+  if(!S.paused){
+    step(dt);
+    const v = 55 * (S.electrons ? -1 : 1);
+    S.off1 += v * S.phi * dt;
+    S.off2 += v * Math.max(-1.2, Math.min(1.2, S.u2)) * dt;
+  }
+  drawStage(); drawGraph(); updateChain();
+  $('#swap').disabled = !!S.swap;
+  requestAnimationFrame(frame);
+}
+
+/* ---------- Bedienung ---------- */
+function setStep(n){
+  S.step = n; S.swap = null; S.hist = []; S.t = 0; S.autoTimer = 0;
+  [1,2,3].forEach(i => { $('#st'+i).setAttribute('aria-pressed', i===n); $('#ctl'+i).hidden = i !== n; });
+  if(n === 3){ S.phase = 0; S.phi = 0; }
+  else { S.redAt = 0; S.phi = 1; S.dphi = 0; S.u2 = 0; }
+  if(n === 2){ S.auto = true; syncAuto(); }
+}
+[1,2,3].forEach(i => $('#st'+i).onclick = () => setStep(i));
+$('#swap').onclick = startSwap;
+function syncAuto(){ $('#auto').textContent = S.auto ? 'Stopp' : 'Start'; }
+$('#auto').onclick = () => { S.auto = !S.auto; S.autoTimer = S.rate; syncAuto(); };
+const rate = $('#rate');
+function syncRate(){ S.rate = 3.6 - +rate.value; $('#rateVal').textContent = 'Tempo: alle ' + S.rate.toFixed(1).replace('.', ',') + ' s umstecken'; }
+rate.oninput = syncRate; syncRate();
+const sp = $('#speed');
+function syncSpeed(){ S.period = +sp.value; $('#speedVal').textContent = 'Ein Hin und Her dauert ' + S.period.toFixed(1).replace('.', ',') + ' s'; }
+sp.oninput = syncSpeed; syncSpeed();
+$('#play').onclick = () => { S.paused = !S.paused; $('#play').textContent = S.paused ? 'Weiter' : 'Pause'; };
+$('#play').textContent = S.paused ? 'Weiter' : 'Pause';
+function setDir(el){ S.electrons = el; $('#dTech').setAttribute('aria-pressed', !el); $('#dEl').setAttribute('aria-pressed', el); }
+$('#dTech').onclick = () => setDir(false);
+$('#dEl').onclick = () => setDir(true);
+
+/* ---------- Selbsttest ---------- */
+const Q = [
+  {q:'Die Kabel stecken fest in der Gleichspannungsquelle. Leuchtet die Lampe?',
+   o:['Ja, weil Strom durch die Primärspule fließt','Nein, weil sich der Magnet im Eisenkern nicht ändert'], a:1,
+   e:'Ein Magnet allein reicht nicht. Er muss sich ändern.'},
+  {q:'Wann blitzt die Lampe bei Gleichspannung kurz auf?',
+   o:['Beim Umstecken der Kabel','Wenn der Strom besonders stark ist','Nie'], a:0,
+   e:'Beim Umstecken wird der Magnet umgepolt. Diese Änderung erzeugt kurz eine Spannung.'},
+  {q:'Warum leuchtet die Lampe bei Wechselspannung immer wieder?',
+   o:['Weil Wechselspannung stärker ist','Weil sie sich von selbst ständig umpolt'], a:1,
+   e:'Wechselspannung macht das Umstecken automatisch, 50-mal pro Sekunde.'}
+];
+const quiz = $('#quiz');
+Q.forEach((it, qi) => {
+  const box = document.createElement('div'); box.className = 'q';
+  box.innerHTML = `<p>${qi+1}. ${it.q}</p><div class="opts"></div><p class="fb" aria-live="polite"></p>`;
+  const opts = box.querySelector('.opts'), fb = box.querySelector('.fb');
+  it.o.forEach((t, oi) => {
+    const b = document.createElement('button'); b.className = 'opt'; b.id = `q${qi}o${oi}`; b.textContent = t;
+    b.onclick = () => {
+      opts.querySelectorAll('.opt').forEach(x => x.classList.remove('right','wrong'));
+      if(oi === it.a){ b.classList.add('right'); fb.textContent = 'Richtig. ' + it.e; }
+      else { b.classList.add('wrong'); fb.textContent = 'Noch nicht. Probiere es in der Animation aus.'; }
+    };
+    opts.appendChild(b);
+  });
+  quiz.appendChild(box);
+});
+
+setStep(1);
+requestAnimationFrame(frame);
+})();
+</script>
+
+<a href="../../../../index.html#klasse-9" style="position:fixed;left:10px;bottom:10px;z-index:50;font:600 14px/1 Arial,Helvetica,sans-serif;color:#fff;background:rgba(27,42,74,.88);text-decoration:none;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.35)">&larr; Übersicht</a>
+</body></html>

@@ -1,0 +1,287 @@
+<!doctype html><html lang="de"><head><title>Der Weg durch das Lämpchen – Physik-Animationen</title><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<style>
+  :root {
+    color-scheme: dark;
+    --ground: #16213E;
+    --panel: #1B2A4A;
+    --panel-2: #22345A;
+    --line: #34497A;
+    --text: #F4F7FB;
+    --muted: #B9C6DE;
+    --accent: #FFC145;
+    --accent-soft: rgba(255, 193, 69, 0.18);
+    --electron: #7FD3FF;
+    --metal: #C7CCD4;
+    --brass: #C9A34A;
+    --display: "Source Serif 4", Cambria, Georgia, serif;
+    --body: "Source Sans 3", Calibri, "Segoe UI", Arial, sans-serif;
+  }
+  html, body { height: 100%; }
+  body {
+    background: var(--ground);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.5;
+    padding-inline: 16px;
+    padding-block: 20px 28px;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 18px; }
+  header { display: grid; gap: 4px; }
+  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+  h1 { font-family: var(--display); font-size: clamp(26px, 3.4vw, 40px); line-height: 1.15; margin: 0; text-wrap: balance; }
+  .lead { color: var(--muted); margin: 0; max-width: 62ch; }
+
+  .main { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 18px; align-items: start; }
+  @media (max-width: 900px) { .main { grid-template-columns: 1fr; } }
+
+  .stage { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .stage svg { display: block; width: 100%; height: auto; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; padding: 14px; border-top: 1px solid var(--line); background: var(--panel-2); }
+  button {
+    font: 600 15px/1 var(--body); color: var(--text); background: transparent;
+    border: 1.5px solid var(--line); border-radius: 999px; padding: 10px 16px; cursor: pointer;
+  }
+  button:hover { border-color: var(--muted); }
+  button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
+  button.primary { background: var(--accent); color: #16213E; border-color: var(--accent); }
+  button.primary:hover { filter: brightness(1.05); }
+
+  aside { display: grid; gap: 12px; }
+  .status { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); font-weight: 700; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); flex: none; }
+  .status.off .dot { background: #5B6B85; box-shadow: none; }
+  .fact { padding: 14px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); display: grid; gap: 4px; }
+  .fact h2 { font-family: var(--display); font-size: 18px; margin: 0; color: var(--accent); }
+  .fact p { margin: 0; color: var(--text); }
+  .note { font-size: 14px; color: var(--muted); margin: 0; padding: 0 4px; }
+
+  svg text { font-family: var(--body); }
+  .lbl { fill: var(--text); font-size: 17px; font-weight: 600; }
+  .lbl-s { fill: var(--muted); font-size: 14px; }
+  .lead-line { stroke: var(--muted); stroke-width: 1.2; fill: none; }
+  .labels { transition: opacity .25s; }
+  .hidden-soft { opacity: 0; pointer-events: none; }
+  @media (prefers-reduced-motion: reduce) { .labels { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Physik 9 · Elektrizitätslehre · Modell</span>
+    <h1>Der Weg durch das Lämpchen</h1>
+    <p class="lead">Das Lämpchen hat zwei Anschlüsse. Die Elektronen kommen am einen Anschluss hinein, laufen durch den Glühdraht und verlassen das Lämpchen am anderen Anschluss.</p>
+  </header>
+
+  <div class="main">
+    <section class="stage" aria-label="Animation: Elektronen fließen durch ein Glühlämpchen">
+      <svg id="svg" viewBox="0 0 900 640" role="img" aria-labelledby="svgt">
+        <title id="svgt">Flachbatterie und Glühlämpchen in einem geschlossenen Stromkreis. Punkte stellen Elektronen dar.</title>
+        <defs>
+          <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="#FFE9A8" stop-opacity=".95"/>
+            <stop offset=".55" stop-color="#FFC145" stop-opacity=".35"/>
+            <stop offset="1" stop-color="#FFC145" stop-opacity="0"/>
+          </radialGradient>
+          <pattern id="thread" width="130" height="18" patternUnits="userSpaceOnUse">
+            <rect width="130" height="18" fill="#C7CCD4"/>
+            <path d="M0 14 L130 4" stroke="#7d8591" stroke-width="3"/>
+          </pattern>
+        </defs>
+
+        <!-- Glow -->
+        <circle id="glowC" cx="560" cy="190" r="230" fill="url(#glow)"/>
+
+        <!-- Battery -->
+        <g id="battery">
+          <rect x="120" y="394" width="22" height="40" fill="#C9A34A" stroke="#6b5520" stroke-width="2"/>
+          <rect x="230" y="350" width="22" height="84" fill="#C9A34A" stroke="#6b5520" stroke-width="2"/>
+          <rect x="80" y="430" width="220" height="140" rx="10" fill="#DCE4F0" stroke="#0f1830" stroke-width="3"/>
+          <rect x="81.5" y="431.5" width="217" height="40" rx="9" fill="#F4F7FB"/>
+          <text x="104" y="462" font-size="30" font-weight="700" fill="#1B2A4A">+</text>
+          <text x="264" y="462" font-size="30" font-weight="700" fill="#1B2A4A">−</text>
+          <text x="190" y="530" font-size="26" font-weight="700" fill="#1B2A4A" text-anchor="middle">4,5 V</text>
+        </g>
+
+        <!-- Cables -->
+        <path id="cableA" d="M241 352 C 250 250, 420 250, 440 420 C 455 545, 560 575, 560 478" fill="none" stroke="#0b1226" stroke-width="13" stroke-linecap="round"/>
+        <path d="M241 352 C 250 250, 420 250, 440 420 C 455 545, 560 575, 560 478" fill="none" stroke="#3E5C9A" stroke-width="9" stroke-linecap="round"/>
+        <g id="cableBg">
+          <path id="cableB" d="M632 382 C 790 392, 780 622, 420 614 C 200 610, 50 620, 48 510 C 46 420, 131 340, 131 398" fill="none" stroke="#0b1226" stroke-width="13" stroke-linecap="round"/>
+          <path id="cableBi" d="M632 382 C 790 392, 780 622, 420 614 C 200 610, 50 620, 48 510 C 46 420, 131 340, 131 398" fill="none" stroke="#9AA5B8" stroke-width="9" stroke-linecap="round"/>
+        </g>
+
+        <!-- Lamp -->
+        <g id="lamp">
+          <circle id="bulb" cx="560" cy="190" r="130" fill="rgba(255,255,255,0.06)" stroke="#8FB0D6" stroke-width="4"/>
+          <path d="M498 300 L622 300 L626 332 L494 332 Z" fill="rgba(255,255,255,0.06)"/>
+          <rect x="494" y="330" width="132" height="92" fill="url(#thread)" stroke="#555c66" stroke-width="3"/>
+          <rect x="508" y="420" width="104" height="26" fill="#111" stroke="#000" stroke-width="2"/>
+          <rect x="540" y="444" width="40" height="28" rx="4" fill="#8a8f98" stroke="#333" stroke-width="2"/>
+          <!-- inner wires -->
+          <polyline points="560,466 560,380 545,330 515,200" fill="none" stroke="#9aa3ad" stroke-width="3"/>
+          <polyline points="605,200 575,330 622,346" fill="none" stroke="#9aa3ad" stroke-width="3"/>
+          <polyline id="filament" points="515,200 526,188 537,212 548,188 560,212 571,188 582,212 593,188 605,200" fill="none" stroke="#FFC145" stroke-width="5" stroke-linejoin="round"/>
+        </g>
+
+        <!-- Path highlight through lamp -->
+        <polyline id="hl" points="560,470 560,380 545,330 515,200 526,188 537,212 548,188 560,212 571,188 582,212 593,188 605,200 575,330 622,346 632,382" fill="none" stroke="#FFC145" stroke-width="16" stroke-linejoin="round" stroke-linecap="round" opacity=".28"/>
+
+        <!-- Clips -->
+        <rect x="548" y="470" width="24" height="30" rx="4" fill="#3E5C9A" stroke="#0b1226" stroke-width="2"/>
+        <rect x="231" y="336" width="20" height="28" rx="4" fill="#3E5C9A" stroke="#0b1226" stroke-width="2"/>
+        <rect x="121" y="382" width="20" height="28" rx="4" fill="#9AA5B8" stroke="#0b1226" stroke-width="2"/>
+        <g id="clipB"><rect x="628" y="368" width="30" height="24" rx="4" fill="#9AA5B8" stroke="#0b1226" stroke-width="2"/></g>
+
+        <!-- Electrons -->
+        <g id="electrons"></g>
+
+        <!-- Hidden loop path used for motion -->
+        <path id="loop" d="M241 352 C 250 250, 420 250, 440 420 C 455 545, 560 575, 560 478 L 560 380 L 545 330 L 515 200 L 526 188 L 537 212 L 548 188 L 560 212 L 571 188 L 582 212 L 593 188 L 605 200 L 575 330 L 622 346 L 632 382 C 790 392, 780 622, 420 614 C 200 610, 50 620, 48 510 C 46 420, 131 340, 131 398 L 131 450 C 150 520, 230 520, 241 450 Z" fill="none" stroke="none"/>
+
+        <!-- Contact badges -->
+        <g>
+          <circle cx="505" cy="470" r="17" fill="#FFC145"/><text x="505" y="477" text-anchor="middle" font-size="20" font-weight="700" fill="#16213E">1</text>
+          <circle cx="672" cy="344" r="17" fill="#FFC145"/><text x="672" y="351" text-anchor="middle" font-size="20" font-weight="700" fill="#16213E">2</text>
+        </g>
+
+        <!-- Labels -->
+        <g id="labels" class="labels">
+          <path class="lead-line" d="M650 110 L700 80 L735 80"/><text class="lbl" x="742" y="86">Glaskolben</text>
+          <path class="lead-line" d="M600 194 L700 150 L735 150"/><text class="lbl" x="742" y="156">Glühdraht</text>
+          <path class="lead-line" d="M592 260 L700 230 L735 230"/><text class="lbl" x="742" y="236">Haltedrähte</text>
+          <path class="lead-line" d="M626 410 L700 440 L735 440"/><text class="lbl" x="742" y="436">Gewinde</text><text class="lbl-s" x="742" y="456">Anschluss 2</text>
+          <path class="lead-line" d="M612 433 L660 500 L735 500"/><text class="lbl" x="742" y="496">Isolierung</text><text class="lbl-s" x="742" y="516">trennt die Anschlüsse</text>
+          <path class="lead-line" d="M488 470 L400 470"/><text class="lbl" x="392" y="466" text-anchor="end">Fußkontakt</text><text class="lbl-s" x="392" y="486" text-anchor="end">Anschluss 1</text>
+          <text class="lbl" x="150" y="410">Pluspol</text>
+          <text class="lbl" x="262" y="342">Minuspol</text>
+          <circle cx="44" cy="40" r="7" fill="var(--electron)"/><text class="lbl-s" x="58" y="45">= Elektron (Modell)</text>
+        </g>
+
+        <!-- Open marker -->
+        <g id="openMark" opacity="0">
+          <text x="700" y="300" text-anchor="middle" font-size="16" font-weight="700" fill="#FFC145">Kabel gelöst: Kreis offen</text>
+        </g>
+      </svg>
+      <div class="controls" role="group" aria-label="Steuerung">
+        <button id="bToggle" class="primary" type="button">Kabel lösen</button>
+        <button id="bPath" type="button" aria-pressed="true">Weg hervorheben</button>
+        <button id="bLabels" type="button" aria-pressed="true">Beschriftung</button>
+        <button id="bSpeed" type="button" aria-pressed="false">Zeitlupe</button>
+      </div>
+    </section>
+
+    <aside>
+      <div id="status" class="status" aria-live="polite"><span class="dot"></span><span id="statusText">Kreis geschlossen: Das Lämpchen leuchtet.</span></div>
+      <div class="fact">
+        <h2>Zwei Anschlüsse</h2>
+        <p>Fußkontakt (1) und Gewinde (2). Die Isolierung dazwischen trennt sie.</p>
+      </div>
+      <div class="fact">
+        <h2>Ein Weg hindurch</h2>
+        <p>Von Anschluss 1 über den Haltedraht, durch den Glühdraht und über den zweiten Haltedraht zu Anschluss 2.</p>
+      </div>
+      <div class="fact">
+        <h2>Nichts wird verbraucht</h2>
+        <p>Genauso viele Elektronen verlassen das Lämpchen, wie hineinkommen. Der Glühdraht wird heiß und leuchtet.</p>
+      </div>
+      <p class="note">Modell: Elektronen kann man nicht sehen. In Wirklichkeit sind es unvorstellbar viele und sie bewegen sich sehr langsam. Die Punkte zeigen die Bewegung vom Minuspol durch das Lämpchen zum Pluspol.</p>
+    </aside>
+  </div>
+</div>
+
+<script>
+(() => {
+  const NS = "http://www.w3.org/2000/svg";
+  const loop = document.getElementById("loop");
+  const L = loop.getTotalLength();
+  const g = document.getElementById("electrons");
+  const N = 46;
+  const dots = [];
+  // battery interior: last part of the loop (after the plus clip) is hidden
+  const cutStart = (() => {
+    // find length where path reaches the plus tongue top (131,398) going backwards from end
+    let best = 0, bestD = 1e9;
+    for (let s = L * 0.7; s < L; s += 2) {
+      const p = loop.getPointAtLength(s);
+      const d = Math.hypot(p.x - 131, p.y - 398);
+      if (d < bestD) { bestD = d; best = s; }
+    }
+    return best;
+  })();
+  const sGew = (() => { let best = 0, bd = 1e9; for (let s = 0; s < L; s += 1) { const p = loop.getPointAtLength(s); const d = Math.hypot(p.x - 632, p.y - 382); if (d < bd) { bd = d; best = s; } } return best; })();
+  for (let i = 0; i < N; i++) {
+    const c = document.createElementNS(NS, "circle");
+    c.setAttribute("r", 7);
+    c.setAttribute("fill", "#7FD3FF");
+    c.setAttribute("stroke", "#0b1226");
+    c.setAttribute("stroke-width", "1.5");
+    g.appendChild(c);
+    dots.push(c);
+  }
+  let closed = true, offset = 0, last = null, slow = false;
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let speed = reduce ? 0 : 38; // px per second
+
+  function place() {
+    for (let i = 0; i < N; i++) {
+      const s = (offset + i * L / N) % L;
+      const p = loop.getPointAtLength(s);
+      dots[i].setAttribute("cx", p.x.toFixed(1));
+      dots[i].setAttribute("cy", p.y.toFixed(1));
+      const inGap = !closed && s > sGew - 4 && s < sGew + 58;
+      dots[i].setAttribute("opacity", (s > cutStart + 6 || inGap) ? 0 : 1);
+    }
+  }
+  function frame(t) {
+    if (last !== null && closed) offset = (offset + (t - last) / 1000 * speed * (slow ? 0.35 : 1)) % L;
+    last = t;
+    place();
+    requestAnimationFrame(frame);
+  }
+  place();
+  requestAnimationFrame(frame);
+
+  const glowC = document.getElementById("glowC");
+  const fil = document.getElementById("filament");
+  const bulb = document.getElementById("bulb");
+  const clipB = document.getElementById("clipB");
+  const cableB = document.getElementById("cableB"), cableBi = document.getElementById("cableBi");
+  const openMark = document.getElementById("openMark");
+  const status = document.getElementById("status"), statusText = document.getElementById("statusText");
+  const bToggle = document.getElementById("bToggle");
+  const dClosed = "M632 382 C 790 392, 780 622, 420 614 C 200 610, 50 620, 48 510 C 46 420, 131 340, 131 398";
+  const dOpen = "M684 384 C 790 392, 780 622, 420 614 C 200 610, 50 620, 48 510 C 46 420, 131 340, 131 398";
+
+  function render() {
+    glowC.setAttribute("opacity", closed ? 1 : 0);
+    fil.setAttribute("stroke", closed ? "#FFC145" : "#555c66");
+    bulb.setAttribute("fill", closed ? "rgba(255,233,168,0.22)" : "rgba(255,255,255,0.06)");
+    cableB.setAttribute("d", closed ? dClosed : dOpen);
+    cableBi.setAttribute("d", closed ? dClosed : dOpen);
+    clipB.setAttribute("transform", closed ? "" : "translate(52,2)");
+    openMark.setAttribute("opacity", closed ? 0 : 1);
+    status.classList.toggle("off", !closed);
+    statusText.textContent = closed ? "Kreis geschlossen: Das Lämpchen leuchtet." : "Kreis offen: Alle Elektronen stehen still, das Lämpchen bleibt dunkel.";
+    bToggle.textContent = closed ? "Kabel lösen" : "Kabel wieder anklemmen";
+  }
+  bToggle.addEventListener("click", () => { closed = !closed; render(); });
+
+  function toggleBtn(id, fn) {
+    const b = document.getElementById(id);
+    b.addEventListener("click", () => {
+      const on = b.getAttribute("aria-pressed") !== "true";
+      b.setAttribute("aria-pressed", String(on));
+      fn(on);
+    });
+  }
+  toggleBtn("bPath", on => document.getElementById("hl").setAttribute("opacity", on ? .28 : 0));
+  toggleBtn("bLabels", on => document.getElementById("labels").classList.toggle("hidden-soft", !on));
+  toggleBtn("bSpeed", on => { slow = on; if (reduce && speed === 0) speed = 38; });
+  render();
+  window.__lamp = { setOffset: v => { offset = v; place(); }, L, N, stop: () => { speed = 0; } };
+})();
+</script>
+
+<a href="../../../../index.html#klasse-9" style="position:fixed;left:10px;bottom:10px;z-index:50;font:600 14px/1 Arial,Helvetica,sans-serif;color:#fff;background:rgba(27,42,74,.88);text-decoration:none;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.35)">&larr; Übersicht</a>
+</body></html>
