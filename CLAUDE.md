@@ -24,14 +24,23 @@ Alle Animationen werden **für die Nutzung am iPad optimiert** (Safari, quer und
 
 ## Übernommene Animationen bleiben unverändert
 
-Animationen, die der Nutzer aus eigenen Repositories (`nailik433/…`) übernehmen lässt, werden **Byte für Byte aus dem Repository** kopiert (nicht aus Artifacts, die älter sein können) und danach nicht umgebaut: kein Entfernen von Schriften, kein Einfügen von Links. Nach dem Kopieren mit `cmp` gegen das Original prüfen.
+Animationen, die der Nutzer aus eigenen Repositories (`nailik433/…`) übernehmen lässt, werden **Byte für Byte aus dem Repository** kopiert (nicht aus Artifacts, die älter sein können) und danach nicht umgebaut: kein Entfernen von Schriften, keine eigenen Änderungen. **Einzige Ausnahme: der Button „← Übersicht"** (siehe nächster Abschnitt). Zum Vergleich mit dem Original den Button vorher entfernen: `python3 tools/uebersicht.py --entfernen DATEI`, dann `cmp` gegen das Original.
+
+## Button „← Übersicht" in JEDER Animation
+
+Jede Animation hat unten links (bei Platzproblemen anders, siehe `POSITION` im Skript) den Button „← Übersicht", der zur passenden Klasse in `index.html` führt. Er wird nie von Hand gebaut, sondern mit dem Werkzeug eingefügt:
+
+- Nach dem Eintrag in `daten/animationen.js`: `python3 tools/uebersicht.py` ausführen (setzt den Button in alle Animationen, mehrfaches Ausführen schadet nicht).
+- `python3 tools/uebersicht.py --pruefen` muss „OK" melden, bevor committet wird.
+- Der Button ist 44 px hoch, mit Sicherheitsabstand für das iPad. Verdeckt er in einer Animation ein Bedienelement, in `POSITION` eine andere Ecke (`tl`, `tr`, `bl`, `br`) eintragen.
 
 ## Wenn eine neue Animation entsteht (immer alle Schritte)
 
 1. Datei aus `animationen/_vorlage.html` ableiten (oder, wenn der Prompt eine eigenständige Einzeldatei verlangt, als `…/<name>/index.html` mit eingebettetem CSS/JS ohne `assets/`), Ablage: `animationen/klasse-<N>/<thema-slug>/<name>.html` (Slug: Kleinbuchstaben, Umlaute ausgeschrieben, z. B. `elektrizitaet`).
 2. **Eintrag in `daten/animationen.js` ergänzen.** Nur dadurch erscheint die Animation in der Übersicht. Unterkategorien (`thema`) entstehen automatisch; vorhandene Schreibweise exakt wiederverwenden (z. B. `Elektrizität`), neue Themen nur, wenn wirklich keins passt.
-3. Tabelle „Aktueller Stand“ in `README.md` aktualisieren.
-4. Testen (siehe unten), erst dann committen.
+3. `python3 tools/uebersicht.py` ausführen (Button „← Übersicht“ einfügen).
+4. Tabelle „Aktueller Stand“ in `README.md` aktualisieren.
+5. Testen (siehe unten), erst dann committen.
 
 ## Konventionen
 
