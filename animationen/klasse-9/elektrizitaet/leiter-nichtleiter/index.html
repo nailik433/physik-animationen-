@@ -1,110 +1,196 @@
-<!doctype html><html lang="de"><head><title>Leiter und Nichtleiter – Physik-Animationen</title><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leiter und Nichtleiter</title>
+<meta name="description" content="Interaktive Animation: Warum leiten Metalle und Graphit den Strom, Kunststoff, Holz, Glas und Luft aber nicht? Ein Blick ins Material zeigt freie und gebundene Elektronen.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2316213E'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%237FD3FF'/%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%23FFC145' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap">
 <style>
-  /* Layout: Bühne mit Stromkreis oben und Lupe ins Material unten, rechts Bedienleiste. Gleiche Bildsprache wie "Weg durchs Lämpchen" (DS1). */
   :root {
     color-scheme: dark;
-    --ground: #16213E;
+    --ground: #111A31;
     --panel: #1B2A4A;
     --panel-2: #22345A;
     --line: #34497A;
     --text: #F4F7FB;
     --muted: #B9C6DE;
     --accent: #FFC145;
-    --accent-soft: rgba(255, 193, 69, 0.18);
+    --accent-soft: rgba(255, 193, 69, 0.16);
     --electron: #7FD3FF;
+    --minus: #5AB0FF;
+    --plus: #FF6B6B;
     --display: "Source Serif 4", Cambria, Georgia, serif;
     --body: "Source Sans 3", Calibri, "Segoe UI", Arial, sans-serif;
   }
+  * { box-sizing: border-box; }
   html, body { height: 100%; }
   body {
-    background: var(--ground);
+    margin: 0;
+    background:
+      radial-gradient(900px 500px at 85% -10%, rgba(255, 193, 69, 0.10), transparent 60%),
+      radial-gradient(800px 600px at 0% 100%, rgba(127, 211, 255, 0.10), transparent 60%),
+      var(--ground);
+    background-attachment: fixed;
     color: var(--text);
     font-family: var(--body);
     font-size: 17px;
     line-height: 1.5;
-    padding-inline: 16px;
-    padding-block: 20px 28px;
+    padding: 20px 16px 28px;
   }
-  .wrap { max-width: 1240px; margin: 0 auto; display: grid; gap: 16px; }
-  header { display: grid; gap: 4px; }
-  h1 { font-family: var(--display); font-size: clamp(26px, 3.4vw, 40px); line-height: 1.15; margin: 0; text-wrap: balance; }
-  .lead { color: var(--muted); margin: 0; max-width: 70ch; }
+  .wrap { max-width: 1280px; margin: 0 auto; display: grid; gap: 18px; }
+  header { display: grid; gap: 6px; }
+  .eyebrow { font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--electron); margin: 0; }
+  h1 {
+    font-family: var(--display); font-size: clamp(30px, 4vw, 48px); line-height: 1.08; margin: 0; text-wrap: balance;
+    background: linear-gradient(100deg, #FFFFFF 0%, #FFE3A3 45%, #FFC145 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .lead { color: var(--muted); margin: 0; max-width: 72ch; }
 
-  .main { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 16px; align-items: start; }
-  @media (max-width: 960px) { .main { grid-template-columns: 1fr; } }
+  .main { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; }
+  @media (max-width: 980px) { .main { grid-template-columns: 1fr; } }
 
-  .stage { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; min-width: 0; }
-  canvas { display: block; width: 100%; aspect-ratio: 1000 / 700; max-width: 100%; }
+  .stage {
+    position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; min-width: 0;
+    box-shadow: 0 30px 80px -30px rgba(0, 0, 0, .7), 0 0 0 1px rgba(255, 255, 255, .03) inset;
+  }
+  canvas { display: block; width: 100%; aspect-ratio: 1000 / 700; max-width: 100%; touch-action: manipulation; }
+  .stage:fullscreen { display: flex; align-items: center; justify-content: center; background: #0B1224; border-radius: 0; border: 0; }
+  .stage:fullscreen canvas { width: min(100vw, calc(100vh * 1000 / 700)); height: auto; }
+  .fsbtn {
+    position: absolute; top: 10px; right: 10px; padding: 7px 10px; font-size: 13px; background: rgba(17, 26, 49, .7);
+    backdrop-filter: blur(6px); border-color: rgba(185, 198, 222, .35);
+  }
 
-  aside { display: grid; gap: 12px; min-width: 0; }
+  aside { display: grid; gap: 14px; min-width: 0; }
+  .card { padding: 14px; border-radius: 14px; background: linear-gradient(180deg, var(--panel-2), var(--panel)); border: 1px solid var(--line); display: grid; gap: 10px; }
   .group { display: grid; gap: 8px; }
-  .group h2 { font-size: 13px; font-weight: 700; letter-spacing: .06em; color: var(--muted); margin: 0; }
+  .group h2, .card h2 { font-size: 12.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0; }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
   button {
-    font: 600 15px/1.1 var(--body); color: var(--text); background: transparent;
+    font: 600 15px/1.1 var(--body); color: var(--text); background: rgba(255, 255, 255, .02);
     border: 1.5px solid var(--line); border-radius: 999px; padding: 9px 14px; cursor: pointer;
+    transition: border-color .15s, background .15s, transform .1s, box-shadow .2s;
   }
   button:hover { border-color: var(--muted); }
+  button:active { transform: scale(.97); }
   button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-  button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
-  button.primary { background: var(--accent); color: #16213E; border-color: var(--accent); font-size: 17px; padding: 12px 18px; width: 100%; }
-  button.primary:hover { filter: brightness(1.05); }
-  button.primary[aria-pressed="true"] { background: transparent; color: var(--accent); }
+  button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); box-shadow: 0 0 18px -6px var(--accent); }
+  .chip { display: inline-flex; align-items: center; gap: 8px; }
+  .chip i { width: 12px; height: 12px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 1px rgba(0, 0, 0, .35), 0 0 8px -2px var(--c); flex: none; }
+  .chip i.air { background: transparent; border: 1.5px dashed var(--muted); box-shadow: none; }
+  button.primary {
+    background: linear-gradient(180deg, #FFD47A, var(--accent)); color: #16213E; border-color: var(--accent);
+    font-size: 18px; padding: 14px 18px; width: 100%; box-shadow: 0 10px 30px -10px rgba(255, 193, 69, .7);
+  }
+  button.primary:hover { filter: brightness(1.06); }
+  button.primary[aria-pressed="true"] { background: transparent; color: var(--accent); box-shadow: none; }
   #sand { width: 100%; border-style: dashed; border-color: var(--accent); }
 
-  .status { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); font-weight: 700; }
-  .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); flex: none; }
-  .status.weak .dot { opacity: .55; box-shadow: 0 0 5px var(--accent); }
+  .status { display: grid; gap: 10px; padding: 12px 14px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); font-weight: 700; transition: border-color .3s, box-shadow .3s; }
+  .status .row { display: flex; align-items: center; gap: 10px; }
+  .status:not(.off) { border-color: rgba(255, 193, 69, .55); box-shadow: 0 0 30px -12px var(--accent); }
+  .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 14px var(--accent); flex: none; transition: all .3s; }
+  .status.weak .dot { opacity: .6; box-shadow: 0 0 6px var(--accent); }
   .status.off .dot { background: #5B6B85; box-shadow: none; }
-  .fact { padding: 14px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); display: grid; gap: 6px; }
-  .fact h3 { font-family: var(--display); font-size: 19px; margin: 0; color: var(--accent); }
+  .meter { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center; font-size: 13px; font-weight: 600; color: var(--muted); }
+  .bar { height: 8px; border-radius: 99px; background: rgba(255, 255, 255, .06); overflow: hidden; }
+  .bar span { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--electron), var(--accent)); transition: width .5s cubic-bezier(.2, .8, .2, 1); }
+
+  .fact h3 { font-family: var(--display); font-size: 21px; margin: 0; color: var(--accent); }
   .fact p { margin: 0; }
-  .legend { display: grid; gap: 6px; font-size: 15px; color: var(--muted); padding: 0 4px; }
-  .legend div { display: flex; align-items: center; gap: 10px; }
-  .sw { width: 18px; height: 18px; flex: none; }
   .toggles { display: flex; flex-wrap: wrap; gap: 8px; }
+  .legend { display: grid; gap: 6px; font-size: 15px; color: var(--muted); }
+  .legend div { display: flex; align-items: center; gap: 10px; }
+  .sw { width: 20px; height: 20px; flex: none; }
+
+  .loghead { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  button.mini { font-size: 12.5px; padding: 5px 10px; }
+  #log { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  #log li { display: flex; align-items: center; gap: 10px; font-size: 15px; animation: pop .45s cubic-bezier(.2, .9, .3, 1.3); }
+  #log li i { width: 12px; height: 12px; border-radius: 50%; background: var(--c); flex: none; }
+  #log li i.air { background: transparent; border: 1.5px dashed var(--muted); }
+  #log li span { flex: 1; min-width: 0; }
+  #log b { font-size: 13px; padding: 3px 9px; border-radius: 99px; white-space: nowrap; }
+  #log b.yes { background: rgba(255, 193, 69, .16); color: var(--accent); }
+  #log b.weak { background: rgba(255, 193, 69, .08); color: #E9C77F; }
+  #log b.no { background: rgba(185, 198, 222, .1); color: var(--muted); }
+  .empty { margin: 0; font-size: 14px; color: var(--muted); }
+  @keyframes pop { from { opacity: 0; transform: translateX(-8px) scale(.96); } }
+
+  .keys { font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 0 4px; }
+  kbd { font: 600 12px/1 var(--body); padding: 3px 6px; border-radius: 5px; border: 1px solid var(--line); background: rgba(255, 255, 255, .04); color: var(--text); }
+  [hidden] { display: none !important; }
+  @media (prefers-reduced-motion: reduce) { #log li { animation: none; } button { transition: none; } }
 </style>
+</head>
+<body>
 
 <div class="wrap">
   <header>
+    <p class="eyebrow">Physik · Elektrizitätslehre</p>
     <h1>Leiter und Nichtleiter</h1>
     <p class="lead">Oben steckt eine Materialprobe im Stromkreis. Die Lupe unten zeigt, was im Inneren der Probe passiert, wenn der Schalter geschlossen wird.</p>
   </header>
 
   <div class="main">
-    <section class="stage" aria-label="Animation: Stromkreis mit Materialprobe und Blick ins Material">
+    <section class="stage" id="stage" aria-label="Animation: Stromkreis mit Materialprobe und Blick ins Material">
       <canvas id="cv" role="img" aria-label="Stromkreis aus Batterie, Schalter, Lämpchen und Materialprobe. Darunter eine starke Vergrößerung der Probe mit Atomen und Elektronen."></canvas>
+      <button class="fsbtn" id="fs" title="Vollbild (F)">⛶ Vollbild</button>
     </section>
 
     <aside>
       <button id="switch" class="primary" aria-pressed="false">Schalter schließen</button>
 
-      <div class="group">
-        <h2>Materialprobe</h2>
-        <div class="chips" id="mats" role="group" aria-label="Material wählen"></div>
-        <button id="sand" hidden>Lack an den Enden abschmirgeln</button>
+      <div class="card">
+        <div class="group">
+          <h2>Materialprobe</h2>
+          <div class="chips" id="mats" role="group" aria-label="Material wählen"></div>
+          <button id="sand" hidden>Lack an den Enden abschmirgeln</button>
+        </div>
       </div>
 
-      <div class="status off" id="status" aria-live="polite"><span class="dot"></span><span id="statusText">Das Lämpchen leuchtet nicht.</span></div>
+      <div class="status off" id="status" aria-live="polite">
+        <div class="row"><span class="dot"></span><span id="statusText">Das Lämpchen leuchtet nicht.</span></div>
+        <div class="meter"><span>Stromstärke</span><div class="bar"><span id="meterFill"></span></div></div>
+      </div>
 
-      <div class="fact" id="fact">
+      <div class="card fact" id="fact">
         <h3 id="factH">Kupfer</h3>
         <p id="factP"></p>
       </div>
 
-      <div class="group">
-        <h2>Ansicht</h2>
-        <div class="toggles">
-          <button id="track" aria-pressed="false">Ein Elektron verfolgen</button>
-          <button id="explain" aria-pressed="true">Erklärung zeigen</button>
-          <button id="pause" aria-pressed="false">Anhalten</button>
+      <div class="card">
+        <div class="loghead"><h2>Versuchsprotokoll</h2><button class="mini" id="resetLog">Leeren</button></div>
+        <ol id="log"></ol>
+        <p class="empty" id="logEmpty">Schließe den Schalter, um ein Material zu testen. Das Ergebnis wird hier notiert.</p>
+      </div>
+
+      <div class="card">
+        <div class="group">
+          <h2>Ansicht</h2>
+          <div class="toggles">
+            <button id="track" aria-pressed="false">Ein Elektron verfolgen</button>
+            <button id="explain" aria-pressed="true">Erklärung zeigen</button>
+            <button id="pause" aria-pressed="false">Anhalten</button>
+          </div>
+        </div>
+        <div class="legend" aria-label="Legende">
+          <div><svg class="sw" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8.5" fill="#C7CCD4" fill-opacity=".28" stroke="#C7CCD4" stroke-width="1.5"/></svg>Atom</div>
+          <div><svg class="sw" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8.5" fill="#C7CCD4" fill-opacity=".28" stroke="#C7CCD4" stroke-width="1.5"/><circle cx="10" cy="10" r="5" fill="none" stroke="#7FD3FF" stroke-opacity=".35" stroke-dasharray="2 2"/><circle cx="15" cy="10" r="2.8" fill="#7FD3FF"/></svg>Elektron, fest im Atom</div>
+          <div><svg class="sw" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="#7FD3FF" fill-opacity=".2"/><circle cx="10" cy="10" r="4.5" fill="#7FD3FF"/></svg>freies Elektron</div>
+          <div id="legIon" hidden><svg class="sw" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8.5" fill="#B98CFF" fill-opacity=".35" stroke="#B98CFF" stroke-width="1.5"/><text x="10" y="14.5" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">+</text></svg>Natrium-Ion (Na⁺)</div>
+          <div id="legIon2" hidden><svg class="sw" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8.5" fill="#6FDC8C" fill-opacity=".35" stroke="#6FDC8C" stroke-width="1.5"/><text x="10" y="14.5" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">−</text></svg>Chlorid-Ion (Cl⁻)</div>
         </div>
       </div>
 
-      <div class="legend" aria-label="Legende">
-        <div><svg class="sw" viewBox="0 0 18 18"><circle cx="9" cy="9" r="7.5" fill="#C7CCD4" fill-opacity=".28" stroke="#C7CCD4" stroke-width="1.5"/></svg>Atom</div>
-        <div><svg class="sw" viewBox="0 0 18 18"><circle cx="9" cy="9" r="7.5" fill="#C7CCD4" fill-opacity=".28" stroke="#C7CCD4" stroke-width="1.5"/><circle cx="9" cy="9" r="3.2" fill="#7FD3FF"/></svg>Elektron, fest im Atom</div>
-        <div><svg class="sw" viewBox="0 0 18 18"><circle cx="9" cy="9" r="5" fill="#7FD3FF"/></svg>freies Elektron</div>
+      <div class="keys" aria-label="Tastenkürzel">
+        <span><kbd>Leertaste</kbd> Schalter</span><span><kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> Material</span>
+        <span><kbd>T</kbd> Verfolgen</span><span><kbd>P</kbd> Anhalten</span><span><kbd>F</kbd> Vollbild</span>
       </div>
     </aside>
   </div>
@@ -115,17 +201,20 @@
   const cv = document.getElementById('cv');
   const ctx = cv.getContext('2d');
   const W = 1000, H = 700;
-  const C = { text: '#F4F7FB', muted: '#B9C6DE', line: '#34497A', wire: '#B9C6DE', accent: '#FFC145', e: '#7FD3FF', panel: '#1B2A4A', deep: '#132038', brass: '#C9A34A' };
+  const C = { text: '#F4F7FB', muted: '#B9C6DE', line: '#34497A', accent: '#FFC145', e: '#7FD3FF', panel: '#1B2A4A', deep: '#132038', minus: '#5AB0FF', plus: '#FF6B6B' };
+  const FONT = '"Source Sans 3", Calibri, Arial, sans-serif';
 
   const MATS = {
-    kupfer:     { name: 'Kupfer',            kind: 'metal', atom: '#D08A5A', sample: '#C8794A', I: 1 },
-    alu:        { name: 'Aluminium',         kind: 'metal', atom: '#C7CCD4', sample: '#C7CCD4', I: 1 },
-    graphit:    { name: 'Graphit',           kind: 'graphit', atom: '#8A919C', sample: '#4A4F57', I: 0.45 },
-    lack:       { name: 'Kupferlackdraht',   kind: 'lack', atom: '#D08A5A', sample: '#B5562E', I: 1 },
-    kunststoff: { name: 'Kunststoff',        kind: 'chain', atom: '#9FB7D9', sample: '#E9EEF5', I: 0 },
-    holz:       { name: 'Holz (trocken)',    kind: 'chain', atom: '#C49464', sample: '#A0703F', I: 0 },
-    glas:       { name: 'Glas',              kind: 'glass', atom: '#8FD1C8', sample: '#9CC9D3', I: 0 },
-    luft:       { name: 'Luft',              kind: 'air', atom: '#AEB8C8', sample: null, I: 0 },
+    kupfer:     { name: 'Kupfer',            kind: 'metal',   atom: '#E09A68', sample: '#C8794A', I: 1 },
+    alu:        { name: 'Aluminium',         kind: 'metal',   atom: '#C7CCD4', sample: '#C7CCD4', I: 1 },
+    graphit:    { name: 'Graphit',           kind: 'graphit', atom: '#9AA1AC', sample: '#4A4F57', I: 0.45 },
+    lack:       { name: 'Kupferlackdraht',   kind: 'lack',    atom: '#E09A68', sample: '#B5562E', I: 1 },
+    kunststoff: { name: 'Kunststoff',        kind: 'chain',   atom: '#9FB7D9', sample: '#E9EEF5', I: 0 },
+    holz:       { name: 'Holz (trocken)',    kind: 'chain',   atom: '#D3A06C', sample: '#A0703F', I: 0 },
+    glas:       { name: 'Glas',              kind: 'glass',   atom: '#8FD1C8', sample: '#9CC9D3', I: 0 },
+    wasser:     { name: 'Destilliertes Wasser', kind: 'water', atom: '#FF8A7A', sample: '#6FA8DC', I: 0 },
+    salzwasser: { name: 'Salzwasser',        kind: 'salt',    atom: '#FF8A7A', sample: '#9CCBEA', I: 0.55 },
+    luft:       { name: 'Luft',              kind: 'air',     atom: '#AEB8C8', sample: null, I: 0 },
   };
 
   const TXT = {
@@ -149,37 +238,102 @@
       on: ['Das Lämpchen leuchtet nicht. {n} ist ein Nichtleiter (Isolator).', 'In {n} bleibt jedes Elektron in seinem Atom. Die Batterie zieht an den Elektronen, aber sie können ihr Atom nicht verlassen. Darum fließt im ganzen Stromkreis kein Strom.'],
       off: 'Auch in {n} gibt es Elektronen. Jedes sitzt fest in seinem Atom.'
     },
+    water: {
+      on: ['Das Lämpchen leuchtet nicht. Destilliertes Wasser ist (praktisch) ein Nichtleiter.', 'Destilliertes Wasser besteht nur aus Wassermolekülen. Ihre Elektronen bleiben in den Molekülen, und es gibt fast keine geladenen Teilchen, die wandern könnten. Darum fließt praktisch kein Strom.'],
+      off: 'Destilliertes Wasser enthält nur Wassermoleküle. In der Flüssigkeit bewegen sie sich durcheinander, aber jedes Elektron bleibt in seinem Molekül.'
+    },
+    salt: {
+      on: ['Das Lämpchen leuchtet schwach. Salzwasser ist ein Leiter.', 'Im Salzwasser gibt es keine freien Elektronen, aber geladene Teilchen: Ionen. Die positiven Natrium-Ionen (Na⁺) wandern zum Minuspol, die negativen Chlorid-Ionen (Cl⁻) zum Pluspol. So fließt Strom durch die Flüssigkeit.'],
+      off: 'Im Wasser ist Kochsalz gelöst. Es zerfällt dabei in Ionen: positive Natrium-Ionen (Na⁺) und negative Chlorid-Ionen (Cl⁻). Sie schwimmen frei zwischen den Wassermolekülen umher.'
+    },
     air: {
       on: ['Das Lämpchen leuchtet nicht. Luft ist ein Nichtleiter.', 'In Luft gibt es nur wenige Teilchen, und ihre Elektronen bleiben in den Atomen. Deshalb unterbricht ein offener Schalter den Stromkreis: Er ist eine Luftlücke.'],
       off: 'Zwischen den Klemmen ist nur Luft. Es gibt wenige Teilchen, und ihre Elektronen sitzen fest in den Atomen.'
     }
   };
+
   let mat = 'kupfer', closed = false, lacquer = true, tracking = false, explain = true, paused = false;
-  let lampB = 0;
-  let atoms = [], free = [], bound = [], bonds = [], mols = [];
-  let trail = [];
+  let lampB = 0, flow = 0, swT = 0, matFade = 1, T = 0, testTime = 0, wasContact = false;
+  let atoms = [], free = [], bound = [], bonds = [], mols = [], trail = [], parts = [];
   const P = { x0: 60, x1: 940, y0: 392, y1: 672 };
   const LB = 165, RB = 835;
-
+  const COLS = 14, ROWS = 5;
+  const DX = (P.x1 - P.x0) / COLS, DY = (P.y1 - P.y0) / ROWS;
+  const SPAN = P.x1 - P.x0, FL = P.x0 - DX / 2, FU = FL + SPAN;
+  const gx = c => P.x0 + DX * (c + 0.5), gy = r => P.y0 + DY * (r + 0.5);
+  const AR = 16;
   const rnd = (a, b) => a + Math.random() * (b - a);
+  const clamp01 = v => Math.max(0, Math.min(1, v));
+  const rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
+  const ease = k => 1 - Math.pow(1 - k, 3);
 
-  function currentI() {
-    if (!closed) return 0;
+  function physI() {
     const m = MATS[mat];
     if (m.kind === 'lack') return lacquer ? 0 : 1;
     return m.I;
   }
+  function currentI() { return closed && swT > 0.98 ? physI() : 0; }
 
-  const COLS = 14, ROWS = 5;
-  const DX = (P.x1 - P.x0) / COLS, DY = (P.y1 - P.y0) / ROWS;
-  const gx = c => P.x0 + DX * (c + 0.5), gy = r => P.y0 + DY * (r + 0.5);
-  const AR = 16;
+  // ---------- Sprites (vorgerendert für weiche Glows) ----------
+  const SS = 3;
+  function sprite(r, draw) {
+    const c = document.createElement('canvas'); c.width = c.height = Math.ceil(r * 2 * SS);
+    const g = c.getContext('2d'); g.scale(SS, SS); draw(g, r); return { c, r };
+  }
+  function blit(s, x, y, scale = 1, alpha = 1) {
+    if (alpha <= 0.003) return;
+    const R = s.r * scale; ctx.globalAlpha = Math.min(1, alpha); ctx.drawImage(s.c, x - R, y - R, 2 * R, 2 * R); ctx.globalAlpha = 1;
+  }
+  const eSpr = sprite(22, (g, r) => {
+    const gr = g.createRadialGradient(r, r, 0, r, r, r);
+    gr.addColorStop(0, '#E6F7FF'); gr.addColorStop(0.18, '#A5E0FF'); gr.addColorStop(0.27, '#7FD3FF');
+    gr.addColorStop(0.3, 'rgba(127,211,255,.22)'); gr.addColorStop(0.4, 'rgba(127,211,255,.05)'); gr.addColorStop(0.5, 'rgba(127,211,255,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, 2 * r, 2 * r);
+  });
+  const lampSpr = sprite(190, (g, r) => {
+    const gr = g.createRadialGradient(r, r, 0, r, r, r);
+    gr.addColorStop(0, 'rgba(255,240,200,.7)'); gr.addColorStop(0.2, 'rgba(255,225,150,.35)'); gr.addColorStop(0.5, 'rgba(255,193,69,.08)');
+    gr.addColorStop(1, 'rgba(255,170,40,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, 2 * r, 2 * r);
+  });
+  const atomSprCache = {};
+  function atomSpr(col, ar = AR) {
+    const key = col + ar;
+    if (atomSprCache[key]) return atomSprCache[key];
+    return atomSprCache[key] = sprite(ar + 3, (g, r) => {
+      const gr = g.createRadialGradient(r - ar * 0.3, r - ar * 0.38, 1, r, r, ar);
+      gr.addColorStop(0, 'rgba(255,255,255,.55)'); gr.addColorStop(0.35, rgba(col, 0.45)); gr.addColorStop(1, rgba(col, 0.16));
+      g.fillStyle = gr; g.beginPath(); g.arc(r, r, ar, 0, 7); g.fill();
+      g.strokeStyle = col; g.lineWidth = 2.4; g.stroke();
+      g.fillStyle = rgba(col, 0.9); g.beginPath(); g.arc(r, r, 3.2, 0, 7); g.fill();
+    });
+  }
+  // Hintergrund mit feinem Punktraster
+  const bg = document.createElement('canvas'); bg.width = W * 2; bg.height = H * 2;
+  (() => {
+    const g = bg.getContext('2d'); g.scale(2, 2);
+    const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, '#1E2F52'); gr.addColorStop(1, '#172440');
+    g.fillStyle = gr; g.fillRect(0, 0, W, H);
+    g.fillStyle = 'rgba(185,198,222,.07)';
+    for (let x = 10; x < W; x += 20) for (let y = 10; y < 350; y += 20) { g.beginPath(); g.arc(x, y, 1, 0, 7); g.fill(); }
+  })();
+  const hatch = (() => {
+    const c = document.createElement('canvas'); c.width = c.height = 16; const g = c.getContext('2d');
+    g.strokeStyle = 'rgba(224,160,48,.22)'; g.lineWidth = 3; g.beginPath(); g.moveTo(-4, 20); g.lineTo(20, -4); g.moveTo(-4, 4); g.lineTo(4, -4); g.moveTo(12, 20); g.lineTo(20, 12); g.stroke();
+    return ctx.createPattern(c, 'repeat');
+  })();
 
+  // ---------- Aufbau des Materials ----------
   function build() {
     atoms = []; free = []; bound = []; bonds = []; mols = []; trail = [];
     const m = MATS[mat];
-    const addAtom = (x, y, col, withE) => { const a = { x, y, col, r: AR }; atoms.push(a); if (withE) bound.push({ a, shift: 0 }); return a; };
-    const addFreeRow = (r, xmin, xmax) => { for (let c = 0; c < COLS; c++) { const x = P.x0 + DX * c, y = gy(r) + DY / 2; if (x >= xmin && x <= xmax) free.push({ x, y }); } };
+    const addAtom = (x, y, col, withE, extra = {}) => {
+      const a = Object.assign({ bx: x, by: y, x, y, col, ph: rnd(0, 7) }, extra); atoms.push(a);
+      if (withE) bound.push({ a, shift: 0, ph: rnd(0, 7), w: rnd(2.2, 3.2) * (Math.random() < .5 ? -1 : 1) });
+      return a;
+    };
+    const addFree = (x, y) => free.push({ x, y, ph: rnd(0, 7) });
+    const addFreeRow = (r, xmin, xmax) => { for (let c = 0; c < COLS; c++) { const x = P.x0 + DX * c, y = gy(r) + DY / 2; if (x >= xmin && x <= xmax) addFree(x, y); } };
     if (m.kind === 'metal' || m.kind === 'lack') {
       const lackOn = m.kind === 'lack' && lacquer;
       for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
@@ -187,32 +341,117 @@
         addAtom(x, y, isLack ? '#E0A030' : m.atom, isLack);
       }
       for (let r = 0; r < ROWS - 1; r++) addFreeRow(r, lackOn ? LB : -1e9, lackOn ? RB : 1e9);
-      for (let c = 0; c < COLS; c++) { const x = P.x0 + DX * c; if (!lackOn || (x >= LB && x <= RB)) free.push({ x, y: P.y0 + 10 }); }
+      for (let c = 0; c < COLS; c++) { const x = P.x0 + DX * c; if (!lackOn || (x >= LB && x <= RB)) addFree(x, P.y0 + 10); }
     } else if (m.kind === 'graphit') {
-      for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) addAtom(gx(c), gy(r), m.atom, !(r === 1 || r === 3));
-      addFreeRow(1, -1e9, 1e9); addFreeRow(3, -1e9, 1e9);
-      free = free.filter((e, i) => i % 2 === 0);
-    } else if (m.kind === 'chain' || m.kind === 'glass') {
       for (let r = 0; r < ROWS; r++) {
         let prev = null;
         for (let c = 0; c < COLS; c++) {
+          const a = addAtom(gx(c), gy(r), m.atom, !(r === 1 || r === 3));
+          if (prev) bonds.push([prev, a]); prev = a;
+        }
+      }
+      addFreeRow(1, -1e9, 1e9); addFreeRow(3, -1e9, 1e9);
+      free = free.filter((e, i) => i % 2 === 0);
+    } else if (m.kind === 'chain' || m.kind === 'glass') {
+      const grid = [];
+      for (let r = 0; r < ROWS; r++) {
+        let prev = null; grid[r] = [];
+        for (let c = 0; c < COLS; c++) {
           const jx = m.kind === 'glass' ? ((c * 7 + r * 3) % 5 - 2) * 4 : 0;
-          const jy = m.kind === 'chain' ? Math.sin(c * 1.3 + r) * 7 : ((c * 5 + r * 11) % 5 - 2) * 3;
-          const a = addAtom(gx(c) + jx, gy(r) + jy, m.atom, true);
-          if (m.kind === 'chain' && prev) bonds.push([prev, a]);
+          const jy = m.kind === 'glass' ? ((c * 5 + r * 11) % 5 - 2) * 3 : 0;
+          const a = addAtom(gx(c) + jx, gy(r) + jy, m.atom, true, { c, row: r });
+          grid[r][c] = a;
+          if (prev && (m.kind === 'chain' || (c * 3 + r) % 4 !== 0)) bonds.push([prev, a]);
           prev = a;
         }
+      }
+      if (m.kind === 'glass') for (let r = 0; r + 1 < ROWS; r++) for (let c = 0; c < COLS; c++) if ((c * 5 + r * 2) % 3 === 0) bonds.push([grid[r][c], grid[r + 1][c]]);
+    } else if (m.kind === 'water' || m.kind === 'salt') {
+      const addMol = (x, y, type) => {
+        const mo = { x, y, vx: rnd(-6, 6), vy: rnd(-6, 6), ang: rnd(0, 7), va: rnd(-0.6, 0.6), type };
+        if (type === 'w') {
+          mo.o = addAtom(x, y, '#FF8A7A', true, { r: 14 });
+          mo.h1 = addAtom(x, y, '#E8EEF5', false, { r: 8 });
+          mo.h2 = addAtom(x, y, '#E8EEF5', false, { r: 8 });
+          bonds.push([mo.o, mo.h1], [mo.o, mo.h2]);
+        } else mo.o = addAtom(x, y, type === 'na' ? '#B98CFF' : '#6FDC8C', false, { r: type === 'na' ? 12 : 17, ion: type });
+        mols.push(mo);
+      };
+      const cols = 11, rows = 4; let k = 0;
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++, k++) {
+        const x = P.x0 + 40 + (SPAN - 80) * (c + (r % 2) * 0.5) / cols, y = P.y0 + 30 + (P.y1 - P.y0 - 62) * r / (rows - 1);
+        let type = 'w';
+        if (m.kind === 'salt' && k % 3 === 1) type = Math.floor(k / 3) % 2 ? 'cl' : 'na';
+        addMol(x + rnd(-6, 6), y + rnd(-6, 6), type);
       }
     } else if (m.kind === 'air') {
       const spots = [[0.12, 0.25], [0.3, 0.7], [0.45, 0.3], [0.62, 0.75], [0.78, 0.35], [0.9, 0.7], [0.2, 0.55], [0.55, 0.52]];
       spots.forEach(([fx, fy], i) => {
-        const x = P.x0 + (P.x1 - P.x0) * fx, y = P.y0 + (P.y1 - P.y0) * fy, ang = i * 0.9;
-        const a1 = addAtom(x - Math.cos(ang) * 17, y - Math.sin(ang) * 17, m.atom, true);
-        const a2 = addAtom(x + Math.cos(ang) * 17, y + Math.sin(ang) * 17, m.atom, true);
-        bonds.push([a1, a2]);
+        const mo = { x: P.x0 + SPAN * fx, y: P.y0 + (P.y1 - P.y0) * fy, ang: i * 0.9, vx: rnd(-14, 14), vy: rnd(-10, 10), va: rnd(-0.6, 0.6) };
+        mo.a1 = addAtom(0, 0, m.atom, true); mo.a2 = addAtom(0, 0, m.atom, true);
+        bonds.push([mo.a1, mo.a2]); mols.push(mo);
       });
     }
+    layout(0);
   }
+
+  // Thermische Bewegung der Teilchen
+  function layout(dt) {
+    const m = MATS[mat];
+    if (m.kind === 'air') {
+      mols.forEach(mo => {
+        mo.x += mo.vx * dt; mo.y += mo.vy * dt; mo.ang += mo.va * dt;
+        if (mo.x < P.x0 + 10 || mo.x > P.x1 - 10) mo.vx *= -1;
+        if (mo.y < P.y0 + 14 || mo.y > P.y1 - 18) mo.vy *= -1;
+        mo.x = Math.max(P.x0 + 10, Math.min(P.x1 - 10, mo.x)); mo.y = Math.max(P.y0 + 14, Math.min(P.y1 - 18, mo.y));
+        const cx = Math.cos(mo.ang) * 17, cy = Math.sin(mo.ang) * 17;
+        mo.a1.x = mo.x - cx; mo.a1.y = mo.y - cy; mo.a2.x = mo.x + cx; mo.a2.y = mo.y + cy;
+      });
+      return;
+    }
+    if (m.kind === 'water' || m.kind === 'salt') {
+      const damp = Math.max(0, 1 - 1.2 * dt), drift = 80 * flow;
+      mols.forEach(mo => {
+        mo.vx = (mo.vx + rnd(-1, 1) * 90 * dt) * damp; mo.vy = (mo.vy + rnd(-1, 1) * 90 * dt) * damp;
+        mo.va = (mo.va + rnd(-1, 1) * 3 * dt) * damp;
+      });
+      // Teilchen stoßen sich ab, damit sie sich nicht überlappen
+      const push = Math.min(1, dt * 8);
+      for (let i = 0; i < mols.length; i++) for (let j = i + 1; j < mols.length; j++) {
+        const a = mols[i], b = mols[j], dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy), min = 46;
+        if (d < min && d > 0.01) {
+          // Ionen drängeln sich durch: Wassermoleküle weichen stärker aus als die Ionen
+          const f = (min - d) / d * push, ia = a.type !== 'w', ib = b.type !== 'w';
+          const wa = ia === ib ? 0.5 : ia ? 0.15 : 0.85;
+          a.x -= dx * f * wa; a.y -= dy * f * wa; b.x += dx * f * (1 - wa); b.y += dy * f * (1 - wa);
+        }
+      }
+      mols.forEach(mo => {
+        const dir = mo.type === 'na' ? -1 : mo.type === 'cl' ? 1 : 0;
+        mo.x += (mo.vx + dir * drift) * dt; mo.y += mo.vy * dt; mo.ang += mo.va * dt;
+        if (mo.y < P.y0 + 16) { mo.y = P.y0 + 16; mo.vy = Math.abs(mo.vy); }
+        if (mo.y > P.y1 - 20) { mo.y = P.y1 - 20; mo.vy = -Math.abs(mo.vy); }
+        if (dir) {
+          if (mo.x > P.x1 + 14) mo.x -= SPAN + 28; else if (mo.x < P.x0 - 14) mo.x += SPAN + 28;
+        } else {
+          if (mo.x < P.x0 + 12) { mo.x = P.x0 + 12; mo.vx = Math.abs(mo.vx); }
+          if (mo.x > P.x1 - 12) { mo.x = P.x1 - 12; mo.vx = -Math.abs(mo.vx); }
+        }
+        mo.o.x = mo.x; mo.o.y = mo.y;
+        if (mo.h1) {
+          mo.h1.x = mo.x + Math.cos(mo.ang - 0.91) * 18; mo.h1.y = mo.y + Math.sin(mo.ang - 0.91) * 18;
+          mo.h2.x = mo.x + Math.cos(mo.ang + 0.91) * 18; mo.h2.y = mo.y + Math.sin(mo.ang + 0.91) * 18;
+        }
+      });
+      return;
+    }
+    // Feststoffe: Atome sitzen fest an ihrem Platz
+    atoms.forEach(a => {
+      a.x = a.bx;
+      a.y = m.kind === 'chain' ? a.by + Math.sin(a.c * 1.3 + a.row) * 7 : a.by;
+    });
+  }
+
   // ---------- Stromkreis-Pfad (Elektronenrichtung: Minuspol -> Pluspol) ----------
   const path = [[490, 70], [120, 70], [120, 270], [880, 270], [880, 70], [510, 70], [490, 70]];
   const segs = []; let PL = 0;
@@ -220,7 +459,6 @@
     const [a, b] = [path[i], path[i + 1]]; const l = Math.hypot(b[0] - a[0], b[1] - a[1]);
     segs.push({ a, b, l, s: PL }); PL += l;
   }
-  const pathLenVisible = PL - 20;
   function at(s) {
     s = ((s % PL) + PL) % PL;
     for (const g of segs) if (s <= g.s + g.l) { const t = (s - g.s) / g.l; return [g.a[0] + (g.b[0] - g.a[0]) * t, g.a[1] + (g.b[1] - g.a[1]) * t]; }
@@ -232,162 +470,455 @@
   function hidden(x, y) {
     if (Math.abs(y - 270) < 2 && x > 402 && x < 598) return true;          // Probe
     if (Math.abs(x - 880) < 2 && y > 136 && y < 204) return true;          // Lämpchen
-    if (Math.abs(y - 70) < 2 && x > 486 && x < 514) return true;           // Batterie
-    if (!closed && Math.abs(y - 70) < 2 && x > 266 && x < 334) return true; // offener Schalter
+    if (Math.abs(y - 70) < 2 && x > 484 && x < 516) return true;           // Batterie
+    if (swT < 0.98 && Math.abs(y - 70) < 2 && x > 264 && x < 336) return true; // offener Schalter
     return false;
   }
 
-  // ---------- Zeichnen ----------
-  function lineSeg(x1, y1, x2, y2, col = C.wire, w = 6) {
-    ctx.strokeStyle = col; ctx.lineWidth = w; ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
-  }
-  function label(t, x, y, o = {}) {
-    ctx.fillStyle = o.col || C.muted; ctx.font = `${o.w || 600} ${o.s || 18}px "Source Sans 3", Calibri, Arial, sans-serif`;
-    ctx.textAlign = o.al || 'center'; ctx.textBaseline = 'middle'; ctx.fillText(t, x, y);
-  }
-
-  function drawCircuit() {
-    const m = MATS[mat];
-    // Leitungen
-    lineSeg(490, 70, 334, 70); lineSeg(266, 70, 120, 70); lineSeg(120, 70, 120, 270);
-    lineSeg(120, 270, 402, 270); lineSeg(598, 270, 880, 270); lineSeg(880, 270, 880, 202);
-    lineSeg(880, 138, 880, 70); lineSeg(880, 70, 510, 70);
-    // Batterie: kurzer Strich links (−), langer Strich rechts (+)
-    lineSeg(490, 56, 490, 84, C.text, 7); lineSeg(510, 40, 510, 100, C.text, 7);
-    label('−', 470, 36, { s: 30, col: C.text, w: 700 }); label('+', 532, 36, { s: 30, col: C.text, w: 700 });
-    label('Batterie', 500, 124, { s: 17 });
-    // Schalter
-    ctx.fillStyle = C.text;
-    ctx.beginPath(); ctx.arc(270, 70, 6, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(330, 70, 6, 0, 7); ctx.fill();
-    if (closed) lineSeg(270, 70, 330, 70, C.text, 6); else lineSeg(270, 70, 324, 34, C.text, 6);
-    label('Schalter', 300, 104, { s: 17 });
-    // Lämpchen
-    if (lampB > 0.02) {
-      const g = ctx.createRadialGradient(880, 170, 10, 880, 170, 130);
-      g.addColorStop(0, `rgba(255,233,168,${0.85 * lampB})`); g.addColorStop(0.5, `rgba(255,193,69,${0.3 * lampB})`); g.addColorStop(1, 'rgba(255,193,69,0)');
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(880, 170, 130, 0, 7); ctx.fill();
-    }
-    ctx.fillStyle = lampB > 0.02 ? `rgba(255,246,214,${0.25 + 0.6 * lampB})` : C.deep;
-    ctx.strokeStyle = C.text; ctx.lineWidth = 4;
-    ctx.beginPath(); ctx.arc(880, 170, 32, 0, 7); ctx.fill(); ctx.stroke();
-    const d = 32 / Math.SQRT2;
-    lineSeg(880 - d, 170 - d, 880 + d, 170 + d, C.text, 4); lineSeg(880 - d, 170 + d, 880 + d, 170 - d, C.text, 4);
-    label('Lämpchen', 834, 170, { s: 17, al: 'right' });
-    // Probe
-    if (m.sample) {
-      ctx.fillStyle = m.sample; ctx.strokeStyle = '#0d1426'; ctx.lineWidth = 2;
-      roundRect(410, 254, 180, 32, 6); ctx.fill(); ctx.stroke();
-      if (m.kind === 'lack' && lacquer) { ctx.fillStyle = 'rgba(224,160,48,.55)'; roundRect(410, 254, 180, 32, 6); ctx.fill(); }
-      if (m.kind === 'lack' && !lacquer) { ctx.fillStyle = '#E0A27A'; ctx.fillRect(410, 254, 22, 32); ctx.fillRect(568, 254, 22, 32); }
-    }
-    clamp(402, 270, 1); clamp(598, 270, -1);
-    label((m.kind === 'air' ? 'Probe: Luftlücke' : 'Probe: ' + m.name), 500, 306, { s: 18, col: C.text, w: 700 });
-  }
-  function clamp(x, y, dir) {
-    ctx.fillStyle = C.brass; ctx.strokeStyle = '#6b5520'; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(x - 16 * dir, y - 9); ctx.lineTo(x + 12 * dir, y - 5); ctx.lineTo(x + 12 * dir, y + 5); ctx.lineTo(x - 16 * dir, y + 9); ctx.closePath(); ctx.fill(); ctx.stroke();
-  }
+  // ---------- Zeichenhilfen ----------
   function roundRect(x, y, w, h, r) {
     ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
     ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
   }
+  function stroke(x1, y1, x2, y2, col, w) {
+    ctx.strokeStyle = col; ctx.lineWidth = w; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  }
+  function label(t, x, y, o = {}) {
+    ctx.fillStyle = o.col || C.muted; ctx.font = `${o.w || 600} ${o.s || 18}px ${FONT}`;
+    ctx.textAlign = o.al || 'center'; ctx.textBaseline = 'middle'; ctx.fillText(t, x, y);
+  }
+  function vgrad(y, h, stops) {
+    const g = ctx.createLinearGradient(0, y, 0, y + h); stops.forEach((c, i) => g.addColorStop(i / (stops.length - 1), c)); return g;
+  }
+
+  const WIRES = [[490, 70, 334, 70], [266, 70, 120, 70], [120, 70, 120, 270], [120, 270, 402, 270], [598, 270, 880, 270], [880, 270, 880, 202], [880, 138, 880, 70], [880, 70, 510, 70]];
+  function drawWires() {
+    if (flow > 0.02) WIRES.forEach(w => stroke(...w, `rgba(127,211,255,${0.06 * flow})`, 16));
+    WIRES.forEach(w => stroke(...w, '#0C1428', 10));
+    WIRES.forEach(w => stroke(...w, '#8E9BB5', 6));
+    WIRES.forEach(w => stroke(...w, 'rgba(255,255,255,.28)', 1.6));
+  }
+
+  function drawBattery() {
+    ctx.fillStyle = 'rgba(12,20,40,.55)'; roundRect(462, 26, 76, 88, 12); ctx.fill();
+    ctx.strokeStyle = 'rgba(185,198,222,.18)'; ctx.lineWidth = 1.5; ctx.stroke();
+    stroke(490, 54, 490, 86, C.text, 9);
+    stroke(510, 38, 510, 102, C.text, 5);
+    label('−', 472, 40, { s: 30, col: C.minus, w: 700 }); label('+', 530, 40, { s: 28, col: C.plus, w: 700 });
+    label('Batterie', 500, 132, { s: 17 });
+  }
+
+  function drawSwitch() {
+    const ang = -(1 - ease(swT)) * 0.64;
+    const ex = 270 + Math.cos(ang) * 62, ey = 70 + Math.sin(ang) * 62;
+    ctx.fillStyle = 'rgba(12,20,40,.45)'; roundRect(246, 22, 108, 70, 12); ctx.fill();
+    if (hover) { ctx.strokeStyle = 'rgba(255,193,69,.6)'; ctx.lineWidth = 2; ctx.stroke(); }
+    stroke(270, 70, ex, ey, '#0C1428', 10);
+    stroke(270, 70, ex, ey, C.text, 6);
+    ctx.fillStyle = C.text;
+    ctx.beginPath(); ctx.arc(270, 70, 7, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(330, 70, 7, 0, 7); ctx.fill();
+    if (swT > 0.98 && flow > 0.05) blit(eSpr, 330, 70, 0.9, 0.2 * flow);
+    label('Schalter', 300, 110, { s: 17 });
+  }
+
+  function drawLamp() {
+    const cx = 880, cy = 170;
+    const fl = lampB * (1 + 0.025 * Math.sin(T * 47) * Math.sin(T * 13));
+    if (fl > 0.02) {
+      ctx.save(); ctx.globalCompositeOperation = 'lighter';
+      blit(lampSpr, cx, cy, 0.45 + 0.15 * fl, 0.8 * fl);
+      ctx.translate(cx, cy); ctx.rotate(T * 0.15);
+      for (let i = 0; i < 8; i++) {
+        ctx.rotate(Math.PI * 2 / 8);
+        const len = 14 + 10 * fl;
+        const g = ctx.createLinearGradient(42, 0, len + 42, 0);
+        g.addColorStop(0, `rgba(255,225,150,${0.35 * fl})`); g.addColorStop(1, 'rgba(255,225,150,0)');
+        ctx.strokeStyle = g; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(42, 0); ctx.lineTo(len + 42, 0); ctx.stroke();
+      }
+      ctx.restore();
+    }
+    const fill = ctx.createRadialGradient(cx - 8, cy - 10, 2, cx, cy, 34);
+    if (fl > 0.02) { fill.addColorStop(0, `rgba(255,255,240,${0.4 + 0.6 * fl})`); fill.addColorStop(1, `rgba(255,200,90,${0.2 + 0.6 * fl})`); }
+    else { fill.addColorStop(0, '#26385E'); fill.addColorStop(1, C.deep); }
+    ctx.fillStyle = fill; ctx.strokeStyle = C.text; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.arc(cx, cy, 32, 0, 7); ctx.fill(); ctx.stroke();
+    const d = 32 / Math.SQRT2;
+    const fc = fl > 0.05 ? `rgb(255,${Math.round(250 - 40 * (1 - fl))},${Math.round(220 - 120 * (1 - fl))})` : C.text;
+    stroke(cx - d, cy - d, cx + d, cy + d, fc, 4); stroke(cx - d, cy + d, cx + d, cy - d, fc, 4);
+    label('Lämpchen', 834, 170, { s: 17, al: 'right', col: fl > 0.3 ? '#FFE3A3' : C.muted });
+  }
+
+  function drawSample() {
+    const m = MATS[mat], x = 410, y = 254, w = 180, h = 32;
+    // Lupen-Kegel zum Materialfenster
+    const cone = ctx.createLinearGradient(0, 290, 0, 362);
+    cone.addColorStop(0, 'rgba(127,211,255,.16)'); cone.addColorStop(1, 'rgba(127,211,255,.03)');
+    ctx.fillStyle = cone;
+    ctx.beginPath(); ctx.moveTo(410, 292); ctx.lineTo(590, 292); ctx.lineTo(P.x1 + 20, 360); ctx.lineTo(P.x0 - 20, 360); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(127,211,255,.28)'; ctx.lineWidth = 1.2; ctx.setLineDash([5, 6]); ctx.lineDashOffset = -T * 12;
+    ctx.beginPath(); ctx.moveTo(410, 292); ctx.lineTo(P.x0 - 20, 360); ctx.moveTo(590, 292); ctx.lineTo(P.x1 + 20, 360); ctx.stroke(); ctx.setLineDash([]);
+
+    const liquid = m.kind === 'water' || m.kind === 'salt';
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 12; ctx.shadowOffsetY = 5;
+    if (liquid) { ctx.fillStyle = 'rgba(200,230,255,.10)'; roundRect(x, y - 14, w, h + 22, 7); ctx.fill(); }
+    if (m.sample && !liquid) {
+      let fillStyle;
+      if (mat === 'kupfer') fillStyle = vgrad(y, h, ['#F6C29C', '#D8895A', '#B86A3C', '#7A3E1E']);
+      else if (mat === 'alu') fillStyle = vgrad(y, h, ['#FFFFFF', '#D5DAE1', '#AEB5C0', '#7D8591']);
+      else if (mat === 'graphit') fillStyle = vgrad(y, h, ['#7E858F', '#4E535B', '#3A3E45', '#22252A']);
+      else if (mat === 'lack') fillStyle = vgrad(y, h, ['#E98A5E', '#B5562E', '#8A3416', '#55200C']);
+      else if (mat === 'kunststoff') fillStyle = vgrad(y, h, ['#FFFFFF', '#EEF2F8', '#D2DAE6', '#A9B4C4']);
+      else if (mat === 'holz') fillStyle = vgrad(y, h, ['#C99560', '#A9773F', '#8C5E2E', '#6A4420']);
+      else if (mat === 'glas') fillStyle = vgrad(y, h, ['rgba(220,245,255,.55)', 'rgba(156,201,211,.32)', 'rgba(120,180,195,.30)', 'rgba(80,140,160,.45)']);
+      ctx.fillStyle = fillStyle; roundRect(x, y, w, h, 7); ctx.fill();
+    }
+    ctx.restore();
+    if (liquid) {
+      const top = y - 6;
+      ctx.save(); roundRect(x, y - 14, w, h + 22, 7); ctx.clip();
+      ctx.fillStyle = vgrad(top, h + 14, m.kind === 'salt' ? ['rgba(170,215,245,.55)', 'rgba(110,170,225,.6)', 'rgba(70,125,190,.75)'] : ['rgba(140,195,240,.5)', 'rgba(90,150,215,.6)', 'rgba(55,110,180,.75)']);
+      ctx.beginPath(); ctx.moveTo(x, top);
+      for (let k = 0; k <= w; k += 6) ctx.lineTo(x + k, top + Math.sin(k * 0.07 + T * 2) * 1.5);
+      ctx.lineTo(x + w, y + h + 8); ctx.lineTo(x, y + h + 8); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = 'rgba(230,245,255,.75)'; ctx.lineWidth = 1.5; ctx.beginPath();
+      for (let k = 0; k <= w; k += 6) { const yy = top + Math.sin(k * 0.07 + T * 2) * 1.5; k ? ctx.lineTo(x + k, yy) : ctx.moveTo(x, yy); }
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,.55)';
+      for (let i = 0; i < 6; i++) { const py = y + h + 4 - ((T * 9 + i * 13) % (h + 6)), px = x + 30 + i * 24 + Math.sin(T * 2 + i) * 2; ctx.beginPath(); ctx.arc(px, py, 1.6, 0, 7); ctx.fill(); }
+      ctx.restore();
+      ctx.strokeStyle = 'rgba(220,245,255,.7)'; ctx.lineWidth = 1.5; roundRect(x, y - 14, w, h + 22, 7); ctx.stroke();
+      [x + 6, x + w - 14].forEach(ex => {
+        const g = ctx.createLinearGradient(ex, 0, ex + 8, 0); g.addColorStop(0, '#E6EAF0'); g.addColorStop(1, '#8C939E');
+        ctx.fillStyle = g; ctx.fillRect(ex, y - 20, 8, h + 22); ctx.strokeStyle = 'rgba(5,10,22,.6)'; ctx.lineWidth = 1; ctx.strokeRect(ex, y - 20, 8, h + 22);
+      });
+    }
+    if (m.sample && !liquid) {
+      ctx.save(); roundRect(x, y, w, h, 7); ctx.clip();
+      if (mat === 'holz') {
+        ctx.strokeStyle = 'rgba(70,40,15,.45)'; ctx.lineWidth = 1.3;
+        for (let i = 0; i < 6; i++) { ctx.beginPath(); for (let k = 0; k <= 180; k += 6) { const yy = y + 4 + i * 5 + Math.sin(k * 0.05 + i * 1.7) * 2.2 + (k > 80 && k < 120 && i === 3 ? Math.sin((k - 80) / 40 * Math.PI) * 4 : 0); k ? ctx.lineTo(x + k, yy) : ctx.moveTo(x, yy); } ctx.stroke(); }
+      }
+      if (mat === 'lack' && !lacquer) {
+        ctx.fillStyle = vgrad(y, h, ['#FFD3B0', '#E8A47A', '#C07444', '#7A3E1E']);
+        ctx.fillRect(x, y, 24, h); ctx.fillRect(x + w - 24, y, 24, h);
+      }
+      // Glanzlicht
+      ctx.fillStyle = mat === 'graphit' ? 'rgba(255,255,255,.12)' : 'rgba(255,255,255,.34)';
+      roundRect(x + 8, y + 4, w - 16, 4, 2); ctx.fill();
+      if (mat === 'glas') {
+        ctx.fillStyle = 'rgba(255,255,255,.35)';
+        ctx.beginPath(); ctx.moveTo(x + 40, y); ctx.lineTo(x + 56, y); ctx.lineTo(x + 36, y + h); ctx.lineTo(x + 20, y + h); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(x + 64, y); ctx.lineTo(x + 70, y); ctx.lineTo(x + 50, y + h); ctx.lineTo(x + 44, y + h); ctx.closePath(); ctx.fill();
+      }
+      ctx.restore();
+      ctx.strokeStyle = mat === 'glas' ? 'rgba(220,245,255,.7)' : 'rgba(5,10,22,.7)'; ctx.lineWidth = 1.5; roundRect(x, y, w, h, 7); ctx.stroke();
+    } else if (!liquid) {
+      ctx.strokeStyle = 'rgba(185,198,222,.28)'; ctx.lineWidth = 1.2; ctx.setLineDash([4, 5]); roundRect(x + 4, y, w - 8, h, 7); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(185,198,222,.35)';
+      for (let i = 0; i < 9; i++) { const px = x + 16 + ((i * 47 + T * 14 * (i % 3 + 1)) % (w - 32)), py = y + 8 + ((i * 13) % 16) + Math.sin(T * 2 + i) * 3; ctx.beginPath(); ctx.arc(px, py, 1.6, 0, 7); ctx.fill(); }
+    }
+    clip(402, 270, 1); clip(598, 270, -1);
+    // Fokus-Ecken
+    const a = 0.55 + 0.3 * Math.sin(T * 2.4);
+    ctx.strokeStyle = rgba('#7FD3FF', a); ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+    const bx0 = 396, by0 = liquid ? 228 : 242, bx1 = 604, by1 = liquid ? 302 : 298, L = 13;
+    ctx.beginPath();
+    ctx.moveTo(bx0, by0 + L); ctx.lineTo(bx0, by0); ctx.lineTo(bx0 + L, by0);
+    ctx.moveTo(bx1 - L, by0); ctx.lineTo(bx1, by0); ctx.lineTo(bx1, by0 + L);
+    ctx.moveTo(bx0, by1 - L); ctx.lineTo(bx0, by1); ctx.lineTo(bx0 + L, by1);
+    ctx.moveTo(bx1 - L, by1); ctx.lineTo(bx1, by1); ctx.lineTo(bx1, by1 - L);
+    ctx.stroke();
+    label(m.kind === 'air' ? 'Probe: Luftlücke' : 'Probe: ' + m.name, 500, liquid ? 214 : 226, { s: 18, col: C.text, w: 700 });
+  }
+  function clip(x, y, dir) {
+    const g = ctx.createLinearGradient(0, y - 10, 0, y + 10);
+    g.addColorStop(0, '#F2D58A'); g.addColorStop(0.45, '#C9A34A'); g.addColorStop(1, '#7A5E1E');
+    ctx.fillStyle = g; ctx.strokeStyle = '#5A4515'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(x - 18 * dir, y - 10); ctx.lineTo(x + 14 * dir, y - 6); ctx.lineTo(x + 14 * dir, y + 6); ctx.lineTo(x - 18 * dir, y + 10); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = 'rgba(90,69,21,.8)'; ctx.lineWidth = 1;
+    ctx.beginPath(); for (let i = 0; i < 4; i++) { const xx = x + (2 + i * 3) * dir; ctx.moveTo(xx, y - 5); ctx.lineTo(xx, y + 5); } ctx.stroke();
+  }
 
   function drawCircuitElectrons() {
-    ctx.fillStyle = C.e;
     for (let i = 0; i < NC; i++) {
       const [x, y] = at(i * SP + phase);
       if (hidden(x, y)) continue;
-      ctx.beginPath(); ctx.arc(x, y, 4.2, 0, 7); ctx.fill();
+      blit(eSpr, x, y, 0.62);
     }
   }
 
   function drawPanel() {
-    ctx.fillStyle = 'rgba(127,211,255,0.05)';
-    ctx.beginPath(); ctx.moveTo(410, 288); ctx.lineTo(590, 288); ctx.lineTo(P.x1 + 20, 360); ctx.lineTo(P.x0 - 20, 360); ctx.closePath(); ctx.fill();
-    ctx.setLineDash([6, 6]); ctx.strokeStyle = 'rgba(185,198,222,.45)'; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(410, 288); ctx.lineTo(P.x0 - 20, 360); ctx.moveTo(590, 288); ctx.lineTo(P.x1 + 20, 360); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = C.deep; ctx.strokeStyle = 'rgba(185,198,222,.6)'; ctx.lineWidth = 2;
-    roundRect(P.x0 - 20, 360, P.x1 - P.x0 + 40, P.y1 - 360 + 16, 14); ctx.fill(); ctx.stroke();
-    label('Blick ins Material (stark vergrößert)', P.x0, 377, { s: 16, al: 'left', w: 700 });
-    label('vom Minuspol', P.x0, P.y1 + 8, { s: 14, al: 'left' });
-    label('zum Pluspol', P.x1, P.y1 + 8, { s: 14, al: 'right' });
-    if (closed) {
-      if (currentI() > 0) {
-        ctx.strokeStyle = C.accent; ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.moveTo(P.x1 - 300, 377); ctx.lineTo(P.x1 - 40, 377); ctx.stroke();
-        ctx.fillStyle = C.accent; ctx.beginPath(); ctx.moveTo(P.x1 - 26, 377); ctx.lineTo(P.x1 - 42, 369); ctx.lineTo(P.x1 - 42, 385); ctx.closePath(); ctx.fill();
-        label('Elektronen wandern', P.x1 - 310, 377, { s: 15, al: 'right', col: C.accent, w: 700 });
+    const m = MATS[mat];
+    const bx = P.x0 - 20, by = 360, bw = SPAN + 40, bh = P.y1 - 360 + 16;
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,.5)'; ctx.shadowBlur = 24; ctx.shadowOffsetY = 8;
+    const pg = ctx.createLinearGradient(0, by, 0, by + bh); pg.addColorStop(0, '#0F192F'); pg.addColorStop(1, '#14223D');
+    ctx.fillStyle = pg; roundRect(bx, by, bw, bh, 16); ctx.fill();
+    ctx.restore();
+    ctx.strokeStyle = 'rgba(127,211,255,.35)'; ctx.lineWidth = 1.5; roundRect(bx, by, bw, bh, 16); ctx.stroke();
+
+    // Kopfzeile
+    ctx.strokeStyle = C.e; ctx.lineWidth = 2.2;
+    ctx.beginPath(); ctx.arc(P.x0 + 4, 375, 6, 0, 7); ctx.moveTo(P.x0 + 8.5, 379.5); ctx.lineTo(P.x0 + 13, 384); ctx.stroke();
+    label('Blick ins Material', P.x0 + 22, 377, { s: 16, al: 'left', w: 700, col: C.text });
+    ctx.font = `700 16px ${FONT}`; const tw = ctx.measureText('Blick ins Material').width;
+    label('(stark vergrößert)', P.x0 + 30 + tw, 377, { s: 15, al: 'left', w: 400 });
+    label('− vom Minuspol', P.x0, P.y1 + 8, { s: 14, al: 'left', col: C.minus, w: 700 });
+    label('zum Pluspol +', P.x1, P.y1 + 8, { s: 14, al: 'right', col: C.plus, w: 700 });
+    if (swT > 0.98 && closed) {
+      if (currentI() > 0 && m.kind === 'salt') {
+        label('Na⁺ wandern zum Minuspol, Cl⁻ zum Pluspol', P.x1 - 26, 377, { s: 15, al: 'right', col: C.accent, w: 700 });
+      } else if (currentI() > 0) {
+        const x0 = P.x1 - 300, x1 = P.x1 - 30;
+        const g = ctx.createLinearGradient(x0, 0, x1, 0); g.addColorStop(0, 'rgba(255,193,69,0)'); g.addColorStop(1, C.accent);
+        ctx.strokeStyle = g; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x0, 377); ctx.lineTo(x1 - 10, 377); ctx.stroke();
+        ctx.strokeStyle = C.accent; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
+        for (let k = 0; k < 4; k++) {
+          const cx = x0 + 30 + ((T * 70 + k * 62) % 240), a = clamp01((cx - x0) / 80);
+          ctx.globalAlpha = a; ctx.beginPath(); ctx.moveTo(cx - 5, 371); ctx.lineTo(cx + 2, 377); ctx.lineTo(cx - 5, 383); ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = C.accent; ctx.beginPath(); ctx.moveTo(x1 + 4, 377); ctx.lineTo(x1 - 12, 369); ctx.lineTo(x1 - 12, 385); ctx.closePath(); ctx.fill();
+        label('Elektronen wandern', x0 - 10, 377, { s: 15, al: 'right', col: C.accent, w: 700 });
       } else {
-        label('Kein Elektron kommt durch', P.x1 - 26, 377, { s: 15, al: 'right', col: C.muted, w: 700 });
+        const x = P.x1 - 26;
+        label('Kein Elektron kommt durch', x - 22, 377, { s: 15, al: 'right', col: '#FF9A9A', w: 700 });
+        ctx.strokeStyle = '#FF9A9A'; ctx.lineWidth = 2.6;
+        ctx.beginPath(); ctx.moveTo(x - 12, 371); ctx.lineTo(x, 383); ctx.moveTo(x, 371); ctx.lineTo(x - 12, 383); ctx.stroke();
       }
     }
+
     ctx.save();
-    ctx.beginPath(); ctx.rect(P.x0 - 18, 388, P.x1 - P.x0 + 36, P.y1 - 388 + 4); ctx.clip();
-    const m = MATS[mat];
+    ctx.beginPath(); ctx.rect(P.x0 - 18, 388, SPAN + 36, P.y1 - 388 + 4); ctx.clip();
+    ctx.globalAlpha = 1;
+    const fa = ease(matFade);
+    ctx.translate(0, (1 - fa) * 14);
+
     if (m.kind === 'lack' && lacquer) {
-      ctx.fillStyle = 'rgba(224,160,48,.12)';
+      ctx.globalAlpha = fa;
+      ctx.fillStyle = 'rgba(224,160,48,.1)';
       ctx.fillRect(P.x0 - 18, 388, LB - P.x0 + 18, P.y1 - 388 + 4); ctx.fillRect(RB, 388, P.x1 - RB + 18, P.y1 - 388 + 4);
-      label('Lack', (P.x0 + LB) / 2 - 8, 400, { s: 14, col: '#E0A030', w: 700 }); label('Lack', (RB + P.x1) / 2 + 8, 400, { s: 14, col: '#E0A030', w: 700 });
+      ctx.fillStyle = hatch;
+      ctx.fillRect(P.x0 - 18, 388, LB - P.x0 + 18, P.y1 - 388 + 4); ctx.fillRect(RB, 388, P.x1 - RB + 18, P.y1 - 388 + 4);
+      ctx.strokeStyle = 'rgba(224,160,48,.55)'; ctx.lineWidth = 2; ctx.setLineDash([6, 5]);
+      ctx.beginPath(); ctx.moveTo(LB, 388); ctx.lineTo(LB, P.y1 + 4); ctx.moveTo(RB, 388); ctx.lineTo(RB, P.y1 + 4); ctx.stroke(); ctx.setLineDash([]);
+      label('Lack', (P.x0 + LB) / 2 - 8, 402, { s: 14, col: '#E0A030', w: 700 }); label('Lack', (RB + P.x1) / 2 + 8, 402, { s: 14, col: '#E0A030', w: 700 });
+      ctx.globalAlpha = 1;
     }
-    ctx.strokeStyle = 'rgba(185,198,222,.35)'; ctx.lineWidth = 4;
-    bonds.forEach(([a, b]) => { ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); });
-    atoms.forEach(a => {
-      ctx.fillStyle = a.col; ctx.globalAlpha = 0.28; ctx.beginPath(); ctx.arc(a.x, a.y, a.r, 0, 7); ctx.fill();
-      ctx.globalAlpha = 1; ctx.strokeStyle = a.col; ctx.lineWidth = 2.5; ctx.stroke();
-    });
-    ctx.fillStyle = C.e;
-    bound.forEach(b => { ctx.beginPath(); ctx.arc(b.a.x + b.shift, b.a.y, 6, 0, 7); ctx.fill(); });
-    free.forEach(e => { ctx.beginPath(); ctx.arc(e.x, e.y, 6.5, 0, 7); ctx.fill(); });
+
+    if (m.kind === 'water' || m.kind === 'salt') {
+      ctx.globalAlpha = fa; ctx.fillStyle = 'rgba(90,150,215,.08)'; ctx.fillRect(P.x0 - 18, 388, SPAN + 36, P.y1 - 388 + 4);
+    }
+    ctx.globalAlpha = fa;
+    ctx.strokeStyle = m.kind === 'graphit' ? 'rgba(154,161,172,.28)' : 'rgba(185,198,222,.32)'; ctx.lineWidth = 4; ctx.lineCap = 'round';
+    ctx.beginPath(); bonds.forEach(([a, b]) => { ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); }); ctx.stroke();
+    // Schweif hinter wandernden Ionen macht den Ionenfluss sichtbar
+    if (m.kind === 'salt' && flow > 0.05) {
+      ctx.lineCap = 'round';
+      mols.forEach(mo => {
+        if (mo.type === 'w') return;
+        const dir = mo.type === 'na' ? -1 : 1, len = 70 * flow, x0 = mo.x - dir * len;
+        const g = ctx.createLinearGradient(x0, 0, mo.x, 0);
+        g.addColorStop(0, rgba(mo.o.col, 0)); g.addColorStop(1, rgba(mo.o.col, 0.55));
+        ctx.globalAlpha = fa * ionFade(mo.o); ctx.strokeStyle = g; ctx.lineWidth = mo.type === 'na' ? 14 : 20;
+        ctx.beginPath(); ctx.moveTo(x0, mo.y); ctx.lineTo(mo.x, mo.y); ctx.stroke();
+      });
+      ctx.globalAlpha = fa;
+    }
+    atoms.forEach(a => blit(atomSpr(a.col, a.r || AR), a.x, a.y, 1, fa * (a.ion ? ionFade(a) : 1)));
+    atoms.forEach(a => { if (a.ion) { ctx.globalAlpha = fa * ionFade(a); label(a.ion === 'na' ? '+' : '−', a.x, a.y - 1, { s: a.ion === 'na' ? 18 : 22, col: '#FFFFFF', w: 700 }); } });
+    ctx.globalAlpha = fa;
+
+    // gebundene Elektronen: kreisen im Atom, werden bei geschlossenem Schalter zum Pluspol gezogen
+    ctx.strokeStyle = 'rgba(127,211,255,.14)'; ctx.lineWidth = 1;
+    bound.forEach(b => { ctx.beginPath(); ctx.arc(b.a.x + b.shift, b.a.y, 8, 0, 7); ctx.stroke(); });
+    bound.forEach(b => { const p = boundPos(b); blit(eSpr, p[0], p[1], 0.7, fa); });
+    // freie Elektronen
+    free.forEach(e => { const p = freePos(e); blit(eSpr, p[0], p[1], 1, fa * p[2]); });
+    ctx.globalAlpha = 1;
+
     if (tracking) {
       const tgt = trackedPos();
       if (tgt) {
-        if (trail.length > 1) {
-          ctx.strokeStyle = 'rgba(255,193,69,.75)'; ctx.lineWidth = 2.5; ctx.beginPath();
-          trail.forEach((p, i) => { if (i === 0 || p.jump) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); }); ctx.stroke();
+        ctx.lineWidth = 3; ctx.lineCap = 'round';
+        for (let i = 1; i < trail.length; i++) {
+          if (trail[i].jump) continue;
+          ctx.strokeStyle = `rgba(255,193,69,${(i / trail.length) * 0.85})`;
+          ctx.beginPath(); ctx.moveTo(trail[i - 1].x, trail[i - 1].y); ctx.lineTo(trail[i].x, trail[i].y); ctx.stroke();
         }
-        ctx.strokeStyle = C.accent; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(tgt[0], tgt[1], 13, 0, 7); ctx.stroke();
+        const pr = 14 + Math.sin(T * 5) * 2;
+        ctx.strokeStyle = C.accent; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(tgt[0], tgt[1], pr, 0, 7); ctx.stroke();
+        ctx.strokeStyle = 'rgba(255,193,69,.35)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(tgt[0], tgt[1], pr + 7, 0, 7); ctx.stroke();
       }
     }
     ctx.restore();
+    // Vignette
+    const vg = ctx.createRadialGradient(500, 530, 200, 500, 530, 560);
+    vg.addColorStop(0, 'rgba(10,16,32,0)'); vg.addColorStop(1, 'rgba(10,16,32,.45)');
+    ctx.save(); roundRect(bx, by, bw, bh, 16); ctx.clip(); ctx.fillStyle = vg; ctx.fillRect(bx, by, bw, bh); ctx.restore();
   }
+
+  function boundPos(b) {
+    const ang = T * b.w + b.ph, tug = closed && swT > 0.98 ? Math.sin(T * 11 + b.ph) * 0.8 : 0;
+    return [b.a.x + b.shift + tug + Math.cos(ang) * 8, b.a.y + Math.sin(ang) * 8];
+  }
+  function freePos(e) {
+    const x = e.x + Math.sin(T * 2.1 + e.ph) * 3.5, y = e.y + Math.cos(T * 2.7 + e.ph * 1.3) * 3.5;
+    const a = clamp01((e.x - FL) / 30) * clamp01((FU - e.x) / 30);
+    return [x, y, a];
+  }
+  function ionFade(a) { return clamp01((a.x - P.x0 + 10) / 25) * clamp01((P.x1 + 10 - a.x) / 25); }
+  function trackedIdx() { return free.length ? Math.floor(free.length / 2) : -1; }
   function trackedPos() {
-    if (free.length) { const e = free[Math.floor(free.length / 2)]; return [e.x, e.y]; }
-    if (bound.length) { const b = bound[Math.floor(bound.length / 2)]; return [b.a.x + b.shift, b.a.y]; }
+    if (free.length) return freePos(free[trackedIdx()]);
+    const ion = mols.find(mo => mo.type === 'cl');
+    if (ion) return [ion.x, ion.y];
+    if (bound.length) return boundPos(bound[Math.floor(bound.length / 2)]);
     return null;
   }
 
-  // ---------- Bewegung: alle freien Elektronen wandern gemeinsam ----------
+  // ---------- Funken / Schmirgelstaub ----------
+  function burst(x, y, n, cols, sp = 160) {
+    for (let i = 0; i < n; i++) {
+      const a = rnd(0, Math.PI * 2), v = rnd(sp * 0.3, sp);
+      parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 40, life: rnd(0.4, 0.9), max: 0.9, col: cols[i % cols.length], r: rnd(1.2, 2.8) });
+    }
+  }
+  function drawParts(dt) {
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    parts = parts.filter(p => (p.life -= dt) > 0);
+    parts.forEach(p => {
+      p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 260 * dt; p.vx *= 0.98;
+      ctx.globalAlpha = clamp01(p.life / 0.5); ctx.fillStyle = p.col;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill();
+    });
+    ctx.restore();
+  }
+
+  // ---------- Bewegung ----------
   function step(dt) {
+    T += dt;
+    const prevSw = swT;
+    swT = clamp01(swT + (closed ? 1 : -1) * dt * 4.5);
+    if (closed && prevSw < 1 && swT >= 1 && physI() > 0) burst(330, 70, 18, ['#FFF3C4', '#FFC145', '#7FD3FF'], 180);
     const I = currentI();
-    lampB += (I - lampB) * Math.min(1, dt * 6);
-    phase += 46 * I * dt;
-    const v = I > 0 ? 46 : 0;
-    const span = P.x1 - P.x0;
+    lampB += (I - lampB) * Math.min(1, dt * 5);
+    flow += ((I > 0 ? 1 : 0) - flow) * Math.min(1, dt * 4);
+    matFade = Math.min(1, matFade + dt * 2.8);
+    phase += 46 * I * dt * (flow);
+    const v = 46 * flow;
     free.forEach((e, i) => {
       e.x += v * dt;
       let jump = false;
-      if (e.x > P.x1 + 10) { e.x -= span; jump = true; }
-      if (tracking && i === Math.floor(free.length / 2)) { trail.push({ x: e.x, y: e.y, jump }); if (trail.length > 200) trail.shift(); }
+      if (e.x >= FU) { e.x -= SPAN; jump = true; }
+      if (tracking && i === trackedIdx()) { const p = freePos(e); trail.push({ x: p[0], y: p[1], jump }); }
     });
-    const pull = closed ? 7 : 0;
+    const pull = closed && swT > 0.98 ? 6 : 0;
     bound.forEach(b => { b.shift += (pull - b.shift) * Math.min(1, dt * 4); });
+    if (tracking && !free.length) { const p = trackedPos(), lp = trail[trail.length - 1]; if (p) trail.push({ x: p[0], y: p[1], jump: !!lp && Math.abs(lp.x - p[0]) > 50 }); }
+    if (trail.length > 240) trail.splice(0, trail.length - 240);
+    layout(dt);
+
+    // Versuchsprotokoll
+    if (closed && swT > 0.98) {
+      testTime += dt;
+      if (testTime > 0.9 && !wasContact) { wasContact = true; record(); }
+    } else { testTime = 0; wasContact = false; }
   }
+
   // ---------- UI ----------
-  const matsEl = document.getElementById('mats');
-  Object.entries(MATS).forEach(([k, m]) => {
+  const $ = id => document.getElementById(id);
+  const matsEl = $('mats');
+  const keys = Object.keys(MATS);
+  function swatch(k) {
+    const i = document.createElement('i'); const m = MATS[k];
+    if (m.sample) i.style.setProperty('--c', k === 'lack' ? '#B5562E' : m.sample); else i.className = 'air';
+    return i;
+  }
+  keys.forEach((k, idx) => {
+    const m = MATS[k];
     const b = document.createElement('button');
-    b.textContent = m.name; b.id = 'mat-' + k; b.setAttribute('aria-pressed', k === mat ? 'true' : 'false');
-    b.addEventListener('click', () => { mat = k; lacquer = true; build(); syncUI(); });
+    b.className = 'chip'; b.id = 'mat-' + k; b.title = `${m.name} (${idx + 1})`;
+    b.append(swatch(k), document.createTextNode(m.name));
+    b.setAttribute('aria-pressed', k === mat ? 'true' : 'false');
+    b.addEventListener('click', () => setMat(k));
     matsEl.appendChild(b);
   });
-  const swBtn = document.getElementById('switch'), sand = document.getElementById('sand');
-  swBtn.addEventListener('click', () => { closed = !closed; syncUI(); });
-  sand.addEventListener('click', () => { lacquer = !lacquer; build(); syncUI(); });
-  const tog = (id, fn) => document.getElementById(id).addEventListener('click', e => { fn(); e.currentTarget.setAttribute('aria-pressed', String(fn.state())); syncUI(); });
-  const trackFn = () => { tracking = !tracking; trail = []; }; trackFn.state = () => tracking; tog('track', trackFn);
-  const explFn = () => { explain = !explain; }; explFn.state = () => explain; tog('explain', explFn);
-  const pauseFn = () => { paused = !paused; }; pauseFn.state = () => paused; tog('pause', pauseFn);
+  function setMat(k) {
+    if (k === mat) return;
+    mat = k; lacquer = true; matFade = 0; testTime = 0; wasContact = false; build(); syncUI();
+  }
+  const swBtn = $('switch'), sand = $('sand');
+  function toggleSwitch() { closed = !closed; syncUI(); }
+  swBtn.addEventListener('click', toggleSwitch);
+  sand.addEventListener('click', () => {
+    lacquer = !lacquer;
+    const cols = lacquer ? ['#E0A030', '#FFC145', '#B5562E'] : ['#FFD3B0', '#E8A47A', '#E0A030', '#FFF3C4'];
+    burst(422, 262, 26, cols, 120); burst(578, 262, 26, cols, 120);
+    testTime = 0; wasContact = false; build(); syncUI();
+  });
+  const toggles = {
+    track: () => { tracking = !tracking; trail = []; return tracking; },
+    explain: () => (explain = !explain),
+    pause: () => (paused = !paused),
+  };
+  function flip(id) { $(id).setAttribute('aria-pressed', String(toggles[id]())); syncUI(); }
+  Object.keys(toggles).forEach(id => $(id).addEventListener('click', () => flip(id)));
+
+  const stage = $('stage');
+  function fullscreen() {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (stage.requestFullscreen) stage.requestFullscreen();
+  }
+  $('fs').addEventListener('click', fullscreen);
+
+  document.addEventListener('keydown', e => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const k = e.key.toLowerCase();
+    if (k === ' ' && document.activeElement && document.activeElement.tagName === 'BUTTON') return;
+    if (k === ' ' || k === 's') { e.preventDefault(); toggleSwitch(); }
+    else if (/^[0-9]$/.test(k)) setMat(keys[(+k + 9) % 10]);
+    else if (k === 't') flip('track');
+    else if (k === 'p') flip('pause');
+    else if (k === 'e') flip('explain');
+    else if (k === 'f') fullscreen();
+  });
+
+  // Klick auf den Schalter in der Zeichnung
+  let hover = false;
+  const toLogical = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * W, (e.clientY - r.top) / r.height * H]; };
+  const onSwitch = ([x, y]) => x > 240 && x < 360 && y > 18 && y < 120;
+  cv.addEventListener('pointermove', e => { hover = onSwitch(toLogical(e)); cv.style.cursor = hover ? 'pointer' : 'default'; });
+  cv.addEventListener('pointerleave', () => { hover = false; });
+  cv.addEventListener('click', e => { if (onSwitch(toLogical(e))) toggleSwitch(); });
+
+  // Versuchsprotokoll
+  const results = new Map();
+  function record() {
+    const m = MATS[mat];
+    const key = mat === 'lack' ? (lacquer ? 'lack' : 'lack-blank') : mat;
+    const name = mat === 'lack' ? (lacquer ? 'Kupferlackdraht (lackiert)' : 'Kupferlackdraht (abgeschmirgelt)') : m.name;
+    const I = physI();
+    let res, cls;
+    if (I >= 0.9) { res = 'Leiter'; cls = 'yes'; }
+    else if (I > 0) { res = 'Leiter (schwach)'; cls = 'weak'; }
+    else if (mat === 'wasser') { res = 'Nichtleiter (praktisch)'; cls = 'no'; }
+    else if (mat === 'lack') { res = 'kein Strom'; cls = 'no'; }
+    else { res = 'Nichtleiter'; cls = 'no'; }
+    if (results.has(key)) return;
+    results.set(key, true);
+    const li = document.createElement('li');
+    const sw = swatch(mat); if (mat === 'lack' && !lacquer) sw.style.setProperty('--c', '#E8A47A');
+    const span = document.createElement('span'); span.textContent = name;
+    const b = document.createElement('b'); b.className = cls; b.textContent = res;
+    li.append(sw, span, b); $('log').appendChild(li);
+    $('logEmpty').hidden = true;
+  }
+  $('resetLog').addEventListener('click', () => { results.clear(); $('log').innerHTML = ''; $('logEmpty').hidden = false; wasContact = closed; });
 
   function syncUI() {
     const m = MATS[mat];
@@ -401,37 +932,54 @@
     else if (m.kind === 'graphit') t = TXT.graphit;
     else if (m.kind === 'lack') t = lacquer ? TXT.lackOn : TXT.lackOff;
     else if (m.kind === 'air') t = TXT.air;
+    else if (m.kind === 'water') t = TXT.water;
+    else if (m.kind === 'salt') t = TXT.salt;
     else t = TXT.insul;
     const fill = s => s.replaceAll('{n}', m.name.replace(' (trocken)', ''));
-    const I = currentI();
-    const st = document.getElementById('status');
+    const I = closed ? physI() : 0;
+    const st = $('status');
     st.className = 'status ' + (I >= 0.9 ? '' : I > 0 ? 'weak' : 'off');
-    document.getElementById('statusText').textContent = closed ? fill(t.on[0]) : 'Schalter offen: Das Lämpchen leuchtet nicht.';
-    document.getElementById('factH').textContent = m.kind === 'air' ? 'Luft' : m.name;
-    document.getElementById('factP').textContent = closed ? fill(t.on[1]) : fill(t.off);
-    document.getElementById('fact').hidden = !explain;
+    $('statusText').textContent = closed ? fill(t.on[0]) : 'Schalter offen: Das Lämpchen leuchtet nicht.';
+    $('meterFill').style.width = (I * 100) + '%';
+    $('factH').textContent = m.kind === 'air' ? 'Luft' : m.name;
+    $('factP').textContent = closed ? fill(t.on[1]) : fill(t.off);
+    $('fact').hidden = !explain;
+    $('legIon').hidden = $('legIon2').hidden = m.kind !== 'salt';
     st.hidden = !explain;
   }
 
   // ---------- Schleife ----------
   function resize() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const w = cv.clientWidth; cv.width = Math.round(w * dpr); cv.height = Math.round(w * 0.7 * dpr);
+    const w = cv.clientWidth; if (!w) return;
+    cv.width = Math.round(w * dpr); cv.height = Math.round(w * 0.7 * dpr);
     ctx.setTransform(cv.width / W, 0, 0, cv.height / H, 0, 0);
   }
-  window.addEventListener('resize', resize);
+  if ('ResizeObserver' in window) new ResizeObserver(resize).observe(cv); else window.addEventListener('resize', resize);
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let last = performance.now();
   function frame(now) {
-    const dt = Math.min(0.05, (now - last) / 1000) * (reduce ? 0.5 : 1); last = now;
+    const rdt = Math.min(0.05, (now - last) / 1000); last = now;
+    const dt = rdt * (reduce ? 0.5 : 1);
     if (!paused) step(dt);
-    ctx.fillStyle = C.panel; ctx.fillRect(0, 0, W, H);
-    drawCircuit(); drawCircuitElectrons(); drawPanel();
+    ctx.drawImage(bg, 0, 0, W, H);
+    drawWires(); drawCircuitElectrons();
+    drawBattery(); drawSwitch(); drawLamp(); drawSample();
+    drawPanel();
+    drawParts(paused ? 0 : dt);
+    if (paused) {
+      ctx.fillStyle = 'rgba(17,26,49,.75)'; roundRect(W / 2 - 70, 312, 140, 32, 16); ctx.fill();
+      label('❚❚  Angehalten', W / 2, 328, { s: 15, col: C.text, w: 700 });
+    }
     requestAnimationFrame(frame);
   }
+  // Direktlinks, z. B. ?material=glas&schalter=zu
+  const q = new URLSearchParams(location.search);
+  if (MATS[q.get('material')]) mat = q.get('material');
+  if (q.get('schalter') === 'zu') closed = true;
+  if (q.has('verfolgen')) { tracking = true; $('track').setAttribute('aria-pressed', 'true'); }
   build(); resize(); syncUI(); requestAnimationFrame(frame);
 })();
 </script>
-
-<a href="../../../../index.html#klasse-9" style="position:fixed;left:10px;bottom:10px;z-index:50;font:600 14px/1 Arial,Helvetica,sans-serif;color:#fff;background:rgba(27,42,74,.88);text-decoration:none;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.35)">&larr; Übersicht</a>
-</body></html>
+</body>
+</html>

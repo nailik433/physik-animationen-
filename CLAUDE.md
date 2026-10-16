@@ -22,6 +22,10 @@ Alle Animationen werden **für die Nutzung am iPad optimiert** (Safari, quer und
 
 **Test:** zusätzlich zum Desktop mit Playwright-Geräteprofil `iPad (gen 7)` und `iPad Pro 11` testen, jeweils quer und hochkant (`isMobile`, `hasTouch`), per Touch bedienen (`tap`), Screenshots ansehen und auf Überlappung/Abschneiden prüfen.
 
+## Übernommene Animationen bleiben unverändert
+
+Animationen, die der Nutzer aus eigenen Repositories (`nailik433/…`) übernehmen lässt, werden **Byte für Byte aus dem Repository** kopiert (nicht aus Artifacts, die älter sein können) und danach nicht umgebaut: kein Entfernen von Schriften, kein Einfügen von Links. Nach dem Kopieren mit `cmp` gegen das Original prüfen.
+
 ## Wenn eine neue Animation entsteht (immer alle Schritte)
 
 1. Datei aus `animationen/_vorlage.html` ableiten (oder, wenn der Prompt eine eigenständige Einzeldatei verlangt, als `…/<name>/index.html` mit eingebettetem CSS/JS ohne `assets/`), Ablage: `animationen/klasse-<N>/<thema-slug>/<name>.html` (Slug: Kleinbuchstaben, Umlaute ausgeschrieben, z. B. `elektrizitaet`).
