@@ -1,468 +1,1046 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boyle-Mariotte – Interaktive Lernstation</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#eaf0f6; --panel:#ffffff; --ink:#0f2440; --muted:#52657d; --line:#cdd8e4;
-  --gas:#f08c00; --accent:#c92a2a; --accent2:#0c8599; --metal:#7b8794; --glass:#dde8f3; --grid:#e6edf4;
-  box-sizing:border-box;
-  padding-top:env(safe-area-inset-top,0px);
-  padding-bottom:env(safe-area-inset-bottom,0px);
+:root {
+  --bg: #f5f1e8;
+  --white: #ffffff;
+  --navy: #1a3552;
+  --teal: #1d8a78;
+  --teal-light: #e4f4f1;
+  --orange: #d95f2b;
+  --orange-light: #fbeee7;
+  --text: #1e2d3d;
+  --text-light: #5a7085;
+  --border: #ddd8cd;
+  --shadow: 0 4px 24px rgba(26,53,82,0.10);
+  --shadow-sm: 0 2px 8px rgba(26,53,82,0.07);
 }
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#0e1622; --panel:#162131; --ink:#e6edf5; --muted:#93a4b8; --line:#2a3a50;
-    --gas:#ffa94d; --accent:#ff6b6b; --accent2:#3bc9db; --metal:#5c6b7d; --glass:#1c2a3c; --grid:#1f2d40;
-  }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+  min-height: 100vh;
 }
-:root[data-theme="dark"]{
-  --bg:#0e1622; --panel:#162131; --ink:#e6edf5; --muted:#93a4b8; --line:#2a3a50;
-  --gas:#ffa94d; --accent:#ff6b6b; --accent2:#3bc9db; --metal:#5c6b7d; --glass:#1c2a3c; --grid:#1f2d40;
+
+/* ── HERO ── */
+.hero {
+  background: var(--navy);
+  color: white;
+  padding: 48px 24px 44px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
 }
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-*,*::before,*::after{box-sizing:inherit}
-body{
-  margin:0; background:var(--bg); color:var(--ink);
-  font-family:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  font-size:17px; line-height:1.5; font-variant-numeric:tabular-nums;
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 25% 50%, rgba(29,138,120,0.28) 0%, transparent 55%),
+    radial-gradient(ellipse at 75% 30%, rgba(217,95,43,0.18) 0%, transparent 50%);
 }
-main{max-width:1120px; margin:0 auto; padding:20px 16px 40px}
-header{margin:8px 0 18px}
-h1{font-size:clamp(1.6rem,4vw,2.3rem); line-height:1.15; margin:0 0 6px; letter-spacing:-0.01em}
-.lead{margin:0; color:var(--muted); max-width:62ch}
-.formula{display:inline-block; margin-top:10px; padding:4px 12px; border:2px solid var(--ink); border-radius:999px; font-weight:700}
-.grid{display:grid; gap:16px; grid-template-columns:1fr}
-@media (min-width:860px){ .grid{grid-template-columns:1.05fr 1fr} }
-.panel{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:16px}
-.panel h2{font-size:1.1rem; margin:0 0 10px}
-canvas{display:block; width:100%}
-#cyl{height:clamp(330px,52vh,470px); touch-action:none; cursor:ns-resize}
-#plot{height:clamp(290px,46vh,420px)}
-.slider{margin:12px 0 4px}
-.slider label{display:flex; justify-content:space-between; font-weight:700}
-.slider label span{color:var(--muted); font-weight:400; font-size:.9rem}
-input[type=range]{width:100%; accent-color:var(--accent); height:28px}
-.readouts{display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-top:10px}
-@media (min-width:520px){ .readouts{grid-template-columns:repeat(4,1fr)} }
-.ro{border:1px solid var(--line); border-radius:10px; padding:6px 10px}
-.ro span{display:block; font-size:.85rem; color:var(--muted)}
-.ro b{font-size:1.15rem}
-.ro.pv{border-color:var(--accent2)}
-.hits{margin-top:10px; font-size:.92rem; color:var(--muted)}
-.hits b{color:var(--ink)}
-.seg{display:inline-flex; border:1px solid var(--line); border-radius:10px; overflow:hidden; margin-bottom:10px}
-.seg button{border:0; background:transparent; color:var(--ink); padding:7px 12px; font:inherit; font-size:.92rem; cursor:pointer}
-.seg button[aria-pressed="true"]{background:var(--ink); color:var(--panel); font-weight:700}
-.chk{display:flex; gap:8px; align-items:center; margin-top:8px; font-size:.95rem}
-.actions{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px}
-.btn{font:inherit; font-size:.95rem; padding:9px 14px; border-radius:10px; border:2px solid var(--ink); background:var(--panel); color:var(--ink); cursor:pointer}
-.btn.primary{background:var(--ink); color:var(--panel); font-weight:700}
-.btn:focus-visible,.seg button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--accent2); outline-offset:2px}
-.tablewrap{overflow-x:auto}
-table{border-collapse:collapse; width:100%; min-width:420px}
-th,td{text-align:right; padding:7px 10px; border-bottom:1px solid var(--line)}
-th{font-size:.9rem; color:var(--muted); font-weight:700}
-th:first-child,td:first-child{text-align:left}
-tfoot td{font-weight:700; border-bottom:0}
-td.empty{text-align:left; color:var(--muted)}
-.bottom{display:grid; gap:16px; grid-template-columns:1fr; margin-top:16px}
-@media (min-width:860px){ .bottom{grid-template-columns:1.05fr 1fr} }
-details summary{cursor:pointer; font-weight:700; font-size:1.05rem}
-details p{margin:10px 0 0; max-width:62ch}
-.legend{display:flex; flex-wrap:wrap; gap:14px; font-size:.88rem; color:var(--muted); margin-top:6px}
-.legend i{display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle}
-@media (prefers-reduced-motion: reduce){ .btn,.seg button{transition:none} }
+.hero-inner { position: relative; max-width: 720px; margin: 0 auto; }
+.hero-chip {
+  display: inline-block;
+  background: rgba(29,138,120,0.25);
+  border: 1px solid rgba(29,138,120,0.55);
+  color: #6ddece;
+  font-size: 0.7rem; font-weight: 600;
+  letter-spacing: 3px; text-transform: uppercase;
+  padding: 5px 16px; border-radius: 100px;
+  margin-bottom: 20px;
+}
+.hero h1 {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(2rem, 6vw, 3.2rem);
+  font-weight: 700; line-height: 1.12;
+  margin-bottom: 14px; color: white;
+}
+.hero h1 em { font-style: italic; color: #6ddece; }
+.hero-sub {
+  font-size: 1rem; color: rgba(255,255,255,0.65);
+  max-width: 520px; margin: 0 auto 28px;
+}
+.formula-hero {
+  display: inline-flex; align-items: center; gap: 16px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 14px; padding: 16px 32px;
+  font-family: 'Fraunces', serif;
+  font-size: 1.6rem; color: white; margin-bottom: 28px;
+}
+.formula-note {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem; color: rgba(255,255,255,0.45);
+  font-style: italic; line-height: 1.4;
+  text-align: left;
+}
+.lernziele { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.lz-item {
+  display: flex; align-items: center; gap: 7px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 8px; padding: 6px 14px;
+  font-size: 0.82rem; color: rgba(255,255,255,0.75);
+}
+
+/* ── TABS ── */
+.tabs-wrapper { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+.tabs-nav {
+  display: flex; gap: 3px; padding: 20px 0 0;
+  border-bottom: 2px solid var(--border);
+  overflow-x: auto; scrollbar-width: none;
+}
+.tabs-nav::-webkit-scrollbar { display: none; }
+.tab-btn {
+  background: none; border: none; cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem; font-weight: 500;
+  color: var(--text-light);
+  padding: 10px 20px; border-radius: 10px 10px 0 0;
+  white-space: nowrap; transition: color .2s, background .2s;
+}
+.tab-btn:hover { color: var(--navy); background: rgba(26,53,82,0.05); }
+.tab-btn.active {
+  color: var(--navy); font-weight: 600;
+  background: var(--white);
+  border: 2px solid var(--border);
+  border-bottom: 2px solid var(--white);
+  margin-bottom: -2px;
+}
+.tab-content { display: none; padding: 28px 0 48px; animation: fadeIn .3s ease; }
+.tab-content.active { display: block; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+/* ── CARDS ── */
+.card {
+  background: var(--white); border-radius: 16px;
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.card-header { padding: 18px 22px 0; }
+.card-title { font-family:'Fraunces',serif; font-size:1.05rem; font-weight:600; color:var(--navy); margin-bottom:3px; }
+.card-sub { font-size:.75rem; color:var(--text-light); }
+.card-body { padding: 16px 22px 22px; }
+
+/* ── EXPERIMENT LAYOUT ── */
+.experiment-grid { display:grid; grid-template-columns:1fr 1fr; gap:22px; align-items:start; }
+@media(max-width:720px){ .experiment-grid{ grid-template-columns:1fr; } }
+@media(max-width:680px){ .exp-top-grid { grid-template-columns:1fr !important; } }
+
+canvas { display:block; width:100%; }
+
+/* slider */
+.slider-section { margin-top: 16px; }
+.slider-label-row { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+.slider-name { font-size:.83rem; font-weight:600; color:var(--text); }
+.slider-value { font-family:'Fraunces',serif; font-size:1.1rem; color:var(--teal); font-weight:600; }
+input[type=range] {
+  -webkit-appearance:none; width:100%; height:7px;
+  border-radius:4px; outline:none; cursor:pointer;
+  transition:background .1s;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none; width:23px; height:23px;
+  border-radius:50%; background:var(--teal); cursor:grab;
+  box-shadow:0 2px 10px rgba(29,138,120,0.45); border:3px solid white;
+  transition:transform .1s;
+}
+input[type=range]::-webkit-slider-thumb:active { cursor:grabbing; transform:scale(1.2); }
+
+/* value boxes */
+.values-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
+.val-box {
+  background:#f8f6f2; border-radius:11px;
+  padding:12px 14px; text-align:center;
+  border:1px solid var(--border);
+}
+.val-box.highlight {
+  background:linear-gradient(135deg,#e4f4f1,#cdeae5);
+  border-color:rgba(29,138,120,0.38); grid-column:1/-1;
+}
+.val-label { font-size:.63rem; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--text-light); margin-bottom:4px; }
+.val-number { font-family:'Fraunces',serif; font-size:1.5rem; font-weight:700; color:var(--navy); line-height:1; }
+.val-number.vc { color:var(--teal); }
+.val-number.pc { color:var(--orange); }
+.val-unit { font-size:.7rem; color:var(--text-light); margin-top:2px; }
+
+/* explanation card */
+.expl-bar { height:5px; transition:background .5s; }
+.expl-icon { font-size:2.4rem; display:block; margin-bottom:10px; }
+.expl-title { font-family:'Fraunces',serif; font-size:1.15rem; font-weight:600; color:var(--navy); margin-bottom:8px; }
+.expl-text { font-size:.9rem; color:var(--text-light); line-height:1.75; }
+.expl-tip {
+  display:flex; align-items:flex-start; gap:8px;
+  background:linear-gradient(135deg,#fef9ec,#fdf2d5);
+  border:1px solid #e8d48a; border-radius:10px;
+  padding:10px 14px; font-size:.82rem; color:#7a5800;
+  margin-top:14px; line-height:1.55;
+}
+.tip-icon { flex-shrink:0; font-size:1rem; margin-top:2px; }
+.key-obs { margin-top:20px; padding-top:18px; border-top:1px solid var(--border); }
+.key-obs-label { font-size:.68rem; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--text-light); margin-bottom:10px; }
+.key-obs-text { font-size:.88rem; color:var(--text); line-height:1.75; }
+
+/* ── GRAPH TAB ── */
+.graph-container { background:var(--white); border-radius:16px; box-shadow:var(--shadow); padding:26px; }
+.graph-info { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin-top:20px; }
+.info-card {
+  background:#f8f6f2; border-radius:11px;
+  padding:14px 16px; border-left:3px solid var(--teal);
+}
+.info-card.orange { border-left-color:var(--orange); }
+.info-card-title { font-size:.7rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-light); margin-bottom:5px; }
+.info-card-text { font-size:.86rem; color:var(--text); line-height:1.55; }
+
+/* ── AUFGABEN ── */
+.aufgaben-list { display:flex; flex-direction:column; gap:20px; }
+.aufgabe { background:var(--white); border-radius:16px; box-shadow:var(--shadow); overflow:hidden; }
+.aufgabe-header {
+  display:flex; align-items:center; gap:14px;
+  padding:18px 22px; border-bottom:1px solid var(--border);
+}
+.aufgabe-num {
+  width:36px; height:36px; border-radius:50%;
+  background:var(--navy); color:white;
+  font-family:'Fraunces',serif; font-size:1rem; font-weight:700;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.aufgabe-title { font-family:'Fraunces',serif; font-size:1rem; font-weight:600; color:var(--navy); }
+.aufgabe-body { padding:20px 22px; }
+.aufgabe-text { font-size:.92rem; color:var(--text); line-height:1.75; margin-bottom:16px; }
+.given-box {
+  background:#f8f6f2; border:1px solid var(--border); border-radius:10px;
+  padding:14px 16px; font-size:.87rem; color:var(--text);
+  line-height:1.75; margin-bottom:16px;
+}
+.hint-btn {
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--teal-light); border:1px solid rgba(29,138,120,.3);
+  border-radius:8px; padding:8px 14px;
+  font-size:.8rem; color:var(--teal); cursor:pointer;
+  font-weight:500; transition:background .2s; margin-bottom:14px;
+  font-family:'DM Sans',sans-serif;
+}
+.hint-btn:hover { background:#d0ece8; }
+.hint-content {
+  display:none; background:var(--teal-light); border-radius:8px;
+  padding:12px 14px; font-size:.85rem; color:#145244;
+  margin-bottom:14px; line-height:1.65;
+}
+.hint-content.visible { display:block; }
+
+/* MC */
+.mc-options { display:flex; flex-direction:column; gap:9px; margin-bottom:14px; }
+.mc-option {
+  display:flex; align-items:center; gap:11px;
+  padding:11px 16px; border-radius:10px;
+  border:2px solid var(--border); cursor:pointer;
+  font-size:.88rem; transition:all .2s; background:white;
+  font-family:'DM Sans',sans-serif;
+}
+.mc-option:hover { border-color:var(--navy); background:#f8f6f2; }
+.mc-option.selected { border-color:var(--navy); background:#eef2f7; font-weight:600; }
+.mc-option.correct { border-color:var(--teal); background:var(--teal-light); color:#145244; }
+.mc-option.wrong { border-color:var(--orange); background:var(--orange-light); color:#8b3010; }
+.mc-radio {
+  width:18px; height:18px; border-radius:50%;
+  border:2px solid var(--border); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  transition:all .2s;
+}
+.mc-option.selected .mc-radio { border-color:var(--navy); background:var(--navy); }
+.mc-option.selected .mc-radio::after { content:''; width:7px; height:7px; border-radius:50%; background:white; }
+
+/* answer row */
+.answer-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.answer-label { font-size:.88rem; font-weight:600; color:var(--text); }
+.answer-input {
+  border:2px solid var(--border); border-radius:8px;
+  padding:9px 14px; font-family:'Fraunces',serif;
+  font-size:1rem; color:var(--navy); width:110px;
+  outline:none; transition:border-color .2s;
+}
+.answer-input:focus { border-color:var(--teal); }
+.answer-input.correct { border-color:var(--teal); background:var(--teal-light); }
+.answer-input.wrong { border-color:var(--orange); background:var(--orange-light); }
+.answer-unit { font-size:.85rem; color:var(--text-light); }
+.check-btn {
+  background:var(--navy); color:white; border:none;
+  border-radius:8px; padding:10px 22px;
+  font-family:'DM Sans',sans-serif; font-size:.88rem; font-weight:600;
+  cursor:pointer; transition:background .2s, transform .1s;
+}
+.check-btn:hover { background:#0f2d48; }
+.check-btn:active { transform:scale(.97); }
+.feedback {
+  display:none; margin-top:12px; padding:13px 16px;
+  border-radius:10px; font-size:.88rem; font-weight:500; line-height:1.55;
+}
+.feedback.correct {
+  display:block; background:var(--teal-light); color:#145244;
+  border:1px solid rgba(29,138,120,.3);
+}
+.feedback.wrong {
+  display:block; background:var(--orange-light); color:#8b3010;
+  border:1px solid rgba(217,95,43,.3);
+}
+
+/* ── ZUSAMMENFASSUNG ── */
+.zus-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+@media(max-width:620px){ .zus-grid{ grid-template-columns:1fr; } }
+.formula-card {
+  grid-column:1/-1; background:var(--navy); color:white;
+  border-radius:16px; padding:36px; text-align:center;
+  position:relative; overflow:hidden;
+}
+.formula-card::before {
+  content:''; position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(29,138,120,.32) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 50%, rgba(217,95,43,.22) 0%, transparent 50%);
+}
+.fci { position:relative; }
+.fc-eyebrow { font-size:.72rem; font-weight:600; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,.45); margin-bottom:16px; font-style:italic; }
+.big-formula { font-family:'Fraunces',serif; font-size:clamp(2rem,5vw,3.2rem); font-weight:700; color:white; margin-bottom:10px; }
+.big-formula .fv { color:#6ddece; }
+.big-formula .fp { color:#f8a07c; }
+.formula-alt { font-family:'Fraunces',serif; font-size:1.15rem; color:rgba(255,255,255,.65); margin-top:10px; }
+.formula-cond { font-size:.78rem; color:rgba(255,255,255,.38); margin-top:8px; font-style:italic; }
+.zus-card { background:var(--white); border-radius:16px; box-shadow:var(--shadow); padding:22px; }
+.zus-card h3 { font-family:'Fraunces',serif; font-size:1rem; color:var(--navy); margin-bottom:14px; }
+.zus-list { list-style:none; display:flex; flex-direction:column; gap:11px; }
+.zus-list li { display:flex; align-items:flex-start; gap:10px; font-size:.88rem; line-height:1.55; color:var(--text); }
+.zus-list li::before { content:'→'; color:var(--teal); font-weight:700; flex-shrink:0; margin-top:1px; }
+.example-card { background:var(--white); border-radius:16px; box-shadow:var(--shadow); padding:22px; grid-column:1/-1; }
+.example-card h3 { font-family:'Fraunces',serif; font-size:1rem; color:var(--navy); margin-bottom:16px; }
+.examples-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(155px,1fr)); gap:12px; }
+.ex-item { background:#f8f6f2; border-radius:11px; padding:16px; text-align:center; border:1px solid var(--border); }
+.ex-emoji { font-size:2.2rem; margin-bottom:7px; }
+.ex-name { font-size:.82rem; font-weight:600; color:var(--navy); margin-bottom:4px; }
+.ex-desc { font-size:.76rem; color:var(--text-light); line-height:1.45; }
 </style>
 </head>
 <body>
-<main>
-  <header>
-    <h1>Gesetz von Boyle-Mariotte</h1>
-    <p class="lead">Ein eingeschlossenes Gas wird zusammengedrückt oder entspannt. Temperatur und Gasmenge bleiben dabei gleich. Wie hängen Druck und Volumen zusammen?</p>
-    <span class="formula">T = konstant</span>
-  </header>
 
-  <section class="grid">
-    <div class="panel">
-      <h2>Versuch: Kolben im Zylinder</h2>
-      <canvas id="cyl" aria-label="Zylinder mit Kolben, Gasteilchen und Manometer"></canvas>
-      <div class="slider">
-        <label for="vol">Volumen einstellen <span>oder am Kolben ziehen</span></label>
-        <input type="range" id="vol" min="20" max="100" step="1" value="50">
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-chip">Physik · Klasse 8 / 9</div>
+    <h1>Das <em>Boyle-Mariotte</em>-Gesetz</h1>
+    <p class="hero-sub">Entdecke, wie Druck und Volumen eines Gases zusammenhängen – interaktiv und zum Selbstforschen.</p>
+    <div class="formula-hero">
+      <span>p · V = konst.</span>
+      <span class="formula-note">bei gleich­bleibender<br>Temperatur T</span>
+    </div>
+    <div class="lernziele">
+      <div class="lz-item">🔬 Experiment</div>
+      <div class="lz-item">📈 p-V-Diagramm</div>
+      <div class="lz-item">📝 Aufgaben lösen</div>
+      <div class="lz-item">✅ Zusammenfassung</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TABS ── -->
+<div class="tabs-wrapper">
+  <nav class="tabs-nav">
+    <button class="tab-btn active"  onclick="showTab('experiment',this)">🔬 Experiment</button>
+    <button class="tab-btn"         onclick="showTab('diagramm',this)">📈 p-V-Diagramm</button>
+    <button class="tab-btn"         onclick="showTab('aufgaben',this)">📝 Aufgaben</button>
+    <button class="tab-btn"         onclick="showTab('zusammenfassung',this)">✅ Zusammenfassung</button>
+  </nav>
+
+  <!-- ══ TAB: EXPERIMENT ══ -->
+  <div id="tab-experiment" class="tab-content active">
+
+    <!-- Top row: sim + graph -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start;">
+
+      <!-- Simulation -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Kolben-Experiment</div>
+          <div class="card-sub">Schieberegler bewegen → Gasteilchen und Druck beobachten</div>
+        </div>
+        <canvas id="simCanvas" height="190"></canvas>
+        <div class="card-body">
+          <div class="slider-section">
+            <div class="slider-label-row">
+              <span class="slider-name">Volumen V</span>
+              <span class="slider-value" id="volLabel">55 cm³</span>
+            </div>
+            <input type="range" id="volSlider" min="18" max="88" value="55">
+          </div>
+          <div class="values-grid">
+            <div class="val-box">
+              <div class="val-label">Volumen V</div>
+              <div class="val-number vc" id="volVal">55.0</div>
+              <div class="val-unit">cm³</div>
+            </div>
+            <div class="val-box">
+              <div class="val-label">Druck p</div>
+              <div class="val-number pc" id="presVal">1.82</div>
+              <div class="val-unit">bar</div>
+            </div>
+            <div class="val-box highlight">
+              <div class="val-label">p · V = konstant</div>
+              <div class="val-number" id="pvVal">100.0</div>
+              <div class="val-unit">bar · cm³</div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="readouts">
-        <div class="ro"><span>Volumen V</span><b id="rV">50 ml</b></div>
-        <div class="ro"><span>Druck p</span><b id="rP">1000 hPa</b></div>
-        <div class="ro pv"><span>p · V</span><b id="rPV">50 000</b></div>
-        <div class="ro"><span>Temperatur T</span><b>20 °C</b></div>
+
+      <!-- Graph -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">p-V-Diagramm</div>
+          <div class="card-sub">Der Punkt bewegt sich mit dem Schieberegler</div>
+        </div>
+        <canvas id="graphCanvas" height="260" style="padding:4px 8px 0;"></canvas>
+        <div class="card-body" style="padding-top:8px;">
+          <div style="font-size:.82rem;color:var(--text-light);line-height:1.6;">
+            Die Kurve ist eine <strong style="color:var(--navy)">Hyperbel (Isotherme)</strong> – alle Punkte darauf haben dasselbe Produkt p·V.
+            Egal wohin du den Kolben schiebst: <span style="color:var(--teal);font-weight:600;">p₁·V₁ = p₂·V₂</span>
+          </div>
+        </div>
       </div>
-      <p class="hits">Stöße der Teilchen auf den Kolben: <b id="rHits">–</b> pro Sekunde</p>
     </div>
 
-    <div class="panel">
-      <h2>Diagramm</h2>
-      <div class="seg" role="group" aria-label="Diagrammart">
-        <button id="mPV" aria-pressed="true">p über V</button>
-        <button id="mInv" aria-pressed="false">p über 1/V</button>
-      </div>
-      <canvas id="plot" aria-label="Diagramm Druck gegen Volumen"></canvas>
-      <div class="legend">
-        <span><i style="background:var(--accent)"></i>aktueller Zustand</span>
-        <span><i style="background:var(--accent2)"></i>Messwerte</span>
-      </div>
-      <label class="chk"><input type="checkbox" id="theory"> Theoriekurve einblenden</label>
-    </div>
-  </section>
-
-  <section class="bottom">
-    <div class="panel">
-      <h2>Messtabelle</h2>
-      <div class="actions">
-        <button class="btn primary" id="rec">Messwert aufnehmen</button>
-        <button class="btn" id="auto">Automatisch bewegen</button>
-        <button class="btn" id="clr">Tabelle leeren</button>
-      </div>
-      <div class="tablewrap">
-        <table>
-          <thead><tr><th>Nr.</th><th>V in ml</th><th>p in hPa</th><th>p · V in hPa·ml</th></tr></thead>
-          <tbody id="tb"></tbody>
-          <tfoot id="tf"></tfoot>
-        </table>
+    <!-- Bottom: explanation -->
+    <div class="card" style="margin-top:22px;display:flex;flex-direction:column;">
+      <div class="expl-bar" id="statusBar"></div>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:0;align-items:stretch;">
+        <div style="padding:22px 20px 22px 22px;">
+          <span class="expl-icon" id="explIcon" style="font-size:2.8rem;display:block;margin-bottom:0;">🧪</span>
+        </div>
+        <div style="padding:22px 22px 22px 0;">
+          <div class="expl-title" id="explTitle">Beobachte das Gas</div>
+          <div class="expl-text" id="explText">Schiebe den Regler nach links oder rechts und beobachte, was mit den Teilchen und dem Druck passiert.</div>
+          <div class="expl-tip" style="margin-top:10px;">
+            <span class="tip-icon">💡</span>
+            <span id="explTip">Starte mit einem großen Volumen und drücke den Kolben dann langsam zusammen.</span>
+          </div>
+        </div>
+        <div style="grid-column:1/-1;padding:0 22px 20px;border-top:1px solid var(--border);padding-top:16px;margin-top:0;">
+          <div class="key-obs-label" style="font-size:.68rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-light);margin-bottom:8px;">Wichtige Erkenntnis</div>
+          <div style="font-size:.9rem;color:var(--text);line-height:1.75;">
+            Wenn das Volumen <strong>kleiner</strong> wird → Druck wird <strong>größer</strong>. &nbsp;|&nbsp;
+            Wenn das Volumen <strong>größer</strong> wird → Druck wird <strong>kleiner</strong>.<br>
+            <span style="color:var(--teal);font-weight:600;">→ p und V sind umgekehrt proportional.</span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="panel">
-      <h2>Auswertung</h2>
-      <details>
-        <summary>Ergebnis anzeigen</summary>
-        <p><b>Gesetz von Boyle-Mariotte:</b> Bei gleichbleibender Temperatur und Gasmenge ist das Produkt aus Druck und Volumen konstant: p · V = konstant, also p₁ · V₁ = p₂ · V₂. Druck und Volumen sind antiproportional. Halbes Volumen bedeutet doppelten Druck.</p>
-        <p>Im p-V-Diagramm ergibt sich eine Hyperbel. Trägt man p über 1/V auf, liegen die Punkte auf einer Ursprungsgeraden.</p>
-      </details>
-      <details style="margin-top:12px">
-        <summary>Erklärung im Teilchenmodell</summary>
-        <p>Die Gasteilchen fliegen ungeordnet umher und prallen gegen die Wände. Jeder Aufprall drückt ein wenig gegen den Kolben. Wird das Volumen halbiert, ist der Weg bis zum nächsten Aufprall nur noch halb so lang. Die Teilchen treffen doppelt so oft auf den Kolben, der Druck verdoppelt sich.</p>
-        <p>Weil die Temperatur gleich bleibt, fliegen die Teilchen nicht schneller. Nur die Anzahl der Stöße pro Sekunde ändert sich.</p>
-      </details>
+  </div>
+
+  <!-- ══ TAB: DIAGRAMM ══ -->
+  <div id="tab-diagramm" class="tab-content">
+    <div class="graph-container">
+      <div class="card-title" style="font-family:'Fraunces',serif;font-size:1.1rem;margin-bottom:3px;">p-V-Diagramm – Vertiefung</div>
+      <div class="card-sub" style="font-size:.8rem;color:var(--text-light);margin-bottom:18px;">Das interaktive Diagramm befindet sich im Experiment-Tab. Hier findest du die Erklärungen dazu.</div>
+      <div class="graph-info">
+        <div class="info-card">
+          <div class="info-card-title">Was ist eine Isotherme?</div>
+          <div class="info-card-text">Eine Kurve aller Gas-Zustände bei <em>gleicher Temperatur</em>. Sie hat die Form einer Hyperbel.</div>
+        </div>
+        <div class="info-card orange">
+          <div class="info-card-title">Was zeigt der Punkt?</div>
+          <div class="info-card-text">Der blaue Punkt ist der aktuelle Zustand (V, p). Alle Punkte auf der Kurve haben dasselbe p·V-Produkt.</div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-title">Warum eine Hyperbel?</div>
+          <div class="info-card-text">Weil p = k / V gilt – das ist mathematisch genau die Gleichung einer Hyperbel im p-V-Diagramm.</div>
+        </div>
+        <div class="info-card orange">
+          <div class="info-card-title">Zwei Zustände vergleichen</div>
+          <div class="info-card-text">Für je zwei Punkte gilt: p₁ · V₁ = p₂ · V₂ – egal welche Punkte du wählst!</div>
+        </div>
+      </div>
     </div>
-  </section>
-</main>
+  </div>
+
+  <!-- ══ TAB: AUFGABEN ══ -->
+  <div id="tab-aufgaben" class="tab-content">
+    <div class="aufgaben-list">
+
+      <!-- Aufgabe 1 -->
+      <div class="aufgabe">
+        <div class="aufgabe-header">
+          <div class="aufgabe-num">1</div>
+          <div class="aufgabe-title">Verständnisfrage – Was passiert mit dem Druck?</div>
+        </div>
+        <div class="aufgabe-body">
+          <p class="aufgabe-text">Ein Gas befindet sich in einem Zylinder. Der Kolben wird so verschoben, dass sich das Volumen <strong>verdoppelt</strong>. Die Temperatur bleibt dabei konstant.<br>Was passiert mit dem Druck?</p>
+          <div class="mc-options" id="mc1">
+            <div class="mc-option" onclick="selectMC(this,'mc1')"><div class="mc-radio"></div>Der Druck verdoppelt sich.</div>
+            <div class="mc-option" onclick="selectMC(this,'mc1')"><div class="mc-radio"></div>Der Druck halbiert sich.</div>
+            <div class="mc-option" onclick="selectMC(this,'mc1')"><div class="mc-radio"></div>Der Druck bleibt unverändert.</div>
+            <div class="mc-option" onclick="selectMC(this,'mc1')"><div class="mc-radio"></div>Der Druck steigt um ein Viertel.</div>
+          </div>
+          <button class="check-btn" onclick="checkMC('mc1',1,'fb1')">Antwort prüfen</button>
+          <div class="feedback" id="fb1"></div>
+        </div>
+      </div>
+
+      <!-- Aufgabe 2 -->
+      <div class="aufgabe">
+        <div class="aufgabe-header">
+          <div class="aufgabe-num">2</div>
+          <div class="aufgabe-title">Berechnung – Neuen Druck bestimmen</div>
+        </div>
+        <div class="aufgabe-body">
+          <p class="aufgabe-text">Ein Gas befindet sich in einem Kolben. Der Kolben wird eingedrückt, bis das Volumen kleiner wird. Berechne den neuen Druck p₂.</p>
+          <div class="given-box">
+            <strong>Gegeben:</strong> V₁ = 60 cm³ &nbsp;|&nbsp; p₁ = 2 bar &nbsp;|&nbsp; V₂ = 20 cm³ &nbsp;|&nbsp; T = konst.<br>
+            <strong>Gesucht:</strong> p₂ = ?<br>
+            <strong>Ansatz:</strong> p₁ · V₁ = p₂ · V₂ &nbsp;⟹&nbsp; p₂ = p₁ · V₁ / V₂
+          </div>
+          <div class="hint-content" id="hint2">
+            p₂ = (2 bar · 60 cm³) / 20 cm³ = 120 / 20 = <strong>6 bar</strong>
+          </div>
+          <button class="hint-btn" onclick="toggleHint('hint2',this)">💡 Hinweis anzeigen</button>
+          <div class="answer-row">
+            <span class="answer-label">p₂ =</span>
+            <input type="number" class="answer-input" id="ans2" placeholder="?" step="0.1">
+            <span class="answer-unit">bar</span>
+            <button class="check-btn" onclick="checkNum('ans2',6,0.2,'fb2')">Prüfen</button>
+          </div>
+          <div class="feedback" id="fb2"></div>
+        </div>
+      </div>
+
+      <!-- Aufgabe 3 -->
+      <div class="aufgabe">
+        <div class="aufgabe-header">
+          <div class="aufgabe-num">3</div>
+          <div class="aufgabe-title">Anwendungsaufgabe – Fahrradpumpe</div>
+        </div>
+        <div class="aufgabe-body">
+          <p class="aufgabe-text">In einer Fahrradpumpe wird Luft beim Pumpen komprimiert. Auf welchen Druck p₂ steigt die Luft in der Pumpe?</p>
+          <div class="given-box">
+            <strong>Gegeben:</strong> V₁ = 500 cm³ &nbsp;|&nbsp; p₁ = 1 bar (Luftdruck) &nbsp;|&nbsp; V₂ = 100 cm³ &nbsp;|&nbsp; T = konst.<br>
+            <strong>Gesucht:</strong> p₂ = ?
+          </div>
+          <div class="hint-content" id="hint3">
+            p₂ = (p₁ · V₁) / V₂ = (1 · 500) / 100 = <strong>5 bar</strong>
+          </div>
+          <button class="hint-btn" onclick="toggleHint('hint3',this)">💡 Hinweis anzeigen</button>
+          <div class="answer-row">
+            <span class="answer-label">p₂ =</span>
+            <input type="number" class="answer-input" id="ans3" placeholder="?" step="0.1">
+            <span class="answer-unit">bar</span>
+            <button class="check-btn" onclick="checkNum('ans3',5,0.2,'fb3')">Prüfen</button>
+          </div>
+          <div class="feedback" id="fb3"></div>
+        </div>
+      </div>
+
+      <!-- Aufgabe 4 -->
+      <div class="aufgabe">
+        <div class="aufgabe-header">
+          <div class="aufgabe-num">4</div>
+          <div class="aufgabe-title">Knobelaufgabe – Volumen bestimmen</div>
+        </div>
+        <div class="aufgabe-body">
+          <p class="aufgabe-text">Ein Taucher trägt eine Druckflasche mit dem Inhalt V₁ = 12 Liter Luft bei p₁ = 200 bar. Er atmet die Luft auf Meereshöhe aus (p₂ = 1 bar). Welches Volumen nimmt die Luft dann ein?</p>
+          <div class="given-box">
+            <strong>Gegeben:</strong> V₁ = 12 L &nbsp;|&nbsp; p₁ = 200 bar &nbsp;|&nbsp; p₂ = 1 bar &nbsp;|&nbsp; T = konst.<br>
+            <strong>Gesucht:</strong> V₂ = ?<br>
+            <strong>Ansatz:</strong> p₁ · V₁ = p₂ · V₂ &nbsp;⟹&nbsp; V₂ = p₁ · V₁ / p₂
+          </div>
+          <div class="hint-content" id="hint4">
+            V₂ = (200 bar · 12 L) / 1 bar = <strong>2400 L</strong> — das sind 2,4 Kubikmeter Luft!
+          </div>
+          <button class="hint-btn" onclick="toggleHint('hint4',this)">💡 Hinweis anzeigen</button>
+          <div class="answer-row">
+            <span class="answer-label">V₂ =</span>
+            <input type="number" class="answer-input" id="ans4" placeholder="?" step="10">
+            <span class="answer-unit">Liter</span>
+            <button class="check-btn" onclick="checkNum('ans4',2400,10,'fb4')">Prüfen</button>
+          </div>
+          <div class="feedback" id="fb4"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ TAB: ZUSAMMENFASSUNG ══ -->
+  <div id="tab-zusammenfassung" class="tab-content">
+    <div class="zus-grid">
+
+      <div class="formula-card">
+        <div class="fci">
+          <div class="fc-eyebrow">Das Boyle-Mariotte-Gesetz</div>
+          <div class="big-formula"><span class="fp">p</span> · <span class="fv">V</span> = k</div>
+          <div class="formula-alt">p₁ · V₁ = p₂ · V₂</div>
+          <div class="formula-cond">gilt nur bei konstanter Temperatur T = konst. (isotherme Zustandsänderung)</div>
+        </div>
+      </div>
+
+      <div class="zus-card">
+        <h3>📌 Kernaussagen</h3>
+        <ul class="zus-list">
+          <li>Druck und Volumen sind bei konstanter Temperatur <strong>umgekehrt proportional</strong>.</li>
+          <li>Wird das Volumen halbiert, verdoppelt sich der Druck – und umgekehrt.</li>
+          <li>Das Produkt p · V bleibt stets konstant.</li>
+          <li>Im p-V-Diagramm entsteht eine <strong>Hyperbel</strong> (Isotherme).</li>
+        </ul>
+      </div>
+
+      <div class="zus-card">
+        <h3>🧠 Warum passiert das?</h3>
+        <ul class="zus-list">
+          <li>Gasteilchen bewegen sich ständig und stoßen gegen die Wände.</li>
+          <li>Kleineres Volumen → mehr Stöße pro Sekunde → höherer Druck.</li>
+          <li>Die Temperatur bestimmt die Teilchengeschwindigkeit – sie muss konstant bleiben.</li>
+        </ul>
+      </div>
+
+      <div class="zus-card">
+        <h3>🔢 Rechenschema</h3>
+        <ul class="zus-list">
+          <li><strong>Ansatz:</strong> p₁ · V₁ = p₂ · V₂</li>
+          <li><strong>Druck gesucht:</strong> p₂ = (p₁ · V₁) / V₂</li>
+          <li><strong>Volumen gesucht:</strong> V₂ = (p₁ · V₁) / p₂</li>
+          <li>Einheiten müssen auf beiden Seiten gleich sein!</li>
+        </ul>
+      </div>
+
+      <div class="zus-card">
+        <h3>⚠️ Gültigkeitsgrenzen</h3>
+        <ul class="zus-list">
+          <li>Nur für <strong>ideale Gase</strong> exakt gültig.</li>
+          <li>Temperatur muss <strong>konstant</strong> bleiben (isotherm).</li>
+          <li>Bei sehr hohen Drücken weichen reale Gase ab.</li>
+        </ul>
+      </div>
+
+      <div class="example-card">
+        <h3>🌍 Alltägliche Beispiele</h3>
+        <div class="examples-grid">
+          <div class="ex-item">
+            <div class="ex-emoji">🚴</div>
+            <div class="ex-name">Fahrradpumpe</div>
+            <div class="ex-desc">Beim Pumpen wird Luft komprimiert – Volumen↓, Druck↑.</div>
+          </div>
+          <div class="ex-item">
+            <div class="ex-emoji">🤿</div>
+            <div class="ex-name">Tauchen</div>
+            <div class="ex-desc">In der Tiefe steigt der Druck – Luftblasen werden kleiner.</div>
+          </div>
+          <div class="ex-item">
+            <div class="ex-emoji">🩺</div>
+            <div class="ex-name">Blutdruckmessung</div>
+            <div class="ex-desc">Luftmanschette wird aufgepumpt: Druck durch Kompression.</div>
+          </div>
+          <div class="ex-item">
+            <div class="ex-emoji">✈️</div>
+            <div class="ex-name">Flugzeug</div>
+            <div class="ex-desc">In großer Höhe ist Luftdruck geringer → Volumen der Luft steigt.</div>
+          </div>
+          <div class="ex-item">
+            <div class="ex-emoji">🫁</div>
+            <div class="ex-name">Atmung</div>
+            <div class="ex-desc">Lunge vergrößert sich → Druck sinkt → Luft strömt ein.</div>
+          </div>
+          <div class="ex-item">
+            <div class="ex-emoji">🔫</div>
+            <div class="ex-name">Luftgewehr</div>
+            <div class="ex-desc">Pressluft wird komprimiert und schlagartig entspannt.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
 
 <script>
-(function(){
-  const $ = id => document.getElementById(id);
-  const K = 50000;            // p·V in hPa·ml (1000 hPa bei 50 ml)
-  const VMIN = 20, VMAX = 100, VSCALE = 110;
-  const PMAX = 3000;
-  const N = 70, R = 1.6;      // Teilchenzahl, Radius in Welteinheiten
-  const fmt = n => Math.round(n).toLocaleString('de-DE');
+// ──────────────────────────────────────────────────────────────
+// STATE
+// ──────────────────────────────────────────────────────────────
+const PV_K = 100; // bar·cm³
+let vol = 55;
+const getP = v => PV_K / v;
 
-  let C = {};
-  function readColors(){
-    const s = getComputedStyle(document.documentElement);
-    ['bg','panel','ink','muted','line','gas','accent','accent2','metal','glass','grid']
-      .forEach(k => C[k] = s.getPropertyValue('--'+k).trim());
-  }
-  readColors();
-  try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readColors); } catch(e){}
+// ──────────────────────────────────────────────────────────────
+// PARTICLES
+// ──────────────────────────────────────────────────────────────
+const N = 26;
+const particles = Array.from({ length: N }, () => ({
+  x: 0.1 + Math.random() * 0.7,
+  y: 0.1 + Math.random() * 0.8,
+  vx: (Math.random() - 0.5) * 0.009,
+  vy: (Math.random() - 0.5) * 0.009,
+  r: 3.5 + Math.random() * 2,
+}));
 
-  const cyl = $('cyl'), plot = $('plot');
-  const cc = cyl.getContext('2d'), pc = plot.getContext('2d');
-  let dpr = 1, cw = 0, ch = 0, pw = 0, ph = 0, geo = {};
+// ──────────────────────────────────────────────────────────────
+// SIM CANVAS
+// ──────────────────────────────────────────────────────────────
+const simCanvas = document.getElementById('simCanvas');
+const sCtx = simCanvas.getContext('2d');
 
-  let target = 50, Vcur = 50, auto = false, autoT = 0, mode = 'pv';
-  let P = [], hits = [], flashes = [], trail = [], data = [];
-  let hitRate = 0;
+function drawSim() {
+  const rect = simCanvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const cw = Math.round(rect.width * dpr), ch = Math.round(rect.height * dpr);
+  if (simCanvas.width !== cw) { simCanvas.width = cw; simCanvas.height = ch; }
+  const W = simCanvas.width, H = simCanvas.height;
+  sCtx.clearRect(0, 0, W, H);
 
-  function resize(){
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
-    cw = cyl.clientWidth; ch = cyl.clientHeight;
-    cyl.width = Math.round(cw*dpr); cyl.height = Math.round(ch*dpr);
-    pw = plot.clientWidth; ph = plot.clientHeight;
-    plot.width = Math.round(pw*dpr); plot.height = Math.round(ph*dpr);
+  const volFrac = (vol - 18) / 70; // 0..1
+  const pistonX = (0.12 + volFrac * 0.74) * W;
+  const pres = getP(vol);
+  const intensity = Math.min(1, pres / 8);
 
-    const oldW = geo.worldW;
-    const yTop = 30, yBot = ch - 20, Hin = yBot - yTop;
-    const cylX = Math.max(44, cw*0.1);
-    const cylW = Math.min(cw*0.46, Hin*0.62);
-    const ppu = Hin / VSCALE;
-    const right = cw - (cylX + cylW);
-    const gr = Math.max(28, Math.min(right/2 - 12, 66));
-    geo = { yTop, yBot, Hin, cylX, cylW, ppu, worldW: cylW/ppu,
-            gx: cylX + cylW + right/2, gr, gy: yBot - gr - 46 };
-    if (oldW && P.length){ const f = geo.worldW/oldW; P.forEach(p => p.x *= f); }
-  }
+  // Background
+  sCtx.fillStyle = '#f0f7ff';
+  sCtx.fillRect(0, 0, W, H);
 
-  function initParticles(){
-    P = [];
-    for (let i=0;i<N;i++){
-      const s = 45 + Math.random()*40, a = Math.random()*Math.PI*2;
-      P.push({ x: R + Math.random()*(geo.worldW-2*R), y: R + Math.random()*(Vcur-2*R),
-               vx: Math.cos(a)*s, vy: Math.sin(a)*s });
-    }
-  }
+  // Gas gradient
+  const gg = sCtx.createLinearGradient(0, 0, pistonX, 0);
+  gg.addColorStop(0, `rgba(${Math.round(160+intensity*70)},${Math.round(220-intensity*90)},${Math.round(255-intensity*70)},0.35)`);
+  gg.addColorStop(1, `rgba(${Math.round(120+intensity*90)},${Math.round(200-intensity*100)},${Math.round(255-intensity*50)},0.1)`);
+  sCtx.fillStyle = gg;
+  sCtx.fillRect(0, 0, pistonX, H);
 
-  function Vd(){ return Math.round(Vcur); }
-  function pd(v){ return Math.round(K/v/10)*10; }
+  // Particles
+  const maxX = pistonX / W;
+  particles.forEach(p => {
+    p.x += p.vx; p.y += p.vy;
+    if (p.x < 0.025) { p.x = 0.025; p.vx = Math.abs(p.vx); }
+    if (p.x > maxX - 0.025) { p.x = maxX - 0.025; p.vx = -Math.abs(p.vx); }
+    if (p.y < 0.04) { p.y = 0.04; p.vy = Math.abs(p.vy); }
+    if (p.y > 0.96) { p.y = 0.96; p.vy = -Math.abs(p.vy); }
 
-  // --- Simulation ---
-  function step(dt, now){
-    if (auto){
-      autoT += dt;
-      target = 60 + 38*Math.sin(autoT*0.55);
-      slider.value = Math.round(target);
-    }
-    const prev = Vcur;
-    Vcur += (target - Vcur)*Math.min(1, dt*6);
-    if (Math.abs(Vcur - prev) > 0.01 || trail.length === 0){
-      const last = trail[trail.length-1];
-      if (!last || Math.abs(last - Vcur) > 0.25){ trail.push(Vcur); if (trail.length > 500) trail.shift(); }
-    }
-    const W = geo.worldW;
-    for (const p of P){
-      p.x += p.vx*dt; p.y += p.vy*dt;
-      if (p.x < R){ p.x = R + (R - p.x); p.vx = Math.abs(p.vx); }
-      else if (p.x > W-R){ p.x = W - R - (p.x - (W-R)); p.vx = -Math.abs(p.vx); }
-      p.x = Math.min(Math.max(p.x, R), W-R);
-      if (p.y < R){ p.y = R + (R - p.y); p.vy = Math.abs(p.vy); }
-      if (p.y > Vcur - R){
-        if (p.vy > 0){ hits.push(now); flashes.push({ x:p.x, t:now }); }
-        p.y = Vcur - R; p.vy = -Math.abs(p.vy);
-      }
-    }
-    while (hits.length && now - hits[0] > 1.5) hits.shift();
-    while (flashes.length && now - flashes[0].t > 0.18) flashes.shift();
-    hitRate += (hits.length/1.5 - hitRate)*Math.min(1, dt*3);
-  }
+    const px = p.x * W, py = p.y * H;
+    const hue = 195 - intensity * 55;
 
-  // --- Zeichnen: Zylinder ---
-  function drawCyl(now){
-    const c = cc; c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,cw,ch);
-    const { yTop, yBot, Hin, cylX, cylW, ppu, gx, gy, gr } = geo;
-    const py = yBot - Vcur*ppu;
-    const p = K/Vcur;
+    // glow
+    const grd = sCtx.createRadialGradient(px, py, 0, px, py, p.r * dpr * 3.5);
+    grd.addColorStop(0, `hsla(${hue},80%,55%,0.3)`);
+    grd.addColorStop(1, 'transparent');
+    sCtx.beginPath(); sCtx.arc(px, py, p.r * dpr * 3.5, 0, Math.PI * 2);
+    sCtx.fillStyle = grd; sCtx.fill();
 
-    // Glas
-    c.fillStyle = C.glass; c.fillRect(cylX, yTop, cylW, Hin);
-    // Gas-Tönung nach Druck
-    c.globalAlpha = Math.min(0.32, 0.04 + p/PMAX*0.28);
-    c.fillStyle = C.gas; c.fillRect(cylX, py, cylW, yBot-py);
-    c.globalAlpha = 1;
-
-    // Skala
-    c.strokeStyle = C.muted; c.fillStyle = C.muted; c.lineWidth = 1;
-    c.font = '11px "Atkinson Hyperlegible", system-ui, sans-serif';
-    c.textAlign = 'right'; c.textBaseline = 'middle';
-    for (let v=0; v<=VSCALE; v+=10){
-      const y = yBot - v*ppu, major = v%20===0;
-      c.beginPath(); c.moveTo(cylX-(major?10:5), y); c.lineTo(cylX-2, y); c.stroke();
-      if (major && v>0 && v<=100) c.fillText(v, cylX-13, y);
-    }
-    c.textAlign = 'left'; c.fillText('ml', 6, yTop + 2);
-
-    // Leitung zum Manometer
-    c.strokeStyle = C.metal; c.lineWidth = 5; c.lineJoin = 'round';
-    c.beginPath(); c.moveTo(cylX+cylW, yBot-10); c.lineTo(gx, yBot-10); c.lineTo(gx, gy+gr); c.stroke();
-
-    // Teilchen
-    c.fillStyle = C.gas;
-    const rr = Math.max(2.5, Math.min(5, R*ppu));
-    for (const q of P){
-      c.beginPath(); c.arc(cylX + q.x*ppu, yBot - q.y*ppu, rr, 0, Math.PI*2); c.fill();
-    }
-
-    // Wände
-    c.strokeStyle = C.ink; c.lineWidth = 3; c.lineCap = 'round';
-    c.beginPath(); c.moveTo(cylX, yTop-8); c.lineTo(cylX, yBot); c.lineTo(cylX+cylW, yBot); c.lineTo(cylX+cylW, yTop-8); c.stroke();
-
-    // Kolbenstange und Kolben
-    c.fillStyle = C.metal;
-    c.fillRect(cylX + cylW/2 - 6, 0, 12, py - 16);
-    c.fillRect(cylX + 2, py - 16, cylW - 4, 16);
-    c.strokeStyle = C.ink; c.lineWidth = 1.5;
-    c.strokeRect(cylX + 2, py - 16, cylW - 4, 16);
-
-    // Stoß-Blitze am Kolben
-    c.strokeStyle = C.accent; c.lineWidth = 2;
-    for (const f of flashes){
-      const a = 1 - (now - f.t)/0.18; if (a <= 0) continue;
-      c.globalAlpha = a;
-      const x = cylX + f.x*ppu;
-      c.beginPath(); c.moveTo(x-5, py+1); c.lineTo(x+5, py+1); c.stroke();
-    }
-    c.globalAlpha = 1;
-
-    // Manometer
-    c.fillStyle = C.panel; c.strokeStyle = C.ink; c.lineWidth = 2.5;
-    c.beginPath(); c.arc(gx, gy, gr, 0, Math.PI*2); c.fill(); c.stroke();
-    const a0 = 0.75*Math.PI, span = 1.5*Math.PI;
-    c.lineWidth = 1; c.strokeStyle = C.ink; c.fillStyle = C.ink;
-    c.textAlign = 'center'; c.textBaseline = 'middle';
-    c.font = `700 ${Math.max(10, gr*0.2)}px "Atkinson Hyperlegible", system-ui, sans-serif`;
-    for (let v=0; v<=PMAX; v+=250){
-      const a = a0 + v/PMAX*span, major = v%1000===0, mid = v%500===0;
-      const r1 = gr*(major?0.72:mid?0.8:0.86), r2 = gr*0.93;
-      c.lineWidth = major?2:1;
-      c.beginPath(); c.moveTo(gx+Math.cos(a)*r1, gy+Math.sin(a)*r1); c.lineTo(gx+Math.cos(a)*r2, gy+Math.sin(a)*r2); c.stroke();
-      if (major) c.fillText(v/1000, gx+Math.cos(a)*gr*0.55, gy+Math.sin(a)*gr*0.55);
-    }
-    c.font = `${Math.max(9, gr*0.16)}px "Atkinson Hyperlegible", system-ui, sans-serif`;
-    c.fillStyle = C.muted; c.fillText('bar', gx, gy + gr*0.45);
-    const an = a0 + Math.min(p, PMAX)/PMAX*span;
-    c.strokeStyle = C.accent; c.lineWidth = 3;
-    c.beginPath(); c.moveTo(gx - Math.cos(an)*gr*0.12, gy - Math.sin(an)*gr*0.12);
-    c.lineTo(gx + Math.cos(an)*gr*0.8, gy + Math.sin(an)*gr*0.8); c.stroke();
-    c.fillStyle = C.ink; c.beginPath(); c.arc(gx, gy, 4, 0, Math.PI*2); c.fill();
-    c.fillStyle = C.ink; c.font = '700 13px "Atkinson Hyperlegible", system-ui, sans-serif';
-    c.fillText('Manometer', gx, gy - gr - 12);
-  }
-
-  // --- Zeichnen: Diagramm ---
-  function drawPlot(){
-    const c = pc; c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,pw,ph);
-    const m = { l:58, r:14, t:14, b:44 };
-    const W = pw - m.l - m.r, H = ph - m.t - m.b;
-    const inv = mode === 'inv';
-    const xMax = inv ? 55 : 110, xStep = inv ? 10 : 20, yStep = 500;
-    const xOf = V => inv ? 1000/V : V;
-    const X = x => m.l + x/xMax*W, Y = p => m.t + H - p/PMAX*H;
-    const font = '12px "Atkinson Hyperlegible", system-ui, sans-serif';
-
-    // Gitter
-    c.strokeStyle = C.grid; c.lineWidth = 1;
-    for (let x=xStep; x<=xMax; x+=xStep){ c.beginPath(); c.moveTo(X(x), m.t); c.lineTo(X(x), m.t+H); c.stroke(); }
-    for (let y=yStep; y<=PMAX; y+=yStep){ c.beginPath(); c.moveTo(m.l, Y(y)); c.lineTo(m.l+W, Y(y)); c.stroke(); }
-
-    // Achsen
-    c.strokeStyle = C.ink; c.lineWidth = 1.5;
-    c.beginPath(); c.moveTo(m.l, m.t); c.lineTo(m.l, m.t+H); c.lineTo(m.l+W, m.t+H); c.stroke();
-    c.fillStyle = C.muted; c.font = font;
-    c.textAlign = 'center'; c.textBaseline = 'top';
-    for (let x=0; x<=xMax; x+=xStep) c.fillText(x, X(x), m.t+H+6);
-    c.textAlign = 'right'; c.textBaseline = 'middle';
-    for (let y=0; y<=PMAX; y+=yStep) c.fillText(y.toLocaleString('de-DE'), m.l-6, Y(y));
-    c.fillStyle = C.ink; c.font = '700 13px "Atkinson Hyperlegible", system-ui, sans-serif';
-    c.textAlign = 'right'; c.textBaseline = 'bottom';
-    c.fillText(inv ? '1/V in 1/l' : 'V in ml', m.l+W, ph-4);
-    c.save(); c.translate(14, m.t + H/2); c.rotate(-Math.PI/2);
-    c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('p in hPa', 0, 0); c.restore();
-
-    c.save(); c.beginPath(); c.rect(m.l, m.t, W, H); c.clip();
-
-    // Theorie
-    if ($('theory').checked){
-      c.strokeStyle = C.muted; c.lineWidth = 2; c.setLineDash([6,5]);
-      c.beginPath();
-      if (inv){ c.moveTo(X(0), Y(0)); c.lineTo(X(55), Y(50*55)); }
-      else { let first = true; for (let V=K/PMAX; V<=110; V+=0.5){ const x=X(V), y=Y(K/V); first ? c.moveTo(x,y) : c.lineTo(x,y); first=false; } }
-      c.stroke(); c.setLineDash([]);
-    }
-
-    // Spur
-    c.fillStyle = C.accent; c.globalAlpha = 0.18;
-    for (const V of trail){ c.beginPath(); c.arc(X(xOf(V)), Y(K/V), 2, 0, Math.PI*2); c.fill(); }
-    c.globalAlpha = 1;
-
-    // Messwerte
-    for (const d of data){
-      c.fillStyle = C.accent2; c.strokeStyle = C.panel; c.lineWidth = 2;
-      c.beginPath(); c.arc(X(xOf(d.V)), Y(d.p), 6, 0, Math.PI*2); c.fill(); c.stroke();
-    }
-
-    // Aktueller Zustand
-    const cx = X(xOf(Vcur)), cy = Y(K/Vcur);
-    c.strokeStyle = C.accent; c.globalAlpha = 0.55; c.lineWidth = 1.2; c.setLineDash([4,4]);
-    c.beginPath(); c.moveTo(cx, m.t+H); c.lineTo(cx, cy); c.lineTo(m.l, cy); c.stroke();
-    c.setLineDash([]); c.globalAlpha = 1;
-    c.fillStyle = C.accent; c.strokeStyle = C.panel; c.lineWidth = 2.5;
-    c.beginPath(); c.arc(cx, cy, 7.5, 0, Math.PI*2); c.fill(); c.stroke();
-    c.restore();
-  }
-
-  // --- Anzeigen ---
-  let lastTxt = '';
-  function updateReadouts(){
-    const v = Vd(), p = pd(v);
-    const txt = v + '|' + p + '|' + Math.round(hitRate);
-    if (txt === lastTxt) return; lastTxt = txt;
-    $('rV').textContent = v + ' ml';
-    $('rP').textContent = fmt(p) + ' hPa';
-    $('rPV').textContent = fmt(p*v) + ' hPa·ml';
-    $('rHits').textContent = hitRate > 0.5 ? '≈ ' + Math.round(hitRate) : '–';
-  }
-
-  function renderTable(){
-    const tb = $('tb'), tf = $('tf');
-    if (!data.length){
-      tb.innerHTML = '<tr><td class="empty" colspan="4">Noch keine Messwerte. Stelle ein Volumen ein und nimm den Wert auf.</td></tr>';
-      tf.innerHTML = ''; return;
-    }
-    tb.innerHTML = data.map((d,i) =>
-      `<tr><td>${i+1}</td><td>${d.V}</td><td>${fmt(d.p)}</td><td>${fmt(d.p*d.V)}</td></tr>`).join('');
-    if (data.length >= 2){
-      const mean = data.reduce((s,d) => s + d.p*d.V, 0)/data.length;
-      tf.innerHTML = `<tr><td colspan="3">Mittelwert p · V</td><td>${fmt(mean)}</td></tr>`;
-    } else tf.innerHTML = '';
-  }
-
-  // --- Bedienung ---
-  const slider = $('vol');
-  function setAuto(on){
-    auto = on;
-    $('auto').textContent = on ? 'Anhalten' : 'Automatisch bewegen';
-    if (on){ const s = Math.max(-1, Math.min(1, (Vcur-60)/38)); autoT = Math.asin(s)/0.55; }
-  }
-  slider.addEventListener('input', () => { setAuto(false); target = +slider.value; });
-  $('auto').addEventListener('click', () => setAuto(!auto));
-  $('rec').addEventListener('click', () => {
-    const v = Vd(); data.push({ V:v, p:pd(v) });
-    if (data.length > 15) data.shift();
-    renderTable();
+    // core
+    sCtx.beginPath(); sCtx.arc(px, py, p.r * dpr, 0, Math.PI * 2);
+    sCtx.fillStyle = `hsla(${hue},70%,48%,0.92)`; sCtx.fill();
+    sCtx.strokeStyle = `hsla(${hue},60%,78%,0.8)`;
+    sCtx.lineWidth = dpr; sCtx.stroke();
   });
-  $('clr').addEventListener('click', () => { data = []; trail = []; renderTable(); });
-  function setMode(m){
-    mode = m;
-    $('mPV').setAttribute('aria-pressed', m==='pv');
-    $('mInv').setAttribute('aria-pressed', m==='inv');
-  }
-  $('mPV').addEventListener('click', () => setMode('pv'));
-  $('mInv').addEventListener('click', () => setMode('inv'));
 
-  let drag = false;
-  function dragTo(e){
-    const r = cyl.getBoundingClientRect();
-    const V = Math.max(VMIN, Math.min(VMAX, (geo.yBot - (e.clientY - r.top))/geo.ppu));
-    target = V; slider.value = Math.round(V);
+  // Pressure arrows
+  const nArr = Math.min(7, Math.floor(pres * 1.1));
+  for (let i = 0; i < nArr; i++) {
+    const ay = ((i + 0.5) / nArr) * (H - 10 * dpr) + 5 * dpr;
+    const ax = pistonX - 18 * dpr - 4 * dpr;
+    const alen = Math.min(26 * dpr, ax - 10 * dpr);
+    if (alen < 8 * dpr) continue;
+    const al = 0.45 + intensity * 0.45;
+    sCtx.strokeStyle = `rgba(217,95,43,${al})`;
+    sCtx.fillStyle = `rgba(217,95,43,${al})`;
+    sCtx.lineWidth = 1.5 * dpr;
+    sCtx.beginPath(); sCtx.moveTo(ax - alen, ay); sCtx.lineTo(ax, ay); sCtx.stroke();
+    sCtx.beginPath();
+    sCtx.moveTo(ax, ay);
+    sCtx.lineTo(ax - 7 * dpr, ay - 4 * dpr);
+    sCtx.lineTo(ax - 7 * dpr, ay + 4 * dpr);
+    sCtx.closePath(); sCtx.fill();
   }
-  cyl.addEventListener('pointerdown', e => {
-    const r = cyl.getBoundingClientRect(), x = e.clientX - r.left;
-    if (x > geo.cylX - 24 && x < geo.cylX + geo.cylW + 24){
-      drag = true; setAuto(false);
-      try { cyl.setPointerCapture(e.pointerId); } catch(err){}
-      dragTo(e);
-    }
+
+  // Walls
+  sCtx.strokeStyle = '#9ab0c4';
+  sCtx.lineWidth = 3 * dpr;
+  [[0, 2, W, 2], [0, H - 2, W, H - 2], [2, 0, 2, H]].forEach(([x1,y1,x2,y2]) => {
+    sCtx.beginPath(); sCtx.moveTo(x1, y1); sCtx.lineTo(x2, y2); sCtx.stroke();
   });
-  cyl.addEventListener('pointermove', e => { if (drag) dragTo(e); });
-  ['pointerup','pointercancel'].forEach(t => cyl.addEventListener(t, () => drag = false));
 
-  // --- Start ---
-  resize(); initParticles(); renderTable();
-  if ('ResizeObserver' in window){ new ResizeObserver(resize).observe(document.body); }
-  else window.addEventListener('resize', resize);
+  // Piston
+  const pw = 16 * dpr;
+  const pg = sCtx.createLinearGradient(pistonX - pw, 0, pistonX + 4 * dpr, 0);
+  pg.addColorStop(0, '#7a99b4'); pg.addColorStop(0.35, '#b8cdd8');
+  pg.addColorStop(0.7, '#e8f0f5'); pg.addColorStop(1, '#fff');
+  sCtx.fillStyle = pg;
+  sCtx.fillRect(pistonX - pw, 3 * dpr, pw + 4 * dpr, H - 6 * dpr);
+  sCtx.strokeStyle = '#7a99b4'; sCtx.lineWidth = 1.5 * dpr;
+  sCtx.strokeRect(pistonX - pw, 3 * dpr, pw + 4 * dpr, H - 6 * dpr);
+  // grooves
+  sCtx.strokeStyle = 'rgba(100,140,165,0.38)'; sCtx.lineWidth = dpr;
+  [0.3, 0.5, 0.7].forEach(f => {
+    sCtx.beginPath(); sCtx.moveTo(pistonX - pw + 4 * dpr, f * H); sCtx.lineTo(pistonX - 4 * dpr, f * H); sCtx.stroke();
+  });
 
-  let tPrev = performance.now(), colorTick = 0;
-  function frame(tNow){
-    const dt = Math.min(0.033, (tNow - tPrev)/1000); tPrev = tNow;
-    const now = tNow/1000;
-    if ((colorTick += dt) > 1){ colorTick = 0; readColors(); }
-    step(dt, now);
-    drawCyl(now); drawPlot(); updateReadouts();
-    requestAnimationFrame(frame);
+  // Rod
+  sCtx.strokeStyle = '#b0bec8'; sCtx.lineWidth = 5 * dpr; sCtx.lineCap = 'round';
+  sCtx.beginPath(); sCtx.moveTo(pistonX + 4 * dpr, H / 2); sCtx.lineTo(W - 6 * dpr, H / 2); sCtx.stroke();
+  sCtx.lineCap = 'butt';
+
+  // Labels
+  sCtx.font = `bold ${10 * dpr}px DM Sans, sans-serif`;
+  sCtx.fillStyle = 'rgba(29,138,120,0.65)';
+  sCtx.fillText('Gas', 10 * dpr, 16 * dpr);
+  if (pistonX < W - 60 * dpr) {
+    sCtx.fillStyle = 'rgba(122,153,180,0.65)';
+    sCtx.fillText('Kolben', pistonX + 6 * dpr, 16 * dpr);
   }
-  requestAnimationFrame(frame);
-})();
+
+  // Pressure label
+  sCtx.fillStyle = `rgba(217,95,43,${Math.min(1, intensity + 0.2)})`;
+  sCtx.font = `bold ${10 * dpr}px DM Sans, sans-serif`;
+  const pLabel = `p = ${pres.toFixed(2)} bar`;
+  sCtx.fillText(pLabel, 10 * dpr, H - 8 * dpr);
+}
+
+// ──────────────────────────────────────────────────────────────
+// DYNAMIC EXPLANATION
+// ──────────────────────────────────────────────────────────────
+function updateExplanation(v) {
+  const p = getP(v);
+  const state = v > 65 ? 'low' : v > 38 ? 'mid' : 'high';
+  const configs = {
+    low: {
+      icon: '😌',
+      title: 'Großes Volumen – niedriger Druck',
+      text: `Die Gasteilchen haben viel Platz. Sie prallen selten gegen die Wände – der Druck ist niedrig (${p.toFixed(2)} bar). Das Produkt p·V = ${(p*v).toFixed(0)} bar·cm³ bleibt konstant.`,
+      tip: 'Tipp: Schiebe den Regler nach links – beobachte, wie der Druck steigt!',
+      bar: 'linear-gradient(90deg, #1d8a78, #a8ddd6)',
+    },
+    mid: {
+      icon: '🧐',
+      title: 'Mittleres Volumen – mittlerer Druck',
+      text: `Ein ausgewogener Zustand (V = ${v} cm³, p = ${p.toFixed(2)} bar). Probiere: Halbiere das Volumen – was erwartest du für den Druck? Das Produkt p·V = ${(p*v).toFixed(0)} bleibt stets konstant!`,
+      tip: 'Tipp: Wenn V halbiert wird, verdoppelt sich p. Teste es aus!',
+      bar: 'linear-gradient(90deg, #1d8a78, #d95f2b)',
+    },
+    high: {
+      icon: '😤',
+      title: 'Kleines Volumen – hoher Druck!',
+      text: `Die Teilchen sind eng gedrängt und stoßen viel häufiger auf die Wände – der Druck steigt stark an (${p.toFixed(2)} bar). Trotzdem gilt: p·V = ${(p*v).toFixed(0)} bar·cm³ = konstant!`,
+      tip: 'Tipp: Das ist genau der Effekt beim Eindrücken einer Fahrradpumpe!',
+      bar: 'linear-gradient(90deg, #d95f2b, #b81a10)',
+    }
+  };
+  const c = configs[state];
+  document.getElementById('explIcon').textContent = c.icon;
+  document.getElementById('explTitle').textContent = c.title;
+  document.getElementById('explText').textContent = c.text;
+  document.getElementById('explTip').textContent = c.tip;
+  document.getElementById('statusBar').style.background = c.bar;
+}
+
+// ──────────────────────────────────────────────────────────────
+// GRAPH CANVAS
+// ──────────────────────────────────────────────────────────────
+const graphCanvas = document.getElementById('graphCanvas');
+const gCtx = graphCanvas.getContext('2d');
+let trail = [];
+
+function drawGraph() {
+  const rect = graphCanvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const cw = Math.round(rect.width * dpr), ch = Math.round(rect.height * dpr);
+  if (graphCanvas.width !== cw) { graphCanvas.width = cw; graphCanvas.height = ch; }
+  const W = graphCanvas.width, H = graphCanvas.height;
+  gCtx.clearRect(0, 0, W, H);
+
+  const pad = { l: 56*dpr, r: 26*dpr, t: 24*dpr, b: 50*dpr };
+  const iW = W - pad.l - pad.r, iH = H - pad.t - pad.b;
+  const Vmin = 14, Vmax = 96, Pmin = 0, Pmax = 8;
+
+  const tx = v => pad.l + ((v - Vmin) / (Vmax - Vmin)) * iW;
+  const ty = p => pad.t + (1 - (p - Pmin) / (Pmax - Pmin)) * iH;
+
+  // BG
+  gCtx.fillStyle = '#fafaf8';
+  gCtx.fillRect(0, 0, W, H);
+
+  // Grid
+  gCtx.strokeStyle = 'rgba(200,195,185,0.5)'; gCtx.lineWidth = 1;
+  for (let v = 20; v <= 90; v += 10) { gCtx.beginPath(); gCtx.moveTo(tx(v), pad.t); gCtx.lineTo(tx(v), pad.t+iH); gCtx.stroke(); }
+  for (let p = 0; p <= 8; p++) { gCtx.beginPath(); gCtx.moveTo(pad.l, ty(p)); gCtx.lineTo(pad.l+iW, ty(p)); gCtx.stroke(); }
+
+  // Area under curve
+  gCtx.beginPath();
+  let first = true;
+  for (let v = Vmin+0.2; v <= Vmax; v += 0.4) {
+    const p = PV_K / v; if (p > Pmax) continue;
+    if (first) { gCtx.moveTo(tx(v), ty(p)); first = false; } else gCtx.lineTo(tx(v), ty(p));
+  }
+  gCtx.lineTo(tx(Vmax), ty(0)); gCtx.lineTo(tx(Vmin), ty(0)); gCtx.closePath();
+  gCtx.fillStyle = 'rgba(29,138,120,0.07)'; gCtx.fill();
+
+  // Curve
+  gCtx.beginPath();
+  first = true;
+  gCtx.strokeStyle = '#1d8a78'; gCtx.lineWidth = 2.5 * dpr; gCtx.lineJoin = 'round';
+  for (let v = Vmin+0.2; v <= Vmax; v += 0.3) {
+    const p = PV_K / v; if (p > Pmax) continue;
+    if (first) { gCtx.moveTo(tx(v), ty(p)); first = false; } else gCtx.lineTo(tx(v), ty(p));
+  }
+  gCtx.stroke();
+
+  // Axes
+  gCtx.strokeStyle = '#5a7085'; gCtx.lineWidth = 2 * dpr;
+  gCtx.beginPath(); gCtx.moveTo(pad.l, pad.t); gCtx.lineTo(pad.l, pad.t+iH); gCtx.lineTo(pad.l+iW, pad.t+iH); gCtx.stroke();
+
+  // Tick labels
+  gCtx.fillStyle = '#5a7085'; gCtx.font = `${10*dpr}px DM Sans, sans-serif`;
+  gCtx.textAlign = 'center';
+  for (let v = 20; v <= 90; v += 20) gCtx.fillText(v, tx(v), pad.t+iH+16*dpr);
+  gCtx.textAlign = 'right';
+  for (let p = 0; p <= 8; p += 2) gCtx.fillText(p, pad.l-8*dpr, ty(p)+4*dpr);
+
+  // Axis labels
+  gCtx.font = `bold ${11*dpr}px DM Sans, sans-serif`;
+  gCtx.textAlign = 'center';
+  gCtx.fillStyle = '#1d8a78';
+  gCtx.fillText('V  (cm³)', pad.l + iW/2, H - 6*dpr);
+  gCtx.save(); gCtx.translate(14*dpr, pad.t + iH/2); gCtx.rotate(-Math.PI/2);
+  gCtx.fillStyle = '#d95f2b'; gCtx.fillText('p  (bar)', 0, 0); gCtx.restore();
+
+  // Curve label
+  const lv = 72, lp = PV_K / lv;
+  if (lp < Pmax - 0.2) {
+    gCtx.font = `italic ${10*dpr}px DM Sans, sans-serif`;
+    gCtx.fillStyle = 'rgba(29,138,120,0.65)'; gCtx.textAlign = 'left';
+    gCtx.fillText('p · V = konst.  (Isotherme)', tx(lv) + 6*dpr, ty(lp) - 7*dpr);
+  }
+
+  // Trail
+  const curP = getP(vol);
+  trail.push({ v: vol, p: curP });
+  if (trail.length > 120) trail.shift();
+  trail.forEach((pt, i) => {
+    const a = (i / trail.length) * 0.55;
+    gCtx.fillStyle = `rgba(29,138,120,${a})`;
+    gCtx.beginPath(); gCtx.arc(tx(pt.v), ty(pt.p), 2.5*dpr, 0, Math.PI*2); gCtx.fill();
+  });
+
+  // Current point
+  const cx = tx(vol), cy = ty(curP);
+  gCtx.strokeStyle = 'rgba(29,138,120,0.2)'; gCtx.lineWidth = dpr;
+  gCtx.setLineDash([4*dpr, 4*dpr]);
+  gCtx.beginPath(); gCtx.moveTo(cx, cy); gCtx.lineTo(cx, pad.t+iH); gCtx.stroke();
+  gCtx.beginPath(); gCtx.moveTo(cx, cy); gCtx.lineTo(pad.l, cy); gCtx.stroke();
+  gCtx.setLineDash([]);
+
+  [14, 8, 4].forEach((r, i) => {
+    gCtx.beginPath(); gCtx.arc(cx, cy, r*dpr, 0, Math.PI*2);
+    gCtx.fillStyle = ['rgba(29,138,120,0.1)','rgba(29,138,120,0.25)','#1d8a78'][i]; gCtx.fill();
+    if (i === 2) { gCtx.strokeStyle = 'white'; gCtx.lineWidth = 1.5*dpr; gCtx.stroke(); }
+  });
+
+  // Coordinate tags
+  gCtx.font = `bold ${10*dpr}px DM Sans, sans-serif`;
+  gCtx.fillStyle = '#1a3552'; gCtx.textAlign = 'center';
+  gCtx.fillText(`V=${vol}`, cx, pad.t+iH+30*dpr);
+  gCtx.textAlign = 'right';
+  gCtx.fillText(`p=${curP.toFixed(1)}`, pad.l-10*dpr, cy+4*dpr);
+}
+
+// ──────────────────────────────────────────────────────────────
+// SLIDER
+// ──────────────────────────────────────────────────────────────
+const slider = document.getElementById('volSlider');
+
+function updateSliderTrack() {
+  const pct = (slider.value - slider.min) / (slider.max - slider.min) * 100;
+  slider.style.background = `linear-gradient(90deg, #1d8a78 ${pct}%, #ddd8cd ${pct}%)`;
+}
+
+slider.addEventListener('input', e => {
+  vol = +e.target.value;
+  const p = getP(vol);
+  document.getElementById('volLabel').textContent = `${vol} cm³`;
+  document.getElementById('volVal').textContent = vol.toFixed(1);
+  document.getElementById('presVal').textContent = p.toFixed(2);
+  document.getElementById('pvVal').textContent = (p * vol).toFixed(1);
+  updateExplanation(vol);
+  updateSliderTrack();
+});
+
+// ──────────────────────────────────────────────────────────────
+// TABS
+// ──────────────────────────────────────────────────────────────
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'diagramm') trail = [];
+}
+
+// ──────────────────────────────────────────────────────────────
+// QUIZ
+// ──────────────────────────────────────────────────────────────
+function selectMC(el, gid) {
+  document.querySelectorAll(`#${gid} .mc-option`).forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function checkMC(gid, correct, fbId) {
+  const opts = document.querySelectorAll(`#${gid} .mc-option`);
+  const fb = document.getElementById(fbId);
+  let sel = -1;
+  opts.forEach((o, i) => { if (o.classList.contains('selected')) sel = i; });
+  if (sel === -1) { fb.className='feedback wrong'; fb.style.display='block'; fb.textContent='Bitte wähle eine Antwort aus.'; return; }
+  opts.forEach((o, i) => {
+    o.classList.remove('selected','correct','wrong');
+    if (i === correct) o.classList.add('correct');
+    else if (i === sel) o.classList.add('wrong');
+  });
+  if (sel === correct) {
+    fb.className='feedback correct';
+    fb.innerHTML='✅ Richtig! Wenn V sich verdoppelt, halbiert sich p – denn p·V = konst. Aus p₁V₁ = p₂V₂ folgt p₂ = p₁/2.';
+  } else {
+    fb.className='feedback wrong';
+    fb.innerHTML='❌ Leider falsch. Nutze die Formel p₁·V₁ = p₂·V₂. Wenn V₂ = 2·V₁, dann muss p₂ = p₁/2 sein.';
+  }
+  fb.style.display='block';
+}
+
+function checkNum(inputId, correct, tol, fbId) {
+  const v = parseFloat(document.getElementById(inputId).value);
+  const inp = document.getElementById(inputId);
+  const fb = document.getElementById(fbId);
+  if (isNaN(v)) { fb.className='feedback wrong'; fb.innerHTML='Bitte gib eine Zahl ein.'; fb.style.display='block'; return; }
+  const ok = Math.abs(v - correct) <= tol;
+  inp.classList.toggle('correct', ok); inp.classList.toggle('wrong', !ok);
+  fb.className = 'feedback ' + (ok ? 'correct' : 'wrong');
+  if (ok) {
+    fb.innerHTML = `✅ Richtig! Das Ergebnis ist ${correct}. Gut gemacht – du hast das Gesetz korrekt angewendet!`;
+  } else {
+    fb.innerHTML = `❌ Nicht ganz richtig. Nutze: p₂ = (p₁ · V₁) / V₂ bzw. V₂ = (p₁ · V₁) / p₂. Zeig dir den Hinweis an!`;
+  }
+  fb.style.display='block';
+}
+
+function toggleHint(id, btn) {
+  const el = document.getElementById(id);
+  const show = el.classList.toggle('visible');
+  btn.innerHTML = show ? '💡 Hinweis verbergen' : '💡 Hinweis anzeigen';
+}
+
+// ──────────────────────────────────────────────────────────────
+// LOOP
+// ──────────────────────────────────────────────────────────────
+function loop() { drawSim(); drawGraph(); requestAnimationFrame(loop); }
+
+updateSliderTrack();
+updateExplanation(vol);
+loop();
 </script>
-<a href="../../../../index.html#klasse-8" style="position:fixed;left:10px;bottom:10px;z-index:50;font:600 14px/1 Arial,Helvetica,sans-serif;color:#fff;background:rgba(27,42,74,.88);text-decoration:none;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.35)">&larr; Übersicht</a>
 </body>
 </html>

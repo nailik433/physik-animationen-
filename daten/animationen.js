@@ -13,7 +13,7 @@ window.PHYSIK = {
       thema: 'Magnetismus',
       titel: 'Elementarmagnete: Nagel magnetisieren',
       beschreibung: 'Ein Eisennagel wird durch Streichen magnetisiert und durch Klopfen oder Erhitzen wieder entmagnetisiert – im Modell der Elementarmagnete.',
-      datei: 'animationen/klasse-7/magnetismus/elementarmagnete/index.html',
+      datei: 'animationen/klasse-7/magnetismus/elementarmagnete/nagel_magnetisierung.html',
       icon: '🧲',
       tags: ['Elementarmagnete', 'Magnetisieren', 'Entmagnetisieren', 'Nagel', 'Curie-Temperatur']
     },
@@ -29,7 +29,7 @@ window.PHYSIK = {
     {
       klasse: 8,
       thema: 'Druck und Gase',
-      titel: 'Gesetz von Boyle-Mariotte',
+      titel: 'Boyle-Mariotte: Interaktive Lernstation',
       beschreibung: 'Ein Gas wird im Zylinder zusammengedrückt: p · V bleibt konstant. Mit Teilchenmodell, Messtabelle und Diagramm.',
       datei: 'animationen/klasse-8/druck-gase/boyle-mariotte/index.html',
       icon: '🧪',
@@ -39,10 +39,10 @@ window.PHYSIK = {
       klasse: 9,
       thema: 'Elektrizität',
       titel: 'Leiter und Nichtleiter',
-      beschreibung: 'Materialproben im Stromkreis und der Blick ins Material: Warum leiten Metalle, und Kunststoff, Holz, Glas und Luft nicht?',
+      beschreibung: 'Materialproben im Stromkreis und der Blick ins Material: Metalle, Graphit, Lackdraht, Kunststoff, Holz, Glas, Luft sowie destilliertes Wasser und Salzwasser (Ionenfluss). Mit Versuchsprotokoll.',
       datei: 'animationen/klasse-9/elektrizitaet/leiter-nichtleiter/index.html',
       icon: '🔌',
-      tags: ['Leiter', 'Nichtleiter', 'Isolator', 'freie Elektronen', 'Atome']
+      tags: ['Leiter', 'Nichtleiter', 'Isolator', 'freie Elektronen', 'Salzwasser', 'Ionen']
     },
     {
       klasse: 9,
