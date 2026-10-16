@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Hintergrund -->
+  <rect width="512" height="512" rx="80" fill="#1c2e4a"/>
+  <!-- Wippe / Hebel -->
+  <rect x="64" y="248" width="384" height="16" rx="8" fill="#c8962b"/>
+  <!-- Drehpunkt (Dreieck) -->
+  <polygon points="256,264 228,320 284,320" fill="#c8962b"/>
+  <rect x="218" y="316" width="76" height="12" rx="4" fill="#c8962b"/>
+  <!-- Linke Last -->
+  <rect x="88" y="190" width="52" height="52" rx="6" fill="#fbf8f0"/>
+  <line x1="114" y1="190" x2="114" y2="248" stroke="#fbf8f0" stroke-width="5" stroke-linecap="round"/>
+  <!-- Rechte Hand / Kraft -->
+  <rect x="372" y="200" width="52" height="52" rx="6" fill="#b84a1e"/>
+  <line x1="398" y1="252" x2="398" y2="248" stroke="#b84a1e" stroke-width="5" stroke-linecap="round"/>
+  <!-- Formel: F₁·s₁ = F₂·s₂ -->
+  <text x="256" y="390" text-anchor="middle" font-family="Georgia,serif" font-size="42" fill="#c8962b" font-style="italic">F·s = F·s</text>
+</svg>
