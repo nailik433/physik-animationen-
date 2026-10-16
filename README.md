@@ -19,10 +19,9 @@ Reines HTML/CSS/JavaScript – kein Build, keine Installation, keine Internetver
 | 9 | Elektrizität | Der Weg durch das Lämpchen |
 | 9 | Elektrizität | Stromstärke im Modell |
 | 9 | Elektrizität | Rollenspiel: Wir sind der Stromkreis |
-| 9 | Induktion und Transformator | Transformator-Labor |
-| 9 | Induktion und Transformator | Transformator: Gleich- vs. Wechselstrom |
+| 10 | Induktion und Transformator | Transformator-Labor |
 
-Klasse 10 ist angelegt und wartet auf Inhalte. Die Klassenzuordnung steht in `daten/animationen.js` und lässt sich dort jederzeit ändern (Eintrag `klasse`/`thema` anpassen, Ordner bei Bedarf verschieben).
+Die Klassenzuordnung steht in `daten/animationen.js` und lässt sich dort jederzeit ändern (Eintrag `klasse`/`thema` anpassen, Ordner bei Bedarf verschieben).
 
 ## Neue Animation hinzufügen
 

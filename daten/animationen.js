@@ -72,22 +72,13 @@ window.PHYSIK = {
       tags: ['Stromstärke', 'Stromkreis', 'Elektronen', 'Rollenspiel', 'Energie']
     },
     {
-      klasse: 9,
+      klasse: 10,
       thema: 'Induktion und Transformator',
       titel: 'Transformator-Labor',
       beschreibung: 'Wann leuchtet die Lampe an der Sekundärspule? Gleichspannung, Umstecken und Wechselspannung im Vergleich.',
-      datei: 'animationen/klasse-9/induktion-transformator/transformator-labor/index.html',
+      datei: 'animationen/klasse-10/induktion-transformator/transformator-labor/index.html',
       icon: '🧰',
       tags: ['Transformator', 'Induktion', 'Wechselspannung', 'Magnetfeld', 'Eisenkern']
-    },
-    {
-      klasse: 9,
-      thema: 'Induktion und Transformator',
-      titel: 'Transformator: Gleich- vs. Wechselstrom',
-      beschreibung: 'Warum braucht ein Transformator Wechselstrom? Das Magnetfeld im Eisenkern muss sich ändern.',
-      datei: 'animationen/klasse-9/induktion-transformator/transformator-gleich-wechselstrom/index.html',
-      icon: '🔁',
-      tags: ['Transformator', 'Gleichstrom', 'Wechselstrom', 'Induktion']
     }
   ]
 };
