@@ -20,6 +20,7 @@ Reines HTML/CSS/JavaScript – kein Build, keine Installation, keine Internetver
 | 9 | Elektrizität | Stromstärke im Modell |
 | 9 | Elektrizität | Rollenspiel: Wir sind der Stromkreis |
 | 10 | Induktion und Transformator | Transformator-Labor |
+| 10 | Elektrische Energieversorgung | Vom Kraftwerk zur Steckdose |
 
 Die Klassenzuordnung steht in `daten/animationen.js` und lässt sich dort jederzeit ändern (Eintrag `klasse`/`thema` anpassen, Ordner bei Bedarf verschieben).
 
