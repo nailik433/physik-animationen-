@@ -79,6 +79,15 @@ window.PHYSIK = {
       datei: 'animationen/klasse-10/induktion-transformator/transformator-labor/index.html',
       icon: '🧰',
       tags: ['Transformator', 'Induktion', 'Wechselspannung', 'Magnetfeld', 'Eisenkern']
+    },
+    {
+      klasse: 10,
+      thema: 'Elektrische Energieversorgung',
+      titel: 'Vom Kraftwerk zur Steckdose',
+      beschreibung: 'Lernumgebung (Stunde 5): Der Weg der Energie vom Generator über Hochspannungsleitungen und Umspannwerke bis zur Steckdose. Mit Animationen, Simulationen, Arbeitsblatt-Aufgaben und Abschlussquiz.',
+      datei: 'animationen/klasse-10/elektrische-energieversorgung/vom-kraftwerk-zur-steckdose/index.html',
+      icon: '🏭',
+      tags: ['Kraftwerk', 'Generator', 'Hochspannung', 'Transformator', 'Stromnetz', 'Leistung', 'Wärmeverlust']
     }
   ]
 };
