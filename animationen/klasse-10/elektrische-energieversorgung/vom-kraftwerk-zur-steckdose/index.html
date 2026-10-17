@@ -1598,16 +1598,19 @@ footer { max-width: 1180px; margin: 0 auto; color: var(--muted); font-size: .85r
       }
       const fb = h("div");
       const chk = h("button", { class: "btn primary", text: "Antwort prüfen" });
-      const next = h("button", { class: "btn" + (answered ? " primary" : ""), text: qi === Q.length - 1 ? "Zur Auswertung →" : "Weiter →" });
+      const nextText = qi === Q.length - 1 ? "Zur Auswertung →" : "Weiter →";
+      const next = h("button", { class: "btn" + (answered ? " primary" : ""), text: nextText });
+      const resetSkip = () => { confirmSkip = false; next.textContent = nextText; };   // Warnhinweis „Ohne Antwort weiter?“ zurücknehmen
       const back = h("button", { class: "btn", text: "← Zurück" });
       back.disabled = qi === 0;
-      function upd() { chk.disabled = S.pts[qi] !== null || get() === null; }
+      function upd() { resetSkip(); chk.disabled = S.pts[qi] !== null || get() === null; }   // jede Änderung der Antwort nimmt die Warnung zurück
       function showFb() {
         const got = S.pts[qi], cls = got >= q.p ? "ok" : got > 0 ? "part" : "bad";
         fb.className = "qz-fb " + cls; fb.innerHTML = "";
         fb.append(h("b", { text: cls === "ok" ? "Richtig! +" + fmtPts(got) + " Punkte" : cls === "part" ? "Teilweise richtig: +" + fmtPts(got) + " von " + q.p + " Punkten" : "Leider falsch: 0 von " + q.p + " Punkten" }),
           h("span", { text: (q.type === "num" ? "Lösung: " : "") + b.sol }));
         mark();
+        resetSkip();
         chk.hidden = true; next.classList.add("primary");
       }
       chk.addEventListener("click", () => { const a = get(); if (a === null) return; S.ans[qi] = a; S.pts[qi] = grade(qi, a); save(); showFb(); card.querySelector(".qz-pts").textContent = q.p + " Punkte · gesamt " + fmtPts(score()) + " / " + TOTAL; });
