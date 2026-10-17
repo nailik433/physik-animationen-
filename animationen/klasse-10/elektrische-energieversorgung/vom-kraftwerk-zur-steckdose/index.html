@@ -1467,7 +1467,18 @@ footer { max-width: 1180px; margin: 0 auto; color: var(--muted); font-size: .85r
     /* ---- Zustand ---- */
     let S = null;
     const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
-    const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { return null; } };
+    /* Datenschutz: Es werden nur Kürzel gespeichert (2 Buchstaben + Geburtstag als 2 Ziffern, z. B. TM05), nie Klarnamen. */
+    const KUERZEL = /^[A-ZÄÖÜ]{2}[0-9]{2}$/;
+    const kuerzelListe = (t) => String(t || "").toUpperCase().split(/[\s,;\/+&]+/).filter((x) => x && x !== "UND");
+    const kuerzelOk = (t) => { const l = kuerzelListe(t); return l.length >= 1 && l.length <= 3 && l.every((c) => KUERZEL.test(c)); };
+    const load = () => {
+      try {
+        const o = JSON.parse(localStorage.getItem(KEY) || "null");
+        if (o && o.name && !kuerzelOk(o.name)) o.name = "";          // alte Einträge mit Namen werden verworfen
+        else if (o && o.name) o.name = kuerzelListe(o.name).join(" ");
+        return o;
+      } catch (e) { return null; }
+    };
     function fresh(name) {
       const seed = Math.floor(Math.random() * 2 ** 31);
       return { v: 1, unlocked: true, started: false, name: name || "", seed, i: 0, ans: Q.map(() => null), pts: Q.map(() => null), done: false };
@@ -1512,10 +1523,15 @@ footer { max-width: 1180px; margin: 0 auto; color: var(--muted); font-size: .85r
 
     function viewIntro() {
       root.innerHTML = "";
-      const name = h("input", { id: "qzName", type: "text", autocomplete: "off", placeholder: "z. B. Lena und Tom", maxlength: "60" });
+      const name = h("input", { id: "qzName", type: "text", autocomplete: "off", autocapitalize: "characters", spellcheck: "false", placeholder: "z. B. TM05", maxlength: "20", style: "text-transform:uppercase" });
       name.value = S.name || "";
+      const nameErr = h("div", { class: "qz-err", role: "alert" });
       const start = h("button", { class: "btn primary", text: "Quiz starten" });
-      start.addEventListener("click", () => { S.name = name.value.trim(); S.started = true; save(); render(); });
+      start.addEventListener("click", () => {
+        const v = name.value.trim();
+        if (v && !kuerzelOk(v)) { nameErr.textContent = "Bitte nur Kürzel eingeben, keine Namen: je 2 Buchstaben und 2 Ziffern, zum Beispiel TM05 (zu zweit: TM05 LK12)."; name.focus(); return; }
+        S.name = v ? kuerzelListe(v).join(" ") : ""; S.started = true; save(); render();
+      });
       root.append(h("div", { class: "qz" }, h("div", { class: "qz-card" },
         h("h3", { text: "So funktioniert das Quiz" }),
         h("ul", { class: "qz-todo" },
@@ -1523,7 +1539,8 @@ footer { max-width: 1180px; margin: 0 auto; color: var(--muted); font-size: .85r
           h("li", { text: "Jede Antwort könnt ihr genau einmal prüfen. Danach seht ihr die Lösung." }),
           h("li", { text: "Bei Aufgaben mit mehreren Teilen gibt es Teilpunkte." }),
           h("li", { text: "Am Ende seht ihr, welche Themen ihr sicher könnt und was ihr euch nochmal anschauen solltet." })),
-        h("div", { class: "qz-field" }, h("label", { for: "qzName", text: "Eure Namen (für die Auswertung)" }), name),
+        h("div", { class: "qz-field" }, h("label", { for: "qzName", text: "Euer Kürzel (für die Auswertung)" }), name, nameErr,
+          h("p", { class: "qz-hint", text: "Bitte keine Namen eingeben. Euer Kürzel: erster Buchstabe vom Vornamen, erster Buchstabe vom Nachnamen, dazu euer Geburtstag (nur der Tag, zweistellig). Beispiel: Tom Müller, geboren am 5.5.2012, gibt TM05. Zu zweit gebt ihr beide Kürzel ein, zum Beispiel TM05 LK12." })),
         h("div", {}, start))));
     }
 
