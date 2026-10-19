@@ -69,6 +69,15 @@ body {
 }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--head); }
 button { font: inherit; color: inherit; }
+/* iPad: Tippen statt Zeigen. Kein Doppeltipp-Zoom, kein Lupenmenü und kein Textmarkieren auf Bedienelementen, kein graues Aufblitzen. */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; touch-action: manipulation; }
+body { touch-action: manipulation; }
+button, .btn, [role=button], [role=radio], [role=checkbox], select, summary, a, .chapbtn, .term {
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none;
+}
+button, .btn, [role=button], [role=radio], [role=checkbox], summary, .chapbtn, .term, #netzSvg, #netSvg { -webkit-user-select: none; user-select: none; }
+input, select, textarea { touch-action: manipulation; }
+input[type=range] { min-height: 44px; }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
 
 /* ---------- Kopfleiste ---------- */
@@ -89,10 +98,10 @@ button { font: inherit; color: inherit; }
 .chapbtn {
   flex: 0 0 auto; display: flex; align-items: center; gap: 8px;
   background: transparent; border: 1px solid rgba(255,255,255,.18); color: var(--on-head);
-  border-radius: 999px; padding: 6px 12px 6px 6px; cursor: pointer; font-size: .9rem; white-space: nowrap;
+  border-radius: 999px; padding: 6px 14px 6px 8px; cursor: pointer; font-size: .95rem; white-space: nowrap; min-height: 48px;
 }
 .chapbtn .n {
-  display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%;
+  display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%;
   font-family: var(--font-mono); font-size: .85rem; background: rgba(255,255,255,.12);
 }
 .chapbtn.seen .n { background: rgba(255,193,69,.28); }
@@ -128,7 +137,8 @@ p { margin: 0; }
 
 /* Fachbegriffe zum Antippen */
 .term {
-  background: none; border: 0; padding: 0; cursor: help; font: inherit; color: inherit;
+  display: inline-block; line-height: 1.2; padding: 11px 4px; margin: -11px -4px;   /* Tippfläche mind. 44 px hoch, ohne den Zeilenabstand zu verändern */
+  background: none; border: 0; cursor: help; font: inherit; color: inherit;
   text-decoration: underline dotted var(--blue); text-decoration-thickness: 2px; text-underline-offset: 4px;
 }
 #gloss {
@@ -151,7 +161,7 @@ p { margin: 0; }
   font-weight: 700; cursor: pointer; min-height: 48px;
 }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-.btn.small { min-height: 40px; padding: 6px 14px; font-size: .95rem; }
+.btn.small { min-height: 44px; padding: 6px 16px; font-size: .95rem; }
 
 /* Bedienelemente */
 .seg { display: inline-flex; background: var(--surface-2); border-radius: 999px; padding: 4px; gap: 4px; flex-wrap: wrap; }
@@ -377,7 +387,23 @@ footer { max-width: 1180px; margin: 0 auto; color: var(--muted); font-size: .85r
     <div class="panel">
       <div class="panel-title">Animation: Generator in Zeitlupe</div>
       <div class="figwrap">
-        <svg viewBox="0 0 600 250" role="img" aria-label="Ein Magnet dreht sich vor einer Spule mit Eisenkern. Ein Spannungsmesser zeigt die Spannung an.">
+        <svg viewBox="0 -56 600 306" role="img" aria-label="Der Wind dreht ein Windrad. Das Windrad dreht einen Magneten vor einer Spule mit Eisenkern. Ein Spannungsmesser zeigt die Spannung an.">
+          <!-- Windrad im Hintergrund: dreht sich mit dem Magneten, der Wind treibt es an -->
+          <g aria-hidden="true">
+            <path d="M322 126 L315 246 H345 L338 126 Z" fill="var(--blue)" opacity=".16"/>
+            <g id="genRotor" transform="translate(330 120)" fill="var(--blue)" fill-opacity=".2" stroke="var(--blue)" stroke-opacity=".6" stroke-width="2" stroke-linejoin="round">
+              <path d="M-8 0 C-13 -34 -9 -78 0 -110 C9 -78 13 -34 8 0 Z"/>
+              <path d="M-8 0 C-13 -34 -9 -78 0 -110 C9 -78 13 -34 8 0 Z" transform="rotate(120)"/>
+              <path d="M-8 0 C-13 -34 -9 -78 0 -110 C9 -78 13 -34 8 0 Z" transform="rotate(240)"/>
+            </g>
+            <circle cx="330" cy="120" r="13" fill="var(--blue)" fill-opacity=".35" stroke="var(--blue)" stroke-opacity=".7" stroke-width="2"/>
+            <g id="genWind" fill="none" stroke="var(--blue)" stroke-opacity=".75" stroke-width="3.5" stroke-linecap="round">
+              <path d="M18 -26 H170" stroke-dasharray="26 18"/>
+              <path d="M18 -4 H196" stroke-dasharray="26 18"/>
+              <path d="M18 18 H152" stroke-dasharray="26 18"/>
+              <path d="M170 -33 L182 -26 L170 -19 M196 -11 L208 -4 L196 3 M152 11 L164 18 L152 25" stroke-width="3"/>
+            </g>
+          </g>
           <circle cx="330" cy="120" r="84" fill="none" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 6"/>
           <rect x="40" y="100" width="170" height="40" rx="4" fill="var(--core)"/>
           <g id="genCoil" fill="none" stroke="var(--coil)" stroke-width="4"></g>
@@ -400,7 +426,9 @@ footer { max-width: 1180px; margin: 0 auto; color: var(--muted); font-size: .85r
           <line id="genNeedle" x1="520" y1="140" x2="520" y2="96" stroke="var(--red)" stroke-width="3" stroke-linecap="round"/>
           <circle cx="520" cy="140" r="5" fill="var(--ink)"/>
           <text x="125" y="74" text-anchor="middle" font-size="14" fill="var(--muted)" font-family="var(--font-body)">Spule mit Eisenkern</text>
-          <text x="330" y="22" text-anchor="middle" font-size="14" fill="var(--muted)" font-family="var(--font-body)">Magnet dreht sich</text>
+          <text x="18" y="-38" font-size="16" font-weight="700" fill="var(--blue)" font-family="var(--font-body)">Wind</text>
+          <text x="330" y="-36" text-anchor="middle" font-size="16" font-weight="700" fill="var(--ink)" font-family="var(--font-body)">Das Windrad dreht den Magneten</text>
+          <text x="520" y="44" text-anchor="middle" font-size="15" font-weight="700" fill="var(--hot)" font-family="var(--font-body)">elektrische Energie</text>
         </svg>
       </div>
       <canvas class="trace" id="genTrace" aria-label="Verlauf der Spannung über die Zeit"></canvas>
@@ -410,7 +438,8 @@ footer { max-width: 1180px; margin: 0 auto; color: var(--muted); font-size: .85r
           <input type="range" id="genSpeed" min="0.1" max="1.5" step="0.05" value="0.4">
         </label>
       </div>
-      <p class="caption">Beobachtet: Wann zeigt der Spannungsmesser nach links, wann nach rechts? Was ändert sich, wenn der Magnet schneller dreht?</p>
+      <p class="caption"><b>Der Wind dreht das Windrad, das Windrad dreht den Magneten:</b> Aus Bewegungsenergie wird elektrische Energie.</p>
+      <p class="caption">Beobachtet: Wann zeigt der Spannungsmesser nach links, wann nach rechts? Was ändert sich, wenn sich das Windrad und mit ihm der Magnet schneller dreht?</p>
     </div>
   </div>
   <div class="task">
@@ -815,13 +844,21 @@ footer { max-width: 1180px; margin: 0 auto; color: var(--muted); font-size: .85r
       const maxLeft = window.scrollX + document.documentElement.clientWidth - w - 16;
       left = Math.max(window.scrollX + 16, Math.min(left, maxLeft));
       gloss.style.left = left + "px";
-      gloss.style.top = (r.bottom + window.scrollY + 8) + "px";
+      let top = r.bottom + window.scrollY + 8;
+      const kopf = document.querySelector(".top"), kopfH = kopf ? kopf.offsetHeight : 0;
+      if (top + gloss.offsetHeight > window.scrollY + window.innerHeight - 8) {          // unten kein Platz: über dem Begriff anzeigen
+        const oben = r.top + window.scrollY - gloss.offsetHeight - 8;
+        if (oben > window.scrollY + kopfH) top = oben;
+      }
+      gloss.style.top = top + "px";
       glossFor = t;
       return;
     }
     if (!e.target.closest("#gloss")) hideGloss();
   });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") hideGloss(); });
+  /* iPad-Safari löst „click“ beim Tippen auf leere Flächen nicht zuverlässig aus: Erklärkasten schließt deshalb schon beim Antippen (pointerdown). */
+  document.addEventListener("pointerdown", (e) => { if (!gloss.hidden && !e.target.closest(".term") && !e.target.closest("#gloss")) hideGloss(); });
 
   /* ---------------- Navigation ---------------- */
   const chapters = $$(".chapter");
@@ -931,7 +968,8 @@ footer { max-width: 1180px; margin: 0 auto; color: var(--muted); font-size: .85r
       d += "M" + (cx + r1 * Math.sin(rad)).toFixed(1) + " " + (cy - r1 * Math.cos(rad)).toFixed(1) + " L" + (cx + r2 * Math.sin(rad)).toFixed(1) + " " + (cy - r2 * Math.cos(rad)).toFixed(1) + " ";
     }
     $("#genScale").setAttribute("d", d);
-    const mag = $("#genMag"), needle = $("#genNeedle");
+    const mag = $("#genMag"), needle = $("#genNeedle"), rotor = $("#genRotor"), windStreaks = $$("#genWind path[stroke-dasharray]");
+    let windOff = 0;
     const speed = $("#genSpeed"), lbl = $("#genSpeedLbl"), play = $("#genPlay");
     const tr = makeTrace($("#genTrace"), [{ color: "--red" }]);
     let th = 0, t = 0;
@@ -939,6 +977,7 @@ footer { max-width: 1180px; margin: 0 auto; color: var(--muted); font-size: .85r
       const rps = parseFloat(speed.value);
       const u = (rps / 1.5) * Math.sin(th);
       mag.setAttribute("transform", "rotate(" + (th * 180 / Math.PI).toFixed(2) + " 330 120)");
+      rotor.setAttribute("transform", "translate(330 120) rotate(" + (th * 180 / Math.PI).toFixed(2) + ")");   // Windrad und Magnet drehen sich gemeinsam
       const a = u * 55 * Math.PI / 180;
       needle.setAttribute("x2", (cx + 44 * Math.sin(a)).toFixed(1));
       needle.setAttribute("y2", (cy - 44 * Math.cos(a)).toFixed(1));
@@ -947,6 +986,8 @@ footer { max-width: 1180px; margin: 0 auto; color: var(--muted); font-size: .85r
     const L = loop((dt) => {
       const rps = parseFloat(speed.value);
       th += 2 * Math.PI * rps * dt; t += dt;
+      windOff -= rps * 70 * dt;
+      windStreaks.forEach((p, i) => p.setAttribute("stroke-dashoffset", (windOff - i * 13).toFixed(1)));   // Linien gegeneinander versetzt
       const u = render();
       tr.push(t, [u]); tr.draw(t);
     });
@@ -1032,7 +1073,7 @@ footer { max-width: 1180px; margin: 0 auto; color: var(--muted); font-size: .85r
     const lv = { gen: y(21000), hoe: y(380000), hoch: y(110000), mit: y(20000), nie: y(400) };
     // Raster
     el("line", { x1: 30, y1: 330, x2: 985, y2: 330, stroke: "var(--line)", "stroke-width": 2 }, svg);
-    const yl = el("text", { x: 30, y: 20, fill: "var(--muted)", "font-size": 15, "font-family": "var(--font-body)" }, svg);
+    const yl = el("text", { x: 30, y: 20, fill: "var(--muted)", "font-size": 17, "font-family": "var(--font-body)" }, svg);
     yl.textContent = "Spannung (nicht maßstabsgetreu)";
     const d = "M60 " + lv.gen + " H230 V" + lv.hoe + " H420 V" + lv.hoch + " H610 V" + lv.mit + " H790 V" + lv.nie + " H970";
     el("path", { d, fill: "none", stroke: "var(--accent)", "stroke-width": 10, "stroke-linejoin": "round", opacity: 0.35 }, svg);
@@ -1047,10 +1088,10 @@ footer { max-width: 1180px; margin: 0 auto; color: var(--muted); font-size: .85r
     ];
     plateaus.forEach(([x, yy, v, name]) => {
       const g = el("g", {}, svg);
-      const w = v.length * 9.2 + 16;
-      el("rect", { x: x - w / 2, y: yy - 46, width: w, height: 24, rx: 4, fill: "var(--accent)" }, g);
-      const tv = el("text", { x, y: yy - 29, "text-anchor": "middle", "font-family": "var(--font-mono)", "font-weight": 600, "font-size": 15, fill: "var(--accent-ink)" }, g); tv.textContent = v;
-      const tn = el("text", { x, y: yy + 22, "text-anchor": "middle", "font-family": "var(--font-display)", "font-weight": 700, "font-size": 17, fill: "var(--ink)" }, g); tn.textContent = name;
+      const w = v.length * 10.4 + 18;
+      el("rect", { x: x - w / 2, y: yy - 50, width: w, height: 28, rx: 4, fill: "var(--accent)" }, g);
+      const tv = el("text", { x, y: yy - 30, "text-anchor": "middle", "font-family": "var(--font-mono)", "font-weight": 600, "font-size": 17, fill: "var(--accent-ink)" }, g); tv.textContent = v;
+      const tn = el("text", { x, y: yy + 24, "text-anchor": "middle", "font-family": "var(--font-display)", "font-weight": 700, "font-size": 19, fill: "var(--ink)" }, g); tn.textContent = name;
     });
     const ST = [
       { x: 60, kind: "kw", name: "Kraftwerk", text: "Eine Turbine dreht den Generator. Er wandelt Bewegungsenergie in elektrische Energie um. Seine Spannung beträgt etwa 10 000 bis 27 000 V." },
@@ -1343,13 +1384,15 @@ footer { max-width: 1180px; margin: 0 auto; color: var(--muted); font-size: .85r
       if (e.arrow !== false) attrs["marker-end"] = "url(#netzArrow)";
       el("line", attrs, gEdges);
       const mx = (p1[0] + p2[0]) / 2, my = (p1[1] + p2[1]) / 2;
-      const g = el("g", { class: "chip", tabindex: 0, role: "button" }, gChips);
-      const r = el("rect", { rx: 14, height: 28, y: my - 14, fill: "var(--surface)", stroke: e.given ? "var(--line)" : "var(--accent)", "stroke-width": 2 }, g);
-      const t = el("text", { x: mx, y: my + 5, "text-anchor": "middle", "font-family": "var(--font-body)", "font-size": 15, "font-weight": 700, fill: "var(--ink)" }, g);
+      const g = el("g", e.given ? { class: "chip" } : { class: "chip", tabindex: 0, role: "button" }, gChips);
+      const hit = e.given ? null : el("rect", { fill: "transparent", height: 68, y: my - 34 }, g);     // unsichtbare, große Tippfläche (mind. 44 px)
+      const r = el("rect", { rx: 16, height: 32, y: my - 16, fill: "var(--surface)", stroke: e.given ? "var(--line)" : "var(--accent)", "stroke-width": 2 }, g);
+      const t = el("text", { x: mx, y: my + 6, "text-anchor": "middle", "font-family": "var(--font-body)", "font-size": 17, "font-weight": 700, fill: "var(--ink)" }, g);
       const set = (open) => {
         t.textContent = open ? e.l : "?";
-        const w = open ? e.l.length * 8.4 + 22 : 34;
+        const w = open ? e.l.length * 9.3 + 24 : 46;
         r.setAttribute("x", mx - w / 2); r.setAttribute("width", w);
+        if (hit) { const hw = Math.max(w + 24, 76); hit.setAttribute("x", mx - hw / 2); hit.setAttribute("width", hw); }
         r.setAttribute("fill", open ? "var(--surface)" : "var(--accent)");
         g.setAttribute("aria-label", open ? e.l : "Verbindung aufdecken");
         g.dataset.open = open ? "1" : "";
@@ -1368,9 +1411,9 @@ footer { max-width: 1180px; margin: 0 auto; color: var(--muted); font-size: .85r
         const tx = el("text", { x: n.x, y: n.y - (n.t.length - 1) * 11 + k * 22 + 6, "text-anchor": "middle", "font-family": "var(--font-display)", "font-weight": 700, "font-size": 19, fill: "var(--ink)" }, gNodes);
         tx.textContent = line;
       });
-      const tw = n.s.length * 7.6 + 16;
-      el("rect", { x: n.x - tw / 2, y: n.y - n.h / 2 - 11, width: tw, height: 20, rx: 10, fill: "var(" + SRC[n.s] + ")" }, gNodes);
-      const st = el("text", { x: n.x, y: n.y - n.h / 2 + 4, "text-anchor": "middle", "font-family": "var(--font-display)", "font-weight": 700, "font-size": 12.5, fill: "var(--bg)", "letter-spacing": ".06em" }, gNodes);
+      const tw = n.s.length * 9.6 + 22;
+      el("rect", { x: n.x - tw / 2, y: n.y - n.h / 2 - 14, width: tw, height: 26, rx: 13, fill: "var(" + SRC[n.s] + ")" }, gNodes);
+      const st = el("text", { x: n.x, y: n.y - n.h / 2 + 5, "text-anchor": "middle", "font-family": "var(--font-display)", "font-weight": 700, "font-size": 15.5, fill: "var(--bg)", "letter-spacing": ".05em" }, gNodes);
       st.textContent = n.s.toUpperCase();
     });
     $("#netzAll").addEventListener("click", () => chips.forEach((f) => f(true)));
