@@ -156,6 +156,33 @@ p { margin: 0; }
 .task svg { flex: 0 0 auto; margin-top: 2px; }
 .task b { font-family: var(--font-display); font-size: 1.1rem; letter-spacing: .02em; }
 .pager { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+/* Aufklappbarer Unterpunkt: Hilfe zu Aufgabe 1c */
+.sub { border: 2px solid var(--blue); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+.sub-toggle { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; border: 0; background: var(--surface-2); padding: 12px 16px; min-height: 64px; cursor: pointer; }
+.sub-toggle b { display: block; font-family: var(--font-display); font-size: 1.1rem; }
+.sub-toggle small { display: block; color: var(--muted); font-size: .92rem; }
+.sub-ico { flex: 0 0 auto; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--blue); color: var(--bg); font-family: var(--font-display); font-weight: 700; }
+.sub-toggle .chev { margin-left: auto; font-size: 1.4rem; transition: transform .2s; }
+.sub-toggle[aria-expanded="true"] .chev { transform: rotate(180deg); }
+.sub-body { padding: 16px; display: grid; gap: 14px; }
+.sub-body h3 { font-family: var(--font-display); font-size: 1.15rem; margin: 0; }
+.sub-body p, .sub-body ol { margin: 0; }
+.sub-body ol { padding-left: 1.3em; display: grid; gap: 6px; }
+.efcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+.efcard { border: 2px solid var(--line); border-left: 8px solid var(--c, var(--ink)); border-radius: 10px; padding: 8px 12px; background: var(--bg); }
+.efcard b { display: block; font-family: var(--font-display); }
+.efcard span { font-size: .95rem; color: var(--muted); }
+.efstep { background: var(--surface-2); border-radius: 10px; padding: 12px 14px; min-height: 5.2em; }
+.efstep b { color: var(--blue); }
+.eftips { display: grid; gap: 8px; }
+.eftip { border-left: 6px solid var(--hot); background: var(--surface-2); border-radius: 0 10px 10px 0; padding: 10px 14px; }
+.efcheck { display: grid; gap: 4px; }
+.efcheck label { display: flex; gap: 14px; align-items: center; min-height: 52px; cursor: pointer; }
+.efcheck input { width: 32px; height: 32px; accent-color: var(--green); flex: 0 0 auto; }
+.fluss { width: 100%; height: auto; display: block; }
+.fluss .el { opacity: 0; transition: opacity .35s; }
+.fluss .el.on { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .fluss .el { transition: none; } .sub-toggle .chev { transition: none; } }
 .btn {
   border: 2px solid var(--ink); background: transparent; border-radius: 999px; padding: 10px 18px;
   font-weight: 700; cursor: pointer; min-height: 48px;
@@ -442,9 +469,77 @@ footer { max-width: 1180px; margin: 0 auto; color: var(--muted); font-size: .85r
       <p class="caption">Beobachtet: Wann zeigt der Spannungsmesser nach links, wann nach rechts? Was ändert sich, wenn sich das Windrad und mit ihm der Magnet schneller dreht?</p>
     </div>
   </div>
+  <div class="sub" id="hilfe1c">
+    <button class="sub-toggle" id="hilfe1cBtn" aria-expanded="false" aria-controls="hilfe1cBody">
+      <span class="sub-ico" aria-hidden="true">1c</span>
+      <span><b>Hilfe zu Aufgabe 1c: Das Energieflussdiagramm wiederholen</b><small>Energieformen, Regeln und ein Beispiel Schritt für Schritt. Antippen zum Aufklappen.</small></span>
+      <span class="chev" aria-hidden="true">▾</span>
+    </button>
+    <div class="sub-body" id="hilfe1cBody" hidden>
+      <div class="seg" id="efTabs" role="group" aria-label="Teile der Hilfe">
+        <button data-ef="1" aria-pressed="true">1 · Energieformen</button>
+        <button data-ef="2" aria-pressed="false">2 · Beispiel: Fahrraddynamo</button>
+        <button data-ef="3" aria-pressed="false">3 · Jetzt ihr: Kraftwerk</button>
+      </div>
+
+      <div id="ef1">
+        <h3>Energieformen: kurze Wiederholung</h3>
+        <p>Energie geht nicht verloren und wird nicht neu erzeugt. Sie wird nur <b>von einer Energieform in eine andere umgewandelt</b>. Das sind die wichtigsten Formen:</p>
+        <div class="efcards" id="efCards"></div>
+        <div class="merke"><b class="tag">Merke</b>Bei jeder Umwandlung bleibt die gesamte Energie gleich. Ein Teil wird aber immer zu <b>Wärme</b>, die man nicht mehr nutzen kann. Das nennt man den <b>Verlust</b>. Die Energie ist dann nicht weg, sondern in der Umgebung verteilt.</div>
+        <div><button class="btn small primary" data-efgo="2">Weiter: Beispiel ansehen →</button></div>
+      </div>
+
+      <div id="ef2" hidden>
+        <h3>So zeichnest du ein Energieflussdiagramm</h3>
+        <ol>
+          <li>Jedes <b>Kästchen</b> ist eine <b>Energieform</b>. Ihr schreibt die Energieform hinein und in Klammern, wo sie steckt (zum Beispiel Kohle).</li>
+          <li>Jeder <b>Pfeil</b> ist eine <b>Umwandlung</b>. Über den Pfeil schreibt ihr, <b>was umwandelt</b> (Maschine oder Gerät).</li>
+          <li>Ihr beginnt links mit der Energieform am Anfang und endet rechts mit der <b>Nutzenergie</b>, die ihr haben wollt.</li>
+          <li>Bei jeder Umwandlung geht ein Teil als <b>Wärme</b> verloren: Zeichnet dafür einen Pfeil nach unten.</li>
+        </ol>
+        <h3>Beispiel: Fahrraddynamo (kennt ihr aus Klasse 9)</h3>
+        <svg class="fluss" id="fluss1" viewBox="0 0 1000 350" role="img" aria-label="Energieflussdiagramm Fahrraddynamo: chemische Energie, Bewegungsenergie, elektrische Energie, Lichtenergie, mit Wärmeverlusten"></svg>
+        <div class="efstep" id="efText1" aria-live="polite"></div>
+        <div class="row">
+          <button class="btn small" id="ef1Zurueck">← Zurück</button>
+          <button class="btn small primary" id="ef1Weiter">Weiter →</button>
+          <button class="btn small" id="ef1Alle">Alles zeigen</button>
+          <button class="btn small" id="ef1Neu">Von vorn</button>
+        </div>
+        <div><button class="btn small primary" data-efgo="3">Weiter: Jetzt seid ihr dran →</button></div>
+      </div>
+
+      <div id="ef3" hidden>
+        <h3>Jetzt ihr: Energieflussdiagramm für das Kohlekraftwerk</h3>
+        <p>Löst Aufgabe 1c auf dem Arbeitsblatt. Der Text oben beschreibt das Kohlekraftwerk Schritt für Schritt. Das Diagramm baut ihr genauso auf wie beim Dynamo, nur mit anderen Energieformen. Probiert es zuerst selbst. Wenn ihr nicht weiterkommt, hilft die Tippkarte.</p>
+        <ul class="qz-todo">
+          <li>Womit beginnt es? Welche Energieform steckt in der Kohle?</li>
+          <li>Was passiert im Kessel, in der Turbine und im Generator? Welche Energieform entsteht jeweils?</li>
+          <li>Welche Energieform steht am Ende? Das ist eure Nutzenergie.</li>
+          <li>Wo geht Energie verloren? Zeichnet die Verlustpfeile.</li>
+        </ul>
+        <div class="eftips" id="efTips"></div>
+        <div class="row">
+          <button class="btn small" id="efTipBtn">Tipp anzeigen</button>
+          <button class="btn small" id="efLoesBtn" aria-expanded="false">Lösung zur Selbstkontrolle zeigen</button>
+        </div>
+        <div id="efLoes" hidden>
+          <svg class="fluss" id="fluss2" viewBox="0 0 1000 350" role="img" aria-label="Energieflussdiagramm Kohlekraftwerk: chemische Energie der Kohle, Wärmeenergie des Dampfes, Bewegungsenergie der Turbine, elektrische Energie, mit Wärmeverlusten"></svg>
+          <h3>Selbstkontrolle: Hat mein Diagramm …</h3>
+          <div class="efcheck">
+            <label><input type="checkbox"> vier Kästchen mit Energieformen, von links nach rechts?</label>
+            <label><input type="checkbox"> Pfeile, die in Reihenfolge von Kessel, Turbine und Generator beschriftet sind?</label>
+            <label><input type="checkbox"> elektrische Energie als Nutzenergie ganz rechts?</label>
+            <label><input type="checkbox"> Verlustpfeile nach unten, die als Wärme an die Umgebung beschriftet sind?</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="task">
     <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path d="M5 25 L7 18 L20 5 L25 10 L12 23 Z M18 7 L23 12" fill="none" stroke="var(--blue)" stroke-width="2.4" stroke-linejoin="round"/></svg>
-    <div><b>Arbeitsblatt: Aufgabe 1a bis 1c</b><br>Beschreibt, was ihr in der Animation beobachtet, und erklärt den Generator in eigenen Worten. ★ Zeichnet ein Energieflussdiagramm.</div>
+    <div><b>Arbeitsblatt: Aufgabe 1a bis 1c</b><br>Beschreibt, was ihr in der Animation beobachtet, und erklärt den Generator in eigenen Worten. ★ Zeichnet ein Energieflussdiagramm.<br><button class="btn small" id="zuHilfe1c" style="margin-top:8px">Hilfe zu 1c öffnen ↑</button></div>
   </div>
   <div class="pager"><button class="btn" data-go="start">← Start</button><button class="btn primary" data-go="k2">Weiter: Warum Hochspannung? →</button></div>
 </section>
@@ -999,6 +1094,126 @@ footer { max-width: 1180px; margin: 0 auto; color: var(--muted); font-size: .85r
     if (reduced) { play.textContent = "Start"; play.setAttribute("aria-pressed", "false"); }
     anim.k1 = { start() { if (play.getAttribute("aria-pressed") === "true") L.start(); render(); }, stop() { L.stop(); } };
     render();
+  })();
+
+  /* ---------------- Kapitel 1: Hilfe zu Aufgabe 1c (Energieflussdiagramm) ---------------- */
+  (function () {
+    const FARBE = { chem: "--green", waerme: "--hot", bew: "--blue", elek: "--accent", licht: "--accent", lage: "--ink", spann: "--ink", kern: "--red" };
+    const FORMEN = [
+      ["bew", "Bewegungsenergie", "fahrendes Auto, drehende Turbine, Wind"],
+      ["lage", "Lageenergie", "Wasser im Stausee, Last auf dem Kran"],
+      ["spann", "Spannenergie", "gespannte Feder, gespannter Bogen"],
+      ["waerme", "Wärmeenergie", "heißer Dampf, heiße Herdplatte"],
+      ["chem", "chemische Energie", "Kohle, Benzin, Nahrung, Akku"],
+      ["elek", "elektrische Energie", "Strom in der Leitung"],
+      ["licht", "Lichtenergie", "Sonnenlicht, Licht der Lampe"],
+      ["kern", "Kernenergie", "Uran im Kernkraftwerk"]
+    ];
+    const cards = $("#efCards");
+    FORMEN.forEach(([k, n, b]) => {
+      const c = document.createElement("div"); c.className = "efcard"; c.style.setProperty("--c", "var(" + FARBE[k] + ")");
+      const t = document.createElement("b"); t.textContent = n;
+      const sp = document.createElement("span"); sp.textContent = "z. B. " + b;
+      c.append(t, sp); cards.appendChild(c);
+    });
+
+    /* Zeichnet ein Energieflussdiagramm; die Teile werden mit setStep(n) nacheinander eingeblendet. */
+    function fluss(svg, spec) {
+      const N = spec.boxen.length, BW = 160, BH = 112, Y0 = 56, W = 1000, VY = 270, gap = (W - N * BW) / (N - 1), ym = Y0 + BH / 2;
+      const teile = [];            // teile[k]: Elemente, die in Schritt k erscheinen
+      const g = (k) => { const e = el("g", { class: "el" }, svg); (teile[k] = teile[k] || []).push(e); return e; };
+      const mid = [];
+      spec.boxen.forEach((b, i) => {
+        const x = i * (BW + gap), col = "var(" + FARBE[b.f] + ")";
+        const gb = g(i === 0 ? 0 : i);
+        if (i > 0) {                                           // Pfeil mit Umwandler vor dem Kästchen
+          const x0 = x - gap + 10, x1 = x - 12, xm = (x0 + x1) / 2; mid.push(xm);
+          el("line", { x1: x0, y1: ym, x2: x1, y2: ym, stroke: "var(--ink)", "stroke-width": 4, "stroke-linecap": "round" }, gb);
+          el("path", { d: "M" + (x1 - 14) + " " + (ym - 10) + " L" + (x1 + 4) + " " + ym + " L" + (x1 - 14) + " " + (ym + 10) + " Z", fill: "var(--ink)" }, gb);
+          const w = el("text", { x: xm, y: ym - 16, "text-anchor": "middle", "font-family": "var(--font-body)", "font-weight": 700, "font-size": 19, fill: "var(--muted)" }, gb); w.textContent = spec.wandler[i - 1];
+        }
+        el("rect", { x, y: Y0, width: BW, height: BH, rx: 14, fill: "var(--surface)", stroke: col, "stroke-width": 5 }, gb);
+        b.z.forEach((z, k) => { const t = el("text", { x: x + BW / 2, y: Y0 + 36 + k * 26, "text-anchor": "middle", "font-family": "var(--font-display)", "font-weight": 700, "font-size": 22, fill: "var(--ink)" }, gb); t.textContent = z; });
+        const o = el("text", { x: x + BW / 2, y: Y0 + 98, "text-anchor": "middle", "font-family": "var(--font-body)", "font-size": 17, fill: "var(--muted)" }, gb); o.textContent = b.o;
+        if (i === N - 1) {                                     // Nutzenergie markieren
+          el("rect", { x: x + 18, y: Y0 - 24, width: BW - 36, height: 26, rx: 13, fill: "var(--green)" }, gb);
+          const n = el("text", { x: x + BW / 2, y: Y0 - 6, "text-anchor": "middle", "font-family": "var(--font-display)", "font-weight": 700, "font-size": 15, fill: "var(--bg)", "letter-spacing": ".05em" }, gb); n.textContent = "NUTZENERGIE";
+        }
+      });
+      const gv = g(N);                                         // Verluste: Pfeile nach unten in die Umgebung
+      mid.forEach((xm) => {
+        el("line", { x1: xm, y1: ym + 12, x2: xm, y2: VY - 16, stroke: "var(--hot)", "stroke-width": 4, "stroke-dasharray": "2 9", "stroke-linecap": "round" }, gv);
+        el("path", { d: "M" + (xm - 10) + " " + (VY - 20) + " L" + xm + " " + (VY - 2) + " L" + (xm + 10) + " " + (VY - 20) + " Z", fill: "var(--hot)" }, gv);
+      });
+      el("rect", { x: 70, y: VY, width: 860, height: 58, rx: 14, fill: "var(--surface)", stroke: "var(--hot)", "stroke-width": 4, "stroke-dasharray": "10 6" }, gv);
+      const vt = el("text", { x: 500, y: VY + 37, "text-anchor": "middle", "font-family": "var(--font-display)", "font-weight": 700, "font-size": 23, fill: "var(--hot)" }, gv); vt.textContent = "Wärme an die Umgebung (Verlust)";
+      return { schritte: N + 1, setStep(n) { teile.forEach((arr, k) => arr.forEach((e) => e.classList.toggle("on", k <= n))); } };
+    }
+    const DYNAMO = {
+      boxen: [{ z: ["chemische", "Energie"], f: "chem", o: "(Nahrung)" }, { z: ["Bewegungs-", "energie"], f: "bew", o: "(Rad)" }, { z: ["elektrische", "Energie"], f: "elek", o: "(Strom)" }, { z: ["Licht-", "energie"], f: "licht", o: "(Lampe)" }],
+      wandler: ["Beine", "Dynamo", "Lampe"]
+    };
+    const KRAFTWERK = {
+      boxen: [{ z: ["chemische", "Energie"], f: "chem", o: "(Kohle)" }, { z: ["Wärme-", "energie"], f: "waerme", o: "(heißer Dampf)" }, { z: ["Bewegungs-", "energie"], f: "bew", o: "(Turbine)" }, { z: ["elektrische", "Energie"], f: "elek", o: "(Strom)" }],
+      wandler: ["Kessel", "Turbine", "Generator"]
+    };
+
+    /* Schritt für Schritt: Fahrraddynamo */
+    const TEXT = [
+      "<b>Schritt 1: Womit beginnt es?</b> Der Radfahrer bekommt seine Energie aus der Nahrung. Das ist <b>chemische Energie</b>. Sie steht im ersten Kästchen.",
+      "<b>Schritt 2: Die erste Umwandlung.</b> Die Beine treiben das Rad an. Aus chemischer Energie wird <b>Bewegungsenergie</b>. Über dem Pfeil steht, wer umwandelt: die Beine.",
+      "<b>Schritt 3: Die zweite Umwandlung.</b> Das Rad dreht den Dynamo. Der Dynamo ist ein kleiner Generator. Er wandelt Bewegungsenergie in <b>elektrische Energie</b> um.",
+      "<b>Schritt 4: Die Nutzenergie.</b> Die Lampe wandelt elektrische Energie in <b>Lichtenergie</b> um. Das Licht wollen wir haben: Es ist die Nutzenergie und steht ganz rechts.",
+      "<b>Schritt 5: Die Verluste.</b> Bei jeder Umwandlung wird ein Teil zu Wärme: warme Muskeln, Reibung am Rad, warmer Dynamo, warme Lampe. Das zeichnet man mit Pfeilen nach unten.",
+      "<b>Schritt 6: Die Probe.</b> Energie am Anfang = Nutzenergie + Wärme. Es geht nichts verloren: Ein Teil wird nur zu Wärme, die man nicht mehr nutzen kann."
+    ];
+    const d1 = fluss($("#fluss1"), DYNAMO);
+    let st = 0;
+    const tx = $("#efText1");
+    function zeigeSchritt(n) {
+      st = Math.max(0, Math.min(TEXT.length - 1, n));
+      d1.setStep(Math.min(st, d1.schritte));
+      tx.innerHTML = TEXT[st];
+      $("#ef1Zurueck").disabled = st === 0; $("#ef1Weiter").disabled = st === TEXT.length - 1;
+    }
+    $("#ef1Zurueck").addEventListener("click", () => zeigeSchritt(st - 1));
+    $("#ef1Weiter").addEventListener("click", () => zeigeSchritt(st + 1));
+    $("#ef1Alle").addEventListener("click", () => zeigeSchritt(TEXT.length - 1));
+    $("#ef1Neu").addEventListener("click", () => zeigeSchritt(0));
+    zeigeSchritt(0);
+
+    /* Jetzt ihr: Tipps in Stufen, dann Lösung zur Selbstkontrolle */
+    const TIPPS = [
+      "<b>Tipp 1:</b> Die Reihenfolge steht im Text oben: Kohle verbrennt im Kessel, der Dampf treibt die Turbine an, die Turbine dreht den Generator. Das sind eure Pfeile.",
+      "<b>Tipp 2:</b> Die vier Energieformen sind: chemische Energie, Wärmeenergie, Bewegungsenergie und elektrische Energie. Ordnet sie den Stationen zu.",
+      "<b>Tipp 3:</b> Kohle = chemische Energie. Der Kessel macht daraus Wärmeenergie im Dampf. Die Turbine macht daraus Bewegungsenergie. Der Generator macht daraus elektrische Energie."
+    ];
+    const tipps = $("#efTips"), tbtn = $("#efTipBtn");
+    let nTipp = 0;
+    tbtn.addEventListener("click", () => {
+      if (nTipp >= TIPPS.length) return;
+      const d = document.createElement("div"); d.className = "eftip"; d.innerHTML = TIPPS[nTipp++]; tipps.appendChild(d);
+      tbtn.textContent = nTipp < TIPPS.length ? "Nächsten Tipp anzeigen" : "Keine weiteren Tipps"; tbtn.disabled = nTipp >= TIPPS.length;
+    });
+    const d2 = fluss($("#fluss2"), KRAFTWERK);
+    d2.setStep(d2.schritte);
+    $("#efLoesBtn").addEventListener("click", (e) => {
+      const b = e.currentTarget, open = b.getAttribute("aria-expanded") !== "true";
+      b.setAttribute("aria-expanded", String(open)); $("#efLoes").hidden = !open;
+      b.textContent = open ? "Lösung wieder verstecken" : "Lösung zur Selbstkontrolle zeigen";
+    });
+
+    /* Aufklappen und Teile wechseln */
+    const body = $("#hilfe1cBody"), tgl = $("#hilfe1cBtn");
+    function auf(open) { tgl.setAttribute("aria-expanded", String(open)); body.hidden = !open; }
+    tgl.addEventListener("click", () => auf(body.hidden));
+    function teil(n) {
+      [1, 2, 3].forEach((i) => { $("#ef" + i).hidden = i !== +n; });
+      $$("#efTabs button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.ef === String(n))));
+    }
+    $$("#efTabs button").forEach((b) => b.addEventListener("click", () => teil(b.dataset.ef)));
+    $$("[data-efgo]").forEach((b) => b.addEventListener("click", () => { teil(b.dataset.efgo); $("#hilfe1c").scrollIntoView({ block: "start", behavior: "smooth" }); }));
+    $("#zuHilfe1c").addEventListener("click", () => { auf(true); teil(1); $("#hilfe1c").scrollIntoView({ block: "start", behavior: "smooth" }); });
   })();
 
   /* ---------------- Kapitel 2A: Modellversuch ---------------- */
