@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lehrerübersicht: Fragen und Antworten Magnetismus</title>
+<style>
+  body { font: 17px/1.5 Arial, Helvetica, sans-serif; color: #111; margin: 0 auto; max-width: 960px; padding: 16px 20px 60px; }
+  h1 { color: #1F3864; } h2 { color: #1F3864; border-top: 3px solid #DCE3F0; padding-top: 14px; margin-top: 30px; }
+  .frage { border: 2px solid #9AA5BD; border-radius: 10px; padding: 10px 16px; margin: 14px 0; break-inside: avoid; }
+  .frage h3 { margin: 0 0 6px; font-size: 18px; } .typ { font-weight: normal; font-size: 14px; color: #333; }
+  ul { margin: 4px 0 8px; padding-left: 22px; } li.ok { font-weight: bold; } .hint { font-weight: normal; color: #333; }
+  .warum { margin: 6px 0 0; } .kennz { background: #E8F0FB; border-radius: 6px; padding: 1px 8px; font-size: 14px; }
+</style>
+</head>
+<body>
+<h1>Lehrerübersicht: Fragen und Antworten</h1>
+<p>Diese Seite wird automatisch aus <code>daten/fragen.js</code> und <code>daten/texte.js</code> erzeugt. Sie ist nicht von der Lernumgebung verlinkt. Richtige Antworten sind mit ✓ markiert. Der Text dahinter ist die Rückmeldung, wenn die Antwort gewählt (oder bei Mehrfachauswahl nicht angekreuzt) wird.</p>
+<div id="inhalt"></div>
+<script src="daten/texte.js"></script>
+<script src="daten/fragen.js"></script>
+<script>
+(function () {
+  'use strict';
+  function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  var TYP = { single: 'Einfachauswahl', multi: 'Mehrfachauswahl', luecke: 'Lückentext', reihenfolge: 'Reihenfolge', zuordnen: 'Zuordnen', richtung: 'Richtung', hotspot: 'Antippen im Bild' };
+  var out = '';
+  window.MODULE.forEach(function (m) {
+    out += '<h2>Modul ' + m.id + ': ' + esc(m.titel) + '</h2>';
+    window.FRAGEN.filter(function (q) { return q.modul === m.id; }).forEach(function (q, i) {
+      var s = '<div class="frage"><h3>' + (q.zusatz ? 'Zusatz' : 'Frage ' + (i + 1)) + ' <span class="typ">(' + TYP[q.typ] + ')</span> ' +
+        (q.blitz ? '<span class="kennz">Blitz-Check</span> ' : '') + '</h3><p>' + esc(q.frage) + '</p>';
+      if (q.szene === 'tabelle-ausschluss') s += '<p><em>Tabelle: A Kupfer und Zink (nein), B Kupfer und Aluminium (nein), C Zink und Eisen (ja), D Kupfer und Eisen (ja).</em></p>';
+      if (q.typ === 'single' || q.typ === 'multi') {
+        s += '<ul>' + q.antworten.map(function (a) {
+          var h = a.h ? ' <span class="hint">→ ' + esc(a.h) + '</span>' : '';
+          return '<li class="' + (a.ok ? 'ok' : '') + '">' + (a.ok ? '✓ ' : (q.typ === 'multi' ? '✗ ' : '')) + esc(a.t) + (q.typ === 'multi' || !a.ok ? h : '') + '</li>';
+        }).join('') + '</ul>';
+      } else if (q.typ === 'luecke') {
+        var k = 0; s += '<p><strong>' + esc(q.text).replace(/___/g, function () { return '[' + esc(q.loesung[k++]) + ']'; }) + '</strong></p><p class="hint">Wortspeicher: ' + q.woerter.map(esc).join(', ') + (q.tauschbar ? ' (Wörter in manchen Lücken dürfen vertauscht sein)' : '') + '</p>';
+      } else if (q.typ === 'reihenfolge') {
+        s += '<ol>' + q.schritte.map(function (t) { return '<li class="ok">' + esc(t) + '</li>'; }).join('') + '</ol>';
+      } else if (q.typ === 'zuordnen') {
+        s += '<ul>' + q.karten.map(function (c) { return '<li><strong>' + esc(c.t) + '</strong> → ' + esc(q.felder[c.ziel]) + ' <span class="hint">(falsch: ' + esc(c.h) + ')</span></li>'; }).join('') + '</ul>';
+      } else if (q.typ === 'richtung') {
+        if (q.modus === 'stapel') s += '<p>Richtig: Bild 1 (anziehen): oben am unteren Magneten ist N, am oberen Magneten zeigt unten S. Bild 2 (abstoßen): unten am oberen Magneten zeigt N.</p>';
+        else if (q.modus === 'kompass') s += '<p>Richtig: Kompass 1 (über der Mitte) nach rechts, Kompass 2 (links vom Nordpol) nach links, Kompass 3 (rechts vom Südpol) nach links. <span class="hint">Rückmeldung: ' + esc(q.hinweisFalsch) + '</span></p>';
+        else s += '<p>Richtig: nach ' + esc(q.loesung) + '. <span class="hint">Rückmeldung: ' + esc(q.hinweisFalsch) + '</span></p>';
+      } else if (q.typ === 'hotspot') {
+        s += '<p>Richtig: Stellen nahe den beiden Enden (Polen) des Magneten. <span class="hint">Rückmeldung bei Mitte oder weit entfernt: ' + esc(q.hinweisFalsch) + '</span></p>';
+      }
+      s += '<p class="warum"><strong>Warum?</strong> ' + esc(q.warum) + '</p></div>';
+      out += s;
+    });
+  });
+  document.getElementById('inhalt').innerHTML = out;
+})();
+</script>
+</body>
+</html>
