@@ -2181,6 +2181,7 @@ window.FRAGEN = [
       var zielAnzahl = Math.round(f * N), schon = N - offen.length, noetig = Math.max(0, zielAnzahl - schon);
       for (k = offen.length - 1; k > 0; k--) { var j = Math.floor(rnd() * (k + 1)), t = offen[k]; offen[k] = offen[j]; offen[j] = t; }
       for (k = 0; k < noetig && k < offen.length; k++) pend[offen[k]] = true;
+      for (k = 0; k < N; k++) if (offen.indexOf(k) < 0) pend[k] = true;      // schon ausgerichtete richten sich genau aus
       strich++;
       var last = stuecke[stuecke.length - 1];
       akt = { typ: 'strich', t: 0, xs: X0 - 26, xe: last.x + stueckBreite(last) + 26 };
