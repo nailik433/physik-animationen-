@@ -18,6 +18,15 @@ window.PHYSIK = {
       tags: ['Elementarmagnete', 'Magnetisieren', 'Entmagnetisieren', 'Nagel', 'Curie-Temperatur']
     },
     {
+      klasse: 7,
+      thema: 'Magnetismus',
+      titel: 'Lernumgebung Magnetismus: Teste dich selbst',
+      beschreibung: 'Selbsttest zur Klassenarbeit: Blitz-Check, acht Module (Fair testen, magnetische Stoffe, Polregel, Elementarmagnete, Abschirmung, Kompass und Erde, Feldlinien, Elektromagnet) mit Animationen und Fragen mit sofortiger Rückmeldung, dazu ein Abschlusscheck.',
+      datei: 'animationen/klasse-7/magnetismus/lernumgebung/index.html',
+      icon: '🧭',
+      tags: ['Magnetismus', 'Selbsttest', 'Polregel', 'Elementarmagnete', 'Feldlinien', 'Elektromagnet', 'Kompass', 'Blitz-Check']
+    },
+    {
       klasse: 8,
       thema: 'Kräfte',
       titel: 'Goldene Regel der Mechanik',

@@ -13,6 +13,7 @@ Reines HTML/CSS/JavaScript – kein Build, keine Installation, keine Internetver
 | Klasse | Thema | Animation |
 |---|---|---|
 | 7 | Magnetismus | Elementarmagnete: Nagel magnetisieren |
+| 7 | Magnetismus | Lernumgebung Magnetismus: Teste dich selbst (Blitz-Check, 8 Module, Abschlusscheck; QR-Code und Einzeldatei im Ordner `material/`) |
 | 8 | Kräfte | Goldene Regel der Mechanik (mit Arbeitsblatt als Word-Datei im Ordner) |
 | 8 | Druck und Gase | Boyle-Mariotte: Interaktive Lernstation |
 | 9 | Elektrizität | Leiter und Nichtleiter |
