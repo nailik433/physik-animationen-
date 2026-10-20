@@ -6,13 +6,15 @@
 
   /* ----- Reiter 1: Wo ist der Magnet stark? ----- */
   function staerke(panel, gruppe) {
-    var W = 720, H = 360, MX = 130, MW = 460, MY = 70, MH = 56;
+    var W = 720, H = 360, MX = 190, MW = 340, MY = 70, MH = 56;
     var STELLEN = [
+      { n: 'linkes Ende (Stirnseite)', x: MX, k: 9, stirn: -1 },
       { n: 'links', x: MX + 0.07 * MW, k: 9 }, { n: 'links der Mitte', x: MX + 0.29 * MW, k: 5 }, { n: 'Mitte', x: MX + 0.5 * MW, k: 2 },
-      { n: 'rechts der Mitte', x: MX + 0.71 * MW, k: 4 }, { n: 'rechts', x: MX + 0.93 * MW, k: 8 }
+      { n: 'rechts der Mitte', x: MX + 0.71 * MW, k: 4 }, { n: 'rechts', x: MX + 0.93 * MW, k: 8 },
+      { n: 'rechtes Ende (Stirnseite)', x: MX + MW, k: 8, stirn: 1 }
     ];
     var cv = G.canvas(panel, W, H, { label: 'Stabmagnet, an dessen Unterseite Büroklammern hängen. Tippe auf eine Stelle.' });
-    var wahl = -1, gezeigt = 0, t = 0, ergebnis = [null, null, null, null, null], speed = 1;
+    var wahl = -1, gezeigt = 0, t = 0, ergebnis = [null, null, null, null, null, null, null], speed = 1;
     var statusEl = el('p', { 'class': 'animstatus', 'aria-live': 'polite', text: 'Tippe auf eine Stelle am Magneten oder auf einen der Knöpfe.' });
     var gitter = el('div', { 'class': 'gegenstaende', role: 'group', 'aria-label': 'Stelle am Magneten wählen' });
     var knoepfe = STELLEN.map(function (s, i) { var b = G.knopf(s.n, function () { waehle(i); }, 'zweit'); b.setAttribute('aria-pressed', 'false'); gitter.appendChild(b); return b; });
@@ -25,18 +27,27 @@
     }
     cv.c.addEventListener('pointerdown', function (e) {
       var p = cv.pos(e), best = -1, bd = 1e9;
-      STELLEN.forEach(function (s, i) { var d = Math.abs(p.x - s.x); if (d < bd) { bd = d; best = i; } });
-      if (p.y < MY + MH + 260 && p.x > MX - 30 && p.x < MX + MW + 30) waehle(best);
+      STELLEN.forEach(function (s, i) {
+        if (!s.stirn) return;
+        var d = Math.hypot(p.x - s.x - s.stirn * 16, p.y - (MY + MH / 2));
+        if (d < 70 && d < bd) { bd = d; best = i; }
+      });
+      if (best >= 0) { waehle(best); return; }
+      STELLEN.forEach(function (s, i) { if (s.stirn) return; var d = Math.abs(p.x - s.x); if (d < bd) { bd = d; best = i; } });
+      if (p.y < MY + MH + 260 && p.x > MX - 20 && p.x < MX + MW + 20) waehle(best);
     });
     function balken() {
-      var s = '<svg viewBox="0 0 520 170" class="szene" role="img" aria-label="Balkendiagramm: Anzahl der Büroklammern an den fünf Stellen">';
+      var s = '<svg viewBox="0 0 520 180" class="szene" role="img" aria-label="Balkendiagramm: Anzahl der Büroklammern an den sieben Stellen">';
+      var kurz = ['Stirn links', 'links', 'links der Mitte', 'Mitte', 'rechts der Mitte', 'rechts', 'Stirn rechts'];
       STELLEN.forEach(function (st, i) {
-        var x = 30 + i * 96, hh = ergebnis[i] == null ? 0 : ergebnis[i] * 11;
-        s += '<rect x="' + x + '" y="' + (130 - hh) + '" width="66" height="' + hh + '" fill="#1F3864"/>';
-        s += '<text x="' + (x + 33) + '" y="' + (124 - hh) + '" text-anchor="middle" font-size="17" font-weight="bold" font-family="Arial,sans-serif" fill="#111">' + (ergebnis[i] == null ? '' : ergebnis[i]) + '</text>';
-        s += '<text x="' + (x + 33) + '" y="152" text-anchor="middle" font-size="13" font-family="Arial,sans-serif" fill="#111">' + st.n + '</text>';
+        var x = 14 + i * 72, hh = ergebnis[i] == null ? 0 : ergebnis[i] * 10;
+        s += '<rect x="' + x + '" y="' + (130 - hh) + '" width="56" height="' + hh + '" fill="#1F3864"/>';
+        s += '<text x="' + (x + 28) + '" y="' + (124 - hh) + '" text-anchor="middle" font-size="17" font-weight="bold" font-family="Arial,sans-serif" fill="#111">' + (ergebnis[i] == null ? '' : ergebnis[i]) + '</text>';
+        var w = kurz[i].split(' '), z1 = w.length > 2 ? w.slice(0, 2).join(' ') : w[0], z2 = w.length > 2 ? w.slice(2).join(' ') : w.slice(1).join(' ');
+        s += '<text x="' + (x + 28) + '" y="148" text-anchor="middle" font-size="12.5" font-family="Arial,sans-serif" fill="#111">' + z1 + '</text>';
+        if (z2) s += '<text x="' + (x + 28) + '" y="164" text-anchor="middle" font-size="12.5" font-family="Arial,sans-serif" fill="#111">' + z2 + '</text>';
       });
-      s += '<line x1="20" y1="130" x2="510" y2="130" stroke="#111" stroke-width="2"/><text x="14" y="16" font-size="14" font-family="Arial,sans-serif" fill="#111">Anzahl der Klammern</text></svg>';
+      s += '<line x1="6" y1="130" x2="514" y2="130" stroke="#111" stroke-width="2"/><text x="260" y="14" text-anchor="middle" font-size="14" font-family="Arial,sans-serif" fill="#111">Anzahl der Klammern</text></svg>';
       diagramm.innerHTML = s;
     }
     balken();
@@ -47,17 +58,21 @@
       G.magnet(ctx, MX, MY, MW, MH, { nZuerst: true });
       STELLEN.forEach(function (s, i) {
         ctx.fillStyle = i === wahl ? G.M : '#fff'; ctx.strokeStyle = G.M; ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.arc(s.x, MY - 20, 9, 0, 6.2832); ctx.fill(); ctx.stroke();
-        G.text(ctx, String(i + 1), s.x, MY - 40, { groesse: 14, fett: true });
+        var mx = s.stirn ? s.x + s.stirn * 16 : s.x, my = s.stirn ? MY + MH / 2 : MY - 20;
+        ctx.beginPath(); ctx.arc(mx, my, 9, 0, 6.2832); ctx.fill(); ctx.stroke();
+        G.text(ctx, s.stirn ? (i === 0 ? 'A' : 'B') : String(i), mx, s.stirn ? my - 22 : MY - 40, { groesse: 14, fett: true });
       });
       if (wahl >= 0) {
-        var x = STELLEN[wahl].x;
-        for (var k = 0; k < gezeigt; k++) G.klammer(ctx, x + Math.sin(k * 1.3) * 1.2, MY + MH + 13 + k * 20, PI2(), 1.2);
-        ctx.fillStyle = '#111'; ctx.beginPath(); ctx.moveTo(x, MY - 6); ctx.lineTo(x - 7, MY - 14); ctx.lineTo(x + 7, MY - 14); ctx.closePath(); ctx.fill();
+        var x = STELLEN[wahl].x, sg = STELLEN[wahl].stirn;
+        for (var k = 0; k < gezeigt; k++) {
+          if (sg) G.klammer(ctx, x + sg * (38 + k * 17), MY + MH / 2, 0, 1.2);
+          else G.klammer(ctx, x + Math.sin(k * 1.3) * 1.2, MY + MH + 13 + k * 20, PI2(), 1.2);
+        }
+        if (!sg) { ctx.fillStyle = '#111'; ctx.beginPath(); ctx.moveTo(x, MY - 6); ctx.lineTo(x - 7, MY - 14); ctx.lineTo(x + 7, MY - 14); ctx.closePath(); ctx.fill(); }
       }
     }, gruppe);
     function PI2() { return Math.PI / 2; }
-    var pz = el('div', { 'class': 'knopfzeile' }, [G.pauseKnopf(h), G.knopf('Neu', function () { wahl = -1; gezeigt = 0; ergebnis = [null, null, null, null, null]; knoepfe.forEach(function (b) { b.setAttribute('aria-pressed', 'false'); }); statusEl.textContent = 'Tippe auf eine Stelle am Magneten oder auf einen der Knöpfe.'; balken(); }, 'zweit')]);
+    var pz = el('div', { 'class': 'knopfzeile' }, [G.pauseKnopf(h), G.knopf('Neu', function () { wahl = -1; gezeigt = 0; ergebnis = [null, null, null, null, null, null, null]; knoepfe.forEach(function (b) { b.setAttribute('aria-pressed', 'false'); }); statusEl.textContent = 'Tippe auf eine Stelle am Magneten oder auf einen der Knöpfe.'; balken(); }, 'zweit')]);
     panel.appendChild(gitter); panel.appendChild(pz); panel.appendChild(statusEl); panel.appendChild(diagramm);
     window.__m5a = { waehle: waehle, ergebnis: function () { return ergebnis; }, tempo: function (v) { speed = v; } };
   }

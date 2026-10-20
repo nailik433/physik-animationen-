@@ -110,7 +110,7 @@ window.MODULE = [
     ],
     anim: { titel: 'Stärke und Abschirmung',
       bedienung: 'Wechsle oben zwischen den beiden Reitern. Tippe auf eine Stelle oder auf ein Material.',
-      auftraege: ['Reiter 1: Tippe auf alle fünf Stellen. Wo hängen die meisten Klammern?', 'Reiter 2: Teste alle Materialien. Welches ist anders?'] }
+      auftraege: ['Reiter 1: Tippe auf alle Stellen, auch auf die beiden Stirnseiten an den Polen. Wo hängen die meisten Klammern?', 'Reiter 2: Teste alle Materialien. Welches ist anders?'] }
   },
   {
     id: 6, titel: 'Kompass und Erde', kurz: 'Warum zeigt ein Kompass nach Norden?',
