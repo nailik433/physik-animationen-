@@ -6,6 +6,7 @@
   'use strict';
   var G = window.G, F = window.F, el = G.el;
   var KEY = 'lern-magnetismus-v1';
+  var ABSCHLUSS_ANZAHL = 20;                         // Fragen im Abschlusscheck (mindestens 2 je Modul, siehe waehleAbschluss)
   var app = document.getElementById('app');
   var Z;
 
@@ -94,7 +95,7 @@
     // 1 Blitz-Check
     var s1 = el('li', { 'class': 'schrittkarte' });
     s1.appendChild(el('h2', { text: '1. Blitz-Check' }));
-    s1.appendChild(el('p', { text: 'Acht Fragen, eine pro Modul. Dauert etwa fünf Minuten. Danach siehst du, was du schon kannst und wo sich Üben lohnt.' }));
+    s1.appendChild(el('p', { text: 'Acht Fragen, eine pro Modul. Dauert etwa fünf Minuten. Du siehst erst am Ende, was richtig war, und erfährst dann, was du schon kannst und wo sich Üben lohnt.' }));
     var bz = el('div', { 'class': 'knopfzeile' });
     var fertig = Z.blitzFertig;
     bz.appendChild(el('a', { 'class': 'btn haupt', href: '#/blitz', text: fertig ? 'Ergebnis ansehen' : (Object.keys(Z.bq).length ? 'Blitz-Check fortsetzen' : 'Blitz-Check starten') }));
@@ -122,7 +123,7 @@
     // 3 Abschluss
     var s3 = el('li', { 'class': 'schrittkarte' });
     s3.appendChild(el('h2', { text: '3. Abschlusscheck' }));
-    s3.appendChild(el('p', { text: 'Zwölf gemischte Fragen aus allen Modulen. Am Ende siehst du deine Punktzahl und welche Module du noch wiederholen solltest.' }));
+    s3.appendChild(el('p', { text: 'Zwanzig gemischte Fragen aus allen Modulen. Du siehst erst am Ende, was richtig war, dazu deine Punktzahl und welche Module du noch wiederholen solltest.' }));
     s3.appendChild(el('div', { 'class': 'knopfzeile' }, [el('a', { 'class': 'btn haupt', href: '#/abschluss', text: Z.aFertig ? 'Ergebnis ansehen' : (Z.auswahl ? 'Abschlusscheck fortsetzen' : 'Abschlusscheck starten') })]));
     ablauf.appendChild(s3);
     app.appendChild(ablauf);
@@ -233,6 +234,7 @@
     var qs = opt.ids.map(frage), n = qs.length;
     app.appendChild(zurStart());
     seitenkopf(opt.titel).forEach(function (x) { app.appendChild(x); });
+    app.appendChild(el('p', { 'class': 'hilfetext', text: 'Du hast pro Frage einen Versuch. Was richtig ist, siehst du erst am Ende.' }));
     var box = el('div', { 'class': 'folge' }); app.appendChild(box);
     function zeige() {
       var i = Z[opt.idxKey];
@@ -246,11 +248,28 @@
       var nav = el('div', { 'class': 'knopfzeile' });
       var weiter = G.knopf(i === n - 1 ? 'Ergebnis ansehen' : 'Weiter →', function () { Z[opt.idxKey] = i + 1; speichern(); zeige(); window.scrollTo(0, 0); var h = document.getElementById('haupt'); if (h) h.focus({ preventScroll: true }); }, 'haupt');
       weiter.hidden = !s.fertig;
-      F.zeigeFrage(host, q, s, { onFertig: function () { weiter.hidden = false; if (opt.beiFertig) opt.beiFertig(q, s); speichern(); weiter.focus(); } });
+      F.zeigeFrage(host, q, s, { test: true, onFertig: function () { weiter.hidden = false; if (opt.beiFertig) opt.beiFertig(q, s); speichern(); weiter.focus(); } });
       nav.appendChild(weiter); box.appendChild(nav);
     }
     zeige();
     fokusHaupt();
+  }
+
+  /* ---------- Auswertung: alle Fragen mit Lösung ---------- */
+  function antwortenAnsehen(ids, kontext) {
+    var wrap = el('div', { 'class': 'auswertung' }, [el('h2', { text: 'Alle Fragen mit Lösung' }), el('p', { text: 'Tippe auf eine Frage, um die richtige Lösung mit Begründung zu sehen.' })]);
+    ids.map(frage).forEach(function (q, i) {
+      var s = Z[kontext][q.id] || {}, ok = !!s.ersterOk;
+      var d = el('details', { 'class': 'rev' + (ok ? ' rev-ok' : ' rev-falsch') });
+      var kurz = q.frage.length > 80 ? q.frage.slice(0, 80) + ' …' : q.frage;
+      d.appendChild(el('summary', { text: (ok ? '✓ richtig: ' : '✗ falsch: ') + 'Frage ' + (i + 1) + ' (Modul ' + q.modul + '). ' + kurz }));
+      var host = el('div', { 'class': 'fragenhost' }), fertig = false;
+      d.addEventListener('toggle', function () {
+        if (d.open && !fertig) { fertig = true; F.zeigeFrage(host, q, { versuche: 1, ersterOk: ok, fertig: true, gezeigt: !ok }, {}); }
+      });
+      d.appendChild(host); wrap.appendChild(d);
+    });
+    return wrap;
   }
 
   /* ---------- Blitz-Check ---------- */
@@ -284,6 +303,7 @@
     app.appendChild(liste);
     app.appendChild(el('p', { 'class': 'fliess', text: ueben.length ? 'Beginne mit den Modulen, die mit einem Pfeil markiert sind.' : 'Super! Du hast alle Blitz-Fragen auf Anhieb richtig. Mach trotzdem den Abschlusscheck.' }));
     app.appendChild(el('div', { 'class': 'knopfzeile' }, [el('a', { 'class': 'btn haupt', href: '#/', text: 'Zur Startseite' }), el('a', { 'class': 'btn zweit', href: '#/abschluss', text: 'Zum Abschlusscheck' })]));
+    app.appendChild(antwortenAnsehen(blitzFragen().map(function (q) { return q.id; }), 'bq'));
     fokusHaupt();
   }
 
@@ -291,20 +311,20 @@
   function waehleAbschluss() {
     var rnd = G.zufall(Z.salt * 31 + (Z.lauf || 0) * 977 + 5);
     var pool = FR.filter(function (q) { return !q.blitz && !q.zusatz; }), ids = [];
-    MO.forEach(function (m) {
+    MO.forEach(function (m) {                                    // je Modul zwei Fragen
       var c = F.mischen(pool.filter(function (q) { return q.modul === m.id; }), rnd);
-      ids.push(c[0].id);
+      ids.push(c[0].id); if (c[1]) ids.push(c[1].id);
     });
     var rest = F.mischen(pool.filter(function (q) { return ids.indexOf(q.id) < 0; }), rnd);
-    while (ids.length < 12 && rest.length) ids.push(rest.shift().id);
-    return F.mischen(ids.map(function (id) { return frage(id); }), rnd).sort(function (a, b) { return a.modul - b.modul; }).map(function (q) { return q.id; });
+    while (ids.length < ABSCHLUSS_ANZAHL && rest.length) ids.push(rest.shift().id);
+    return F.mischen(ids, rnd);
   }
   function ansichtAbschluss() {
     if (Z.aFertig) { abschlussErgebnis(); return; }
     if (!Z.auswahl) {
       leeren();
       app.appendChild(zurStart());
-      seitenkopf('Abschlusscheck', 'Zwölf Fragen aus allen Modulen. Du siehst keine Frage aus dem Blitz-Check. Gewertet wird, was du beim ersten Versuch richtig hast.').forEach(function (x) { app.appendChild(x); });
+      seitenkopf('Abschlusscheck', 'Zwanzig gemischte Fragen aus allen Modulen. Du siehst keine Frage aus dem Blitz-Check. Du hast pro Frage einen Versuch und siehst erst am Ende, was richtig war.').forEach(function (x) { app.appendChild(x); });
       app.appendChild(el('div', { 'class': 'knopfzeile' }, [G.knopf('Abschlusscheck starten', function () { Z.auswahl = waehleAbschluss(); Z.aq = {}; Z.aIdx = 0; speichern(); ansichtAbschluss(); }, 'haupt')]));
       fokusHaupt(); return;
     }
@@ -321,7 +341,7 @@
     });
     seitenkopf('Abschlusscheck: dein Ergebnis').forEach(function (x) { app.appendChild(x); });
     app.appendChild(el('p', { 'class': 'punktzahl', text: punkte + ' von ' + qs.length + ' Punkten' }));
-    app.appendChild(el('p', { 'class': 'fliess', text: 'Für jede Frage, die du beim ersten Versuch richtig hattest, gibt es einen Punkt.' }));
+    app.appendChild(el('p', { 'class': 'fliess', text: 'Für jede richtig beantwortete Frage gibt es einen Punkt.' }));
     var tab = el('table', { 'class': 'tabelle' });
     tab.appendChild(el('thead', {}, [el('tr', {}, [el('th', { text: 'Modul' }), el('th', { text: 'Richtig' }), el('th', { text: 'Hinweis' })])]));
     var tb = el('tbody'); var wdh = [];
@@ -333,6 +353,7 @@
     });
     tab.appendChild(tb); app.appendChild(tab);
     app.appendChild(el('p', { 'class': 'fliess', text: wdh.length ? 'Wiederhole noch: ' + wdh.map(function (m) { return 'Modul ' + m.id + ' (' + m.titel + ')'; }).join(', ') + '.' : 'Stark! In allen Modulen hast du die Fragen auf Anhieb richtig beantwortet.' }));
+    app.appendChild(antwortenAnsehen(Z.auswahl, 'aq'));
     app.appendChild(el('div', { 'class': 'knopfzeile' }, [
       el('a', { 'class': 'btn haupt', href: '#/', text: 'Zur Startseite' }),
       G.knopf('Nochmal mit neuen Fragen', function () { Z.lauf = (Z.lauf || 0) + 1; Z.auswahl = waehleAbschluss(); Z.aq = {}; Z.aIdx = 0; Z.aFertig = false; speichern(); ansichtAbschluss(); }, 'zweit')
