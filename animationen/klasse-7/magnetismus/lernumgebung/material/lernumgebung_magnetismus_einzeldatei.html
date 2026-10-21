@@ -241,11 +241,6 @@ window.GLOSSAR = {
   'Eisenfeilspänen': 'Sehr kleine Eisenstückchen. Im Magnetfeld ordnen sie sich entlang der Feldlinien an.',
   'Eisenfeilspäne': 'Sehr kleine Eisenstückchen. Im Magnetfeld ordnen sie sich entlang der Feldlinien an.',
   'Verlauf': 'Der Weg, den eine Linie nimmt.',
-  'Spule': 'Ein aufgewickelter Draht.',
-  'Windungen': 'Die Schleifen eines aufgewickelten Drahtes.',
-  'Eisenkern': 'Ein Stab aus Eisen in der Spule, zum Beispiel ein Nagel.',
-  'Elektromagnet': 'Eine Spule mit Eisenkern. Er ist nur ein Magnet, solange Strom fließt.',
-  'Dauermagnet': 'Ein Magnet, der immer magnetisch bleibt, ohne Strom.',
   'Oersted': 'Der dänische Physiker Hans Christian Oersted. Er entdeckte 1820, dass ein Strom ein Magnetfeld erzeugt.',
   'Hammer': 'Erschütterung bringt die Elementarmagnete durcheinander.'
 };
@@ -351,19 +346,18 @@ window.MODULE = [
       auftraege: ['Ziehe den Kompass einmal um den Magneten herum. In welche Richtung zeigt die Nordspitze?', 'Schalte Feilspäne und Feldlinien ein. Was zeigt die Feldlinie, was die Feilspäne nicht?'] }
   },
   {
-    id: 8, titel: 'Elektromagnet', kurz: 'Wie kann man einen Magneten an- und ausschalten?',
-    leit: 'Wie kann man einen Magneten an- und ausschalten?',
+    id: 8, titel: 'Strom und Magnetfeld', kurz: 'Was passiert mit einer Kompassnadel neben einem Draht mit Strom?',
+    leit: 'Was passiert mit einer Kompassnadel neben einem Draht mit Strom?',
     info: [
-      { t: 'p', text: 'Ein elektrischer **Strom erzeugt ein Magnetfeld**. Eine Kompassnadel in der Nähe wird abgelenkt. Ohne Strom verschwindet das Feld. Vertauschst du die Batterieanschlüsse, schlägt die Nadel in die andere Richtung aus.' },
-      { t: 'p', text: 'Wickelst du den Draht zu einer **Spule**, wird das Magnetfeld stärker. Je mehr **Windungen**, desto stärker das Feld.' },
-      { t: 'p', text: 'Das Feld einer Spule, durch die Strom fließt, sieht aus wie das Feld eines Stabmagneten. Die Spule hat einen Nordpol und einen Südpol. Vertauschst du die Anschlüsse, vertauschen sich die Pole.' },
-      { t: 'p', text: 'Steckst du einen **Eisenkern** in die Spule, wird das Magnetfeld viel stärker. Das Feld der Spule richtet die Elementarmagnete im Eisen aus. Der Kern wird selbst zum Magneten.' },
-      { t: 'merke', liste: ['Ein elektrischer Strom erzeugt ein Magnetfeld.', 'Eine Spule mit Eisenkern heißt Elektromagnet.', 'Man kann einen Elektromagneten ein- und ausschalten.'] },
-      { t: 'beispiel', text: 'Anwendungen sind der Kran auf dem Schrottplatz, die Klingel und das Relais.' }
+      { t: 'p', text: 'Ein elektrischer **Strom erzeugt ein Magnetfeld|Magnetfeld**. Das gilt für jeden Draht, durch den Strom fließt. Eine **Kompassnadel** neben dem Draht wird abgelenkt.' },
+      { t: 'p', text: 'Ohne Strom gibt es kein Magnetfeld mehr. Die Nadel kehrt dann in ihre Ausgangslage zurück.' },
+      { t: 'p', text: 'Vertauschst du die Anschlüsse der Batterie, ändert sich die Stromrichtung. Dann ändert sich auch die Richtung des Magnetfelds: Die Pole tauschen die Seiten, und die Nadel schlägt in die andere Richtung aus.' },
+      { t: 'merke', liste: ['Ein elektrischer Strom in einem Leiter erzeugt ein Magnetfeld.', 'Ändert sich die Stromrichtung, ändert sich auch die Richtung des Magnetfelds. Die Pole drehen sich.'] },
+      { t: 'beispiel', text: 'Der dänische Physiker **Oersted** hat das entdeckt, als er eine Kompassnadel neben einen Draht mit Strom legte.' }
     ],
-    anim: { titel: 'Elektromagnet',
-      bedienung: 'Wechsle oben zwischen den Reitern. Schalte den Strom mit dem Schalter ein und aus.',
-      auftraege: ['Reiter 1: Schalte den Strom ein. Was macht die Nadel? Vertausche die Anschlüsse.', 'Reiter 2: Erhöhe die Windungen. Was passiert mit dem Balken? Stecke den Eisenkern in die Spule. Was ändert sich? Schalte aus.'] }
+    anim: { titel: 'Strom und Kompassnadel',
+      bedienung: 'Schalte den Strom mit dem Schalter ein und aus. Mit „Anschlüsse vertauschen“ änderst du die Stromrichtung.',
+      auftraege: ['Schalte den Strom ein. Was macht die Nadel?', 'Vertausche die Anschlüsse. In welche Richtung schlägt die Nadel jetzt aus?', 'Schalte den Strom aus. Was passiert?'] }
   }
 ];
 
@@ -710,7 +704,7 @@ window.FRAGEN = [
   hinweisFalsch: 'Die Feldlinie läuft außen vom Nordpol zum Südpol. Im Spalt steht links der Nordpol des linken Magneten und rechts der Südpol des rechten Magneten.',
   warum: 'Die Feldlinie läuft vom Nordpol des linken Magneten zum Südpol des rechten Magneten, also nach rechts.' },
 
-/* ---------- Modul 8: Elektromagnet ---------- */
+/* ---------- Modul 8: Strom und Magnetfeld ---------- */
 { id: 'm8q1', modul: 8, typ: 'single', blitz: true,
   frage: 'Was passiert mit einer Kompassnadel neben einem Draht, durch den Strom fließt?',
   antworten: [
@@ -720,53 +714,37 @@ window.FRAGEN = [
   ],
   warum: 'Der Strom im Draht erzeugt ein Magnetfeld. Dieses Feld lenkt die Kompassnadel ab.' },
 { id: 'm8q2', modul: 8, typ: 'single',
-  frage: 'Du schaltest den Strom aus. Was passiert mit dem Magnetfeld der Spule?',
+  frage: 'Du schaltest den Strom aus. Was passiert mit dem Magnetfeld um den Draht?',
   antworten: [
     { t: 'Es verschwindet.', ok: true },
     { t: 'Es bleibt genauso stark.', h: 'Ohne Strom gibt es kein Magnetfeld.' },
     { t: 'Es wird stärker.', h: 'Ohne Strom verschwindet das Feld.' }
   ],
-  warum: 'Das Magnetfeld der Spule gibt es nur, solange Strom fließt.' },
-{ id: 'm8q3', modul: 8, typ: 'multi',
-  frage: 'Wie macht man einen Elektromagneten stärker? Kreuze alle richtigen an.',
+  warum: 'Das Magnetfeld um den Draht gibt es nur, solange Strom fließt.' },
+{ id: 'm8q3', modul: 8, typ: 'single',
+  frage: 'Du vertauschst die Anschlüsse der Batterie. Was passiert mit der Kompassnadel?',
   antworten: [
-    { t: 'Mehr Windungen.', ok: true, h: 'Je mehr Windungen, desto stärker das Feld.' },
-    { t: 'Einen Eisenkern in die Spule stecken.', ok: true, h: 'Der Eisenkern macht das Feld viel stärker.' },
-    { t: 'Einen Holzstab in die Spule stecken.', h: 'Holz ist nicht ferromagnetisch. Es ändert nichts.' },
-    { t: 'Den Draht gerade lassen statt zu wickeln.', h: 'Gewickelt wird das Feld stärker. Ein gerader Draht gibt nur ein schwaches Feld.' }
-  ],
-  warum: 'Mehr Windungen und ein Eisenkern machen das Feld stärker.' },
-{ id: 'm8q4', modul: 8, typ: 'single',
-  frage: 'Warum wird ein Nagel in der Spule zum Magneten?',
-  antworten: [
-    { t: 'Das Magnetfeld der Spule richtet die Elementarmagnete im Eisen aus.', ok: true },
-    { t: 'Der Nagel wird warm.', h: 'Wärme macht Magnete schwächer, nicht stärker.' },
-    { t: 'Der Nagel enthält Strom aus der Batterie.', h: 'Der Strom fließt durch den Draht, nicht durch den Nagel. Das Feld des Stroms richtet die Elementarmagnete aus.' }
-  ],
-  warum: 'Das Feld der Spule richtet die Elementarmagnete im Eisen aus. Der Nagel wird selbst zum Magneten.' },
-{ id: 'm8q5', modul: 8, typ: 'luecke',
-  frage: 'Ergänze den Text.',
-  text: 'Eine Spule mit Eisenkern heißt ___. Man kann ihn ___ und ___.',
-  woerter: ['Elektromagnet', 'Dauermagnet', 'einschalten', 'ausschalten', 'Kompass'],
-  loesung: ['Elektromagnet', 'einschalten', 'ausschalten'],
-  tauschbar: [[1, 2]],
-  warum: 'Eine Spule mit Eisenkern heißt Elektromagnet. Man kann ihn ein- und ausschalten.' },
-{ id: 'm8q6', modul: 8, typ: 'single',
-  frage: 'Auf dem Schrottplatz hebt ein Kran Autos mit einem Elektromagneten. Warum ist ein Elektromagnet hier besser als ein Dauermagnet?',
-  antworten: [
-    { t: 'Man kann ihn ausschalten und so die Last wieder ablegen.', ok: true },
-    { t: 'Er zieht auch Holz und Kunststoff an.', h: 'Auch ein Elektromagnet zieht nur ferromagnetische Stoffe an.' },
-    { t: 'Er braucht keine Energie.', h: 'Er braucht elektrische Energie. Das ist ein Nachteil, kein Vorteil.' }
-  ],
-  warum: 'Schaltet man den Elektromagneten aus, fällt die Last ab. Ein Dauermagnet würde sie festhalten.' },
-{ id: 'm8q7', modul: 8, typ: 'single',
-  frage: 'Du vertauschst die Anschlüsse der Batterie an der Spule. Was passiert mit den Polen?',
-  antworten: [
-    { t: 'Nordpol und Südpol vertauschen sich.', ok: true },
-    { t: 'Nichts, die Pole bleiben wie vorher.', h: 'Beim Vertauschen der Anschlüsse ändert sich die Richtung des Stroms. Dadurch tauschen die Pole.' },
+    { t: 'Sie schlägt in die andere Richtung aus.', ok: true },
+    { t: 'Nichts, sie schlägt genauso aus wie vorher.', h: 'Beim Vertauschen der Anschlüsse ändert sich die Richtung des Stroms. Dadurch ändert sich auch die Richtung des Magnetfelds.' },
     { t: 'Das Magnetfeld verschwindet.', h: 'Das Feld verschwindet nur, wenn der Strom aus ist. Hier fließt Strom, nur in die andere Richtung.' }
   ],
-  warum: 'Die Stromrichtung ändert sich. Deshalb tauschen Nordpol und Südpol die Plätze.' }
+  warum: 'Die Stromrichtung ändert sich. Deshalb ändert sich auch die Richtung des Magnetfelds, und die Pole tauschen die Seiten.' },
+{ id: 'm8q4', modul: 8, typ: 'multi',
+  frage: 'Welche Aussagen stimmen? Kreuze alle richtigen an.',
+  antworten: [
+    { t: 'Ein elektrischer Strom erzeugt ein Magnetfeld.', ok: true, h: 'Das hat Oersted entdeckt.' },
+    { t: 'Ohne Strom gibt es kein Magnetfeld um den Draht.', ok: true, h: 'Das Feld gibt es nur, solange Strom fließt.' },
+    { t: 'Ändert man die Stromrichtung, ändert sich die Richtung des Magnetfelds.', ok: true, h: 'Die Pole tauschen die Seiten.' },
+    { t: 'Das Magnetfeld bleibt, wenn man den Strom ausschaltet.', h: 'Ohne Strom verschwindet das Feld.' },
+    { t: 'Nur Magnete haben ein Magnetfeld.', h: 'Auch ein elektrischer Strom erzeugt ein Magnetfeld.' }
+  ],
+  warum: 'Ein Strom erzeugt ein Magnetfeld, aber nur solange er fließt. Eine andere Stromrichtung ändert die Richtung des Feldes.' },
+{ id: 'm8q5', modul: 8, typ: 'luecke',
+  frage: 'Ergänze den Text.',
+  text: 'Ein elektrischer ___ in einem Draht erzeugt ein ___. Ändert man die ___, schlägt die Kompassnadel in die andere Richtung aus.',
+  woerter: ['Strom', 'Magnetfeld', 'Stromrichtung', 'Nordpol', 'Eisen'],
+  loesung: ['Strom', 'Magnetfeld', 'Stromrichtung'],
+  warum: 'Ein Strom erzeugt ein Magnetfeld. Bei einer anderen Stromrichtung ändert sich die Richtung des Feldes.' }
 ];
 
 </script>
@@ -2853,7 +2831,7 @@ window.FRAGEN = [
 
 </script>
 <script>
-/* Modul 8: Elektromagnet (Oersted-Versuch und Spule) – nur qualitativ */
+/* Modul 8: Strom und Magnetfeld (Oersted-Versuch) – nur qualitativ */
 (function () {
   'use strict';
   var G = window.G, el = G.el, PI = Math.PI;
@@ -2889,7 +2867,7 @@ window.FRAGEN = [
     ctx.restore();
   }
 
-  /* ----- Reiter 1: Oersted ----- */
+  /* ----- Oersted-Versuch ----- */
   function oersted(panel, gruppe) {
     var W = 720, H = 400, DX = 250, OBEN = 40, UNTEN = 360, KY = 200, BX = 560;
     var cv = G.canvas(panel, W, H, { label: 'Draufsicht: Ein Draht liegt in Nord-Süd-Richtung über einer Kompassnadel. Eine Batterie und ein Schalter gehören zum Stromkreis.' });
@@ -2959,109 +2937,8 @@ window.FRAGEN = [
     window.__m8a = { an: function () { return an; }, schalter: function () { bSchalter.click(); }, tausch: function () { bTausch.click(); }, winkel: function () { return ang; }, ziel: winkelZiel, plusUnten: function () { return plusUnten; } };
   }
 
-  /* ----- Reiter 2: Spule ----- */
-  function spule(panel, gruppe) {
-    var W = 720, H = 460, CX = 360, CY = 150, HL = 100, MH = 54;
-    var cv = G.canvas(panel, W, H, { label: 'Eine Spule mit Batterie und Schalter. Unter der Spule hängen Büroklammern.' });
-    var wind = 3, kern = false, an = false, tauscht = false, bar = 0, klam = 0, speed = 1, cache = {};
-    var statusEl = el('p', { 'class': 'animstatus', 'aria-live': 'polite' });
-    var regler = el('input', { type: 'range', min: '1', max: '6', step: '1', value: '3', id: 'm8w', 'aria-label': 'Windungen' });
-    var anz = el('output', { 'for': 'm8w', text: '300 Windungen' });
-    regler.addEventListener('input', function () { wind = parseInt(regler.value, 10); anz.textContent = wind * 100 + ' Windungen'; meldung(); });
-    var bKern = G.knopf('Eisenkern: nein', function () { kern = !kern; bKern.textContent = 'Eisenkern: ' + (kern ? 'ja' : 'nein'); bKern.setAttribute('aria-pressed', kern ? 'true' : 'false'); meldung(); }, 'schalter');
-    bKern.setAttribute('aria-pressed', 'false');
-    var bStrom = G.knopf('Strom: aus', function () { an = !an; bStrom.textContent = 'Strom: ' + (an ? 'an' : 'aus'); bStrom.setAttribute('aria-pressed', an ? 'true' : 'false'); meldung(); }, 'schalter');
-    bStrom.setAttribute('aria-pressed', 'false');
-    var bTausch = G.knopf('Anschlüsse vertauschen', function () { tauscht = !tauscht; meldung(); }, 'schalter');
-    function sollKlammern() { if (!an) return 0; return kern ? Math.round(wind * 100 / 40) : Math.floor(wind * 100 / 200); }
-    function sollStaerke() { if (!an) return 0; return (wind / 6) * (kern ? 1 : 0.18); }
-    function meldung() {
-      if (!an) statusEl.textContent = 'Der Strom ist aus. Es gibt kein Magnetfeld und keine Klammer bleibt hängen.';
-      else statusEl.textContent = 'Strom an: ' + (kern ? 'Spule mit Eisenkern (Elektromagnet)' : 'Spule ohne Eisenkern') + ', ' + wind * 100 + ' Windungen. Links ist der ' + (tauscht ? 'Südpol, rechts der Nordpol.' : 'Nordpol, rechts der Südpol.');
-    }
-    meldung();
-    function szene() {
-      var key = (kern ? 'k' : 'o') + (tauscht ? 't' : 'n');
-      if (cache[key]) return cache[key];
-      var ext = kern ? 28 : 0, rect = { x: CX - HL - ext, y: CY - MH / 2, w: 2 * (HL + ext), h: MH };
-      var d = 0.38 * (HL + ext), q = tauscht ? -1 : 1;
-      var poles = [{ x: CX - d, y: CY, q: q }, { x: CX + d, y: CY, q: -q }];
-      var s = { rect: rect, poles: poles, linien: G.linien(poles, [rect], { x0: 6, y0: 6, x1: W - 6, y1: H - 6 }, { n: kern ? 18 : 12, h: 2.5, rs: 12 }) };
-      cache[key] = s; return s;
-    }
-    var h = G.laufen(function (dt) {
-      dt *= speed;
-      bar += (sollStaerke() - bar) * Math.min(1, dt * 4);
-      var z = sollKlammern(); klam += Math.sign(z - klam) * Math.min(Math.abs(z - klam), dt * 12);
-      zeichne();
-    }, gruppe);
-    var regl = el('div', { 'class': 'regler' }, [el('label', { 'for': 'm8w', text: 'Windungen' }), regler, anz]);
-    panel.appendChild(regl);
-    panel.appendChild(el('div', { 'class': 'schalterzeile' }, [bKern, bStrom, bTausch]));
-    panel.appendChild(el('div', { 'class': 'knopfzeile' }, [G.pauseKnopf(h)]));
-    panel.appendChild(statusEl);
-    panel.appendChild(el('p', { 'class': 'hilfetext', text: 'Das ist ein Modell. Die Anzahl der Klammern ist nur zum Vergleichen gedacht.' }));
-
-    function zeichne() {
-      var ctx = cv.ctx; ctx.clearRect(0, 0, W, H);
-      var s = szene();
-      if (an) G.zeichneLinien(ctx, s.linien, G.M, 2.2);
-      // Anschlussleitungen und Batterie
-      var LY = 320, links = CX - HL, rechts = CX + HL;
-      ctx.save(); ctx.strokeStyle = '#B45309'; ctx.lineWidth = 5; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(links, CY); ctx.lineTo(links, LY); ctx.lineTo(CX - 60, LY); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(CX + 60, LY); ctx.lineTo(CX + 110, LY); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(CX + 164, LY); ctx.lineTo(rechts, LY); ctx.lineTo(rechts, CY); ctx.stroke();
-      ctx.restore();
-      ctx.fillStyle = '#fff'; ctx.fillRect(CX - 48, LY - 30, 96, 60);
-      batterie(ctx, CX, LY, true, !tauscht, 60);
-      schalterSymbol(ctx, CX + 137, LY, an);
-      G.text(ctx, 'Batterie', CX, LY + 50, { groesse: 15 , halo: true }); G.text(ctx, 'Schalter', CX + 137, LY + 34, { groesse: 15 , halo: true });
-      // Eisenkern
-      if (kern) {
-        ctx.fillStyle = '#B8BEC8'; ctx.strokeStyle = '#333'; ctx.lineWidth = 3;
-        ctx.fillRect(CX - HL - 28, CY - 9, 2 * (HL + 28), 18); ctx.strokeRect(CX - HL - 28, CY - 9, 2 * (HL + 28), 18);
-      }
-      // Spule: Halbkreisbögen (2 bis 7, bei 300 Windungen vier)
-      var n = wind + 1, bw = 2 * HL / n;
-      ctx.strokeStyle = '#B45309'; ctx.lineWidth = 5; ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(links, CY);
-      for (var k = 0; k < n; k++) { ctx.arc(links + bw * (k + 0.5), CY, bw / 2, PI, 0, false); }
-      ctx.stroke();
-      G.text(ctx, 'Spule', CX, CY - 52, { groesse: 15 , halo: true });
-      // Pole an den Enden
-      var ext = kern ? 28 : 0;
-      var pl = tauscht ? ['S', G.S] : ['N', G.N], pr = tauscht ? ['N', G.N] : ['S', G.S];
-      [[CX - HL - ext - 24, pl], [CX + HL + ext + 24, pr]].forEach(function (b) {
-        ctx.fillStyle = an ? b[1][1] : '#E5E7EB'; ctx.strokeStyle = '#111'; ctx.lineWidth = 2.5;
-        ctx.beginPath(); ctx.arc(b[0], CY - 28, 17, 0, 6.2832); ctx.fill(); ctx.stroke();
-        if (an) G.buchstabe(ctx, b[1][0], b[0], CY - 28, 20); else G.text(ctx, '–', b[0], CY - 28, { groesse: 20, fett: true, farbe: '#555' });
-      });
-      // Büroklammern: links und rechts am Ende, bis zu 8 pro Seite
-      var nK = Math.round(klam), li = Math.ceil(nK / 2), re = Math.floor(nK / 2), kk;
-      for (kk = 0; kk < li; kk++) G.klammer(ctx, CX - HL - ext - 6, CY + 36 + kk * 18, PI / 2, 1.1);
-      for (kk = 0; kk < re; kk++) G.klammer(ctx, CX + HL + ext + 6, CY + 36 + kk * 18, PI / 2, 1.1);
-      G.text(ctx, 'Büroklammern: ' + nK, 20, 30, { groesse: 17, fett: true, ausr: 'left', halo: true });
-      // Balken Stärke
-      var bx = 60, by = H - 36, bwid = 330;
-      G.text(ctx, 'Stärke des Magneten', bx, by - 20, { groesse: 15, fett: true, ausr: 'left', halo: true });
-      ctx.fillStyle = '#E5E9F2'; ctx.fillRect(bx, by - 8, bwid, 20);
-      ctx.fillStyle = G.M; ctx.fillRect(bx, by - 8, bwid * Math.min(1, bar), 20);
-      ctx.strokeStyle = '#111'; ctx.lineWidth = 2; ctx.strokeRect(bx, by - 8, bwid, 20);
-    }
-    window.__m8b = {
-      windungen: function (v) { regler.value = String(v); regler.dispatchEvent(new Event('input')); }, kern: function (v) { if (kern !== v) bKern.click(); },
-      strom: function (v) { if (an !== v) bStrom.click(); }, tausch: function () { bTausch.click(); },
-      klammern: sollKlammern, staerke: sollStaerke, poleLinks: function () { return tauscht ? 'S' : 'N'; }, balken: function () { return bar; }, tempo: function (v) { speed = v; },
-      linienZahl: function () { return szene().linien.length; }
-    };
-  }
-
   window.ANIM[8] = function (host) {
-    G.reiter(host, [
-      { titel: 'Oersted: Strom und Kompass', bau: oersted },
-      { titel: 'Spule und Eisenkern', bau: spule }
-    ]);
+    oersted(host, []);
   };
 })();
 
@@ -3157,7 +3034,7 @@ window.FRAGEN = [
   /* ---------- Startseite ---------- */
   function ansichtStart() {
     leeren();
-    seitenkopf('Magnetismus: Teste dich selbst', 'Wiederhole alles zum Thema Magnetismus und Elektromagnet. Es gibt keine Noten und keinen Zeitdruck. Zu jedem Thema findest du einen kurzen Text, eine Animation und Fragen mit sofortiger Rückmeldung.').forEach(function (n) { app.appendChild(n); });
+    seitenkopf('Magnetismus: Teste dich selbst', 'Wiederhole alles zum Thema Magnetismus. Es gibt keine Noten und keinen Zeitdruck. Zu jedem Thema findest du einen kurzen Text, eine Animation und Fragen mit sofortiger Rückmeldung.').forEach(function (n) { app.appendChild(n); });
 
     var ablauf = el('ol', { 'class': 'schritte3' });
     // 1 Blitz-Check
