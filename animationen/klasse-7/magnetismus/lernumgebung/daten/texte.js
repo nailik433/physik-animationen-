@@ -30,11 +30,6 @@ window.GLOSSAR = {
   'Eisenfeilspänen': 'Sehr kleine Eisenstückchen. Im Magnetfeld ordnen sie sich entlang der Feldlinien an.',
   'Eisenfeilspäne': 'Sehr kleine Eisenstückchen. Im Magnetfeld ordnen sie sich entlang der Feldlinien an.',
   'Verlauf': 'Der Weg, den eine Linie nimmt.',
-  'Spule': 'Ein aufgewickelter Draht.',
-  'Windungen': 'Die Schleifen eines aufgewickelten Drahtes.',
-  'Eisenkern': 'Ein Stab aus Eisen in der Spule, zum Beispiel ein Nagel.',
-  'Elektromagnet': 'Eine Spule mit Eisenkern. Er ist nur ein Magnet, solange Strom fließt.',
-  'Dauermagnet': 'Ein Magnet, der immer magnetisch bleibt, ohne Strom.',
   'Oersted': 'Der dänische Physiker Hans Christian Oersted. Er entdeckte 1820, dass ein Strom ein Magnetfeld erzeugt.',
   'Hammer': 'Erschütterung bringt die Elementarmagnete durcheinander.'
 };
@@ -140,18 +135,17 @@ window.MODULE = [
       auftraege: ['Ziehe den Kompass einmal um den Magneten herum. In welche Richtung zeigt die Nordspitze?', 'Schalte Feilspäne und Feldlinien ein. Was zeigt die Feldlinie, was die Feilspäne nicht?'] }
   },
   {
-    id: 8, titel: 'Elektromagnet', kurz: 'Wie kann man einen Magneten an- und ausschalten?',
-    leit: 'Wie kann man einen Magneten an- und ausschalten?',
+    id: 8, titel: 'Strom und Magnetfeld', kurz: 'Was passiert mit einer Kompassnadel neben einem Draht mit Strom?',
+    leit: 'Was passiert mit einer Kompassnadel neben einem Draht mit Strom?',
     info: [
-      { t: 'p', text: 'Ein elektrischer **Strom erzeugt ein Magnetfeld**. Eine Kompassnadel in der Nähe wird abgelenkt. Ohne Strom verschwindet das Feld. Vertauschst du die Batterieanschlüsse, schlägt die Nadel in die andere Richtung aus.' },
-      { t: 'p', text: 'Wickelst du den Draht zu einer **Spule**, wird das Magnetfeld stärker. Je mehr **Windungen**, desto stärker das Feld.' },
-      { t: 'p', text: 'Das Feld einer Spule, durch die Strom fließt, sieht aus wie das Feld eines Stabmagneten. Die Spule hat einen Nordpol und einen Südpol. Vertauschst du die Anschlüsse, vertauschen sich die Pole.' },
-      { t: 'p', text: 'Steckst du einen **Eisenkern** in die Spule, wird das Magnetfeld viel stärker. Das Feld der Spule richtet die Elementarmagnete im Eisen aus. Der Kern wird selbst zum Magneten.' },
-      { t: 'merke', liste: ['Ein elektrischer Strom erzeugt ein Magnetfeld.', 'Eine Spule mit Eisenkern heißt Elektromagnet.', 'Man kann einen Elektromagneten ein- und ausschalten.'] },
-      { t: 'beispiel', text: 'Anwendungen sind der Kran auf dem Schrottplatz, die Klingel und das Relais.' }
+      { t: 'p', text: 'Ein elektrischer **Strom erzeugt ein Magnetfeld|Magnetfeld**. Das gilt für jeden Draht, durch den Strom fließt. Eine **Kompassnadel** neben dem Draht wird abgelenkt.' },
+      { t: 'p', text: 'Ohne Strom gibt es kein Magnetfeld mehr. Die Nadel kehrt dann in ihre Ausgangslage zurück.' },
+      { t: 'p', text: 'Vertauschst du die Anschlüsse der Batterie, ändert sich die Stromrichtung. Dann ändert sich auch die Richtung des Magnetfelds: Die Pole tauschen die Seiten, und die Nadel schlägt in die andere Richtung aus.' },
+      { t: 'merke', liste: ['Ein elektrischer Strom in einem Leiter erzeugt ein Magnetfeld.', 'Ändert sich die Stromrichtung, ändert sich auch die Richtung des Magnetfelds. Die Pole drehen sich.'] },
+      { t: 'beispiel', text: 'Der dänische Physiker **Oersted** hat das entdeckt, als er eine Kompassnadel neben einen Draht mit Strom legte.' }
     ],
-    anim: { titel: 'Elektromagnet',
-      bedienung: 'Wechsle oben zwischen den Reitern. Schalte den Strom mit dem Schalter ein und aus.',
-      auftraege: ['Reiter 1: Schalte den Strom ein. Was macht die Nadel? Vertausche die Anschlüsse.', 'Reiter 2: Erhöhe die Windungen. Was passiert mit dem Balken? Stecke den Eisenkern in die Spule. Was ändert sich? Schalte aus.'] }
+    anim: { titel: 'Strom und Kompassnadel',
+      bedienung: 'Schalte den Strom mit dem Schalter ein und aus. Mit „Anschlüsse vertauschen“ änderst du die Stromrichtung.',
+      auftraege: ['Schalte den Strom ein. Was macht die Nadel?', 'Vertausche die Anschlüsse. In welche Richtung schlägt die Nadel jetzt aus?', 'Schalte den Strom aus. Was passiert?'] }
   }
 ];

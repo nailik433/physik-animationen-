@@ -88,7 +88,7 @@
   /* ---------- Startseite ---------- */
   function ansichtStart() {
     leeren();
-    seitenkopf('Magnetismus: Teste dich selbst', 'Wiederhole alles zum Thema Magnetismus und Elektromagnet. Es gibt keine Noten und keinen Zeitdruck. Zu jedem Thema findest du einen kurzen Text, eine Animation und Fragen mit sofortiger Rückmeldung.').forEach(function (n) { app.appendChild(n); });
+    seitenkopf('Magnetismus: Teste dich selbst', 'Wiederhole alles zum Thema Magnetismus. Es gibt keine Noten und keinen Zeitdruck. Zu jedem Thema findest du einen kurzen Text, eine Animation und Fragen mit sofortiger Rückmeldung.').forEach(function (n) { app.appendChild(n); });
 
     var ablauf = el('ol', { 'class': 'schritte3' });
     // 1 Blitz-Check

@@ -339,7 +339,7 @@ window.FRAGEN = [
   hinweisFalsch: 'Die Feldlinie läuft außen vom Nordpol zum Südpol. Im Spalt steht links der Nordpol des linken Magneten und rechts der Südpol des rechten Magneten.',
   warum: 'Die Feldlinie läuft vom Nordpol des linken Magneten zum Südpol des rechten Magneten, also nach rechts.' },
 
-/* ---------- Modul 8: Elektromagnet ---------- */
+/* ---------- Modul 8: Strom und Magnetfeld ---------- */
 { id: 'm8q1', modul: 8, typ: 'single', blitz: true,
   frage: 'Was passiert mit einer Kompassnadel neben einem Draht, durch den Strom fließt?',
   antworten: [
@@ -349,51 +349,35 @@ window.FRAGEN = [
   ],
   warum: 'Der Strom im Draht erzeugt ein Magnetfeld. Dieses Feld lenkt die Kompassnadel ab.' },
 { id: 'm8q2', modul: 8, typ: 'single',
-  frage: 'Du schaltest den Strom aus. Was passiert mit dem Magnetfeld der Spule?',
+  frage: 'Du schaltest den Strom aus. Was passiert mit dem Magnetfeld um den Draht?',
   antworten: [
     { t: 'Es verschwindet.', ok: true },
     { t: 'Es bleibt genauso stark.', h: 'Ohne Strom gibt es kein Magnetfeld.' },
     { t: 'Es wird stärker.', h: 'Ohne Strom verschwindet das Feld.' }
   ],
-  warum: 'Das Magnetfeld der Spule gibt es nur, solange Strom fließt.' },
-{ id: 'm8q3', modul: 8, typ: 'multi',
-  frage: 'Wie macht man einen Elektromagneten stärker? Kreuze alle richtigen an.',
+  warum: 'Das Magnetfeld um den Draht gibt es nur, solange Strom fließt.' },
+{ id: 'm8q3', modul: 8, typ: 'single',
+  frage: 'Du vertauschst die Anschlüsse der Batterie. Was passiert mit der Kompassnadel?',
   antworten: [
-    { t: 'Mehr Windungen.', ok: true, h: 'Je mehr Windungen, desto stärker das Feld.' },
-    { t: 'Einen Eisenkern in die Spule stecken.', ok: true, h: 'Der Eisenkern macht das Feld viel stärker.' },
-    { t: 'Einen Holzstab in die Spule stecken.', h: 'Holz ist nicht ferromagnetisch. Es ändert nichts.' },
-    { t: 'Den Draht gerade lassen statt zu wickeln.', h: 'Gewickelt wird das Feld stärker. Ein gerader Draht gibt nur ein schwaches Feld.' }
-  ],
-  warum: 'Mehr Windungen und ein Eisenkern machen das Feld stärker.' },
-{ id: 'm8q4', modul: 8, typ: 'single',
-  frage: 'Warum wird ein Nagel in der Spule zum Magneten?',
-  antworten: [
-    { t: 'Das Magnetfeld der Spule richtet die Elementarmagnete im Eisen aus.', ok: true },
-    { t: 'Der Nagel wird warm.', h: 'Wärme macht Magnete schwächer, nicht stärker.' },
-    { t: 'Der Nagel enthält Strom aus der Batterie.', h: 'Der Strom fließt durch den Draht, nicht durch den Nagel. Das Feld des Stroms richtet die Elementarmagnete aus.' }
-  ],
-  warum: 'Das Feld der Spule richtet die Elementarmagnete im Eisen aus. Der Nagel wird selbst zum Magneten.' },
-{ id: 'm8q5', modul: 8, typ: 'luecke',
-  frage: 'Ergänze den Text.',
-  text: 'Eine Spule mit Eisenkern heißt ___. Man kann ihn ___ und ___.',
-  woerter: ['Elektromagnet', 'Dauermagnet', 'einschalten', 'ausschalten', 'Kompass'],
-  loesung: ['Elektromagnet', 'einschalten', 'ausschalten'],
-  tauschbar: [[1, 2]],
-  warum: 'Eine Spule mit Eisenkern heißt Elektromagnet. Man kann ihn ein- und ausschalten.' },
-{ id: 'm8q6', modul: 8, typ: 'single',
-  frage: 'Auf dem Schrottplatz hebt ein Kran Autos mit einem Elektromagneten. Warum ist ein Elektromagnet hier besser als ein Dauermagnet?',
-  antworten: [
-    { t: 'Man kann ihn ausschalten und so die Last wieder ablegen.', ok: true },
-    { t: 'Er zieht auch Holz und Kunststoff an.', h: 'Auch ein Elektromagnet zieht nur ferromagnetische Stoffe an.' },
-    { t: 'Er braucht keine Energie.', h: 'Er braucht elektrische Energie. Das ist ein Nachteil, kein Vorteil.' }
-  ],
-  warum: 'Schaltet man den Elektromagneten aus, fällt die Last ab. Ein Dauermagnet würde sie festhalten.' },
-{ id: 'm8q7', modul: 8, typ: 'single',
-  frage: 'Du vertauschst die Anschlüsse der Batterie an der Spule. Was passiert mit den Polen?',
-  antworten: [
-    { t: 'Nordpol und Südpol vertauschen sich.', ok: true },
-    { t: 'Nichts, die Pole bleiben wie vorher.', h: 'Beim Vertauschen der Anschlüsse ändert sich die Richtung des Stroms. Dadurch tauschen die Pole.' },
+    { t: 'Sie schlägt in die andere Richtung aus.', ok: true },
+    { t: 'Nichts, sie schlägt genauso aus wie vorher.', h: 'Beim Vertauschen der Anschlüsse ändert sich die Richtung des Stroms. Dadurch ändert sich auch die Richtung des Magnetfelds.' },
     { t: 'Das Magnetfeld verschwindet.', h: 'Das Feld verschwindet nur, wenn der Strom aus ist. Hier fließt Strom, nur in die andere Richtung.' }
   ],
-  warum: 'Die Stromrichtung ändert sich. Deshalb tauschen Nordpol und Südpol die Plätze.' }
+  warum: 'Die Stromrichtung ändert sich. Deshalb ändert sich auch die Richtung des Magnetfelds, und die Pole tauschen die Seiten.' },
+{ id: 'm8q4', modul: 8, typ: 'multi',
+  frage: 'Welche Aussagen stimmen? Kreuze alle richtigen an.',
+  antworten: [
+    { t: 'Ein elektrischer Strom erzeugt ein Magnetfeld.', ok: true, h: 'Das hat Oersted entdeckt.' },
+    { t: 'Ohne Strom gibt es kein Magnetfeld um den Draht.', ok: true, h: 'Das Feld gibt es nur, solange Strom fließt.' },
+    { t: 'Ändert man die Stromrichtung, ändert sich die Richtung des Magnetfelds.', ok: true, h: 'Die Pole tauschen die Seiten.' },
+    { t: 'Das Magnetfeld bleibt, wenn man den Strom ausschaltet.', h: 'Ohne Strom verschwindet das Feld.' },
+    { t: 'Nur Magnete haben ein Magnetfeld.', h: 'Auch ein elektrischer Strom erzeugt ein Magnetfeld.' }
+  ],
+  warum: 'Ein Strom erzeugt ein Magnetfeld, aber nur solange er fließt. Eine andere Stromrichtung ändert die Richtung des Feldes.' },
+{ id: 'm8q5', modul: 8, typ: 'luecke',
+  frage: 'Ergänze den Text.',
+  text: 'Ein elektrischer ___ in einem Draht erzeugt ein ___. Ändert man die ___, schlägt die Kompassnadel in die andere Richtung aus.',
+  woerter: ['Strom', 'Magnetfeld', 'Stromrichtung', 'Nordpol', 'Eisen'],
+  loesung: ['Strom', 'Magnetfeld', 'Stromrichtung'],
+  warum: 'Ein Strom erzeugt ein Magnetfeld. Bei einer anderen Stromrichtung ändert sich die Richtung des Feldes.' }
 ];
