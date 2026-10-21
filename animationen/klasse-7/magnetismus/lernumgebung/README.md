@@ -1,6 +1,6 @@
 # Lernumgebung Magnetismus (Klasse 7)
 
-Selbsttest und Wiederholung zum Thema Magnetismus: Blitz-Check (8 Fragen), acht Module mit Infotext, Animation und Fragen, Abschlusscheck (12 Fragen). Keine Noten, kein Zeitdruck.
+Selbsttest und Wiederholung zum Thema Magnetismus: Blitz-Check (8 Fragen), acht Module mit Infotext, Animation und Fragen, Abschlusscheck (20 Fragen). Keine Noten, kein Zeitdruck.
 
 ## Starten
 

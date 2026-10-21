@@ -134,9 +134,9 @@
     return {
       hatAntwort: function () { return sel() >= 0; },
       fehlt: 'Wähle zuerst eine Antwort.',
-      pruefe: function () {
+      pruefe: function (still) {
         var i = sel(), ok = !!items[i].a.ok;
-        labels[i].classList.add(ok ? 'richtig' : 'falsch'); marke(marken[i], ok);
+        if (!still) { labels[i].classList.add(ok ? 'richtig' : 'falsch'); marke(marken[i], ok); }
         return { ok: ok, hinweise: ok ? [] : [items[i].a.h || 'Das stimmt nicht.'] };
       },
       nochmal: function () { var i = sel(); if (i >= 0) inputs[i].checked = false; leeren(); },
@@ -165,13 +165,13 @@
     return {
       hatAntwort: function () { return inputs.some(function (i) { return i.checked; }); },
       fehlt: 'Kreuze mindestens eine Antwort an.',
-      pruefe: function () {
+      pruefe: function (still) {
         var ok = true, hin = [];
         items.forEach(function (it, i) {
           var soll = !!it.a.ok, ist = inputs[i].checked;
-          if (soll === ist) { if (ist) { labels[i].classList.add('richtig'); marke(marken[i], true); } return; }
-          ok = false; labels[i].classList.add('falsch');
-          marken[i].textContent = ist ? '✗ falsch angekreuzt' : '✗ fehlt'; marken[i].className = 'marke m-falsch';
+          if (soll === ist) { if (ist && !still) { labels[i].classList.add('richtig'); marke(marken[i], true); } return; }
+          ok = false;
+          if (!still) { labels[i].classList.add('falsch'); marken[i].textContent = ist ? '✗ falsch angekreuzt' : '✗ fehlt'; marken[i].className = 'marke m-falsch'; }
           hin.push(ist ? '„' + it.a.t + '“ stimmt nicht. ' + (it.a.h || '') : 'Du hast „' + it.a.t + '“ nicht angekreuzt. ' + (it.a.h || ''));
         });
         return { ok: ok, hinweise: hin };
@@ -249,9 +249,10 @@
     return {
       hatAntwort: function () { return leerIndex() < 0; },
       fehlt: 'Fülle zuerst alle Lücken.',
-      pruefe: function () {
-        status = bewerte(); zeichne();
-        var alle = status.every(function (s) { return s; });
+      pruefe: function (still) {
+        var res = bewerte();
+        if (!still) { status = res; zeichne(); }
+        var alle = res.every(function (s) { return s; });
         return { ok: alle, hinweise: alle ? [] : ['Prüfe die Lücken mit ✗. Tippe auf eine Lücke, um das Wort zu entfernen.'] };
       },
       nochmal: function () {
@@ -297,9 +298,10 @@
     zeichne();
     return {
       hatAntwort: function () { return true; }, fehlt: '',
-      pruefe: function () {
-        status = folge.map(function (s, k) { return s.i === k; }); zeichne();
-        var ok = status.every(function (s) { return s; });
+      pruefe: function (still) {
+        var res = folge.map(function (s, k) { return s.i === k; });
+        if (!still) { status = res; zeichne(); }
+        var ok = res.every(function (s) { return s; });
         return { ok: ok, hinweise: ok ? [] : ['Die Schritte mit ✗ stehen noch nicht an der richtigen Stelle. Verschiebe sie mit den Pfeilknöpfen.'] };
       },
       nochmal: function () { status = []; zeichne(); },
@@ -352,14 +354,13 @@
     return {
       hatAntwort: function () { return karten.every(function (c) { return c.platz >= 0; }); },
       fehlt: 'Lege zuerst alle Karten in die Felder.',
-      pruefe: function () {
-        var ok = true, hin = [];
-        status = {};
+      pruefe: function (still) {
+        var ok = true, hin = [], res = {};
         karten.forEach(function (c) {
-          var r = c.platz === c.k.ziel; status[c.i] = r;
+          var r = c.platz === c.k.ziel; res[c.i] = r;
           if (!r) { ok = false; hin.push('„' + c.k.t + '“: ' + (c.k.h || 'Das gehört in ein anderes Feld.')); }
         });
-        zeichne();
+        if (!still) { status = res; zeichne(); }
         return { ok: ok, hinweise: hin };
       },
       nochmal: function () { karten.forEach(function (c) { if (status[c.i] === false) c.platz = -1; }); status = {}; gewaehlt = null; zeichne(); },
@@ -442,9 +443,10 @@
     zeichne();
     return {
       hatAntwort: function () { return wahl.every(function (w) { return w != null; }); }, fehlt: 'Stelle zuerst alle drei Kompasse ein.',
-      pruefe: function () {
-        status = sz.punkte.map(function (p, i) { return wahl[i] === p.soll; }); zeichne();
-        var ok = status.every(function (s) { return s; });
+      pruefe: function (still) {
+        var res = sz.punkte.map(function (p, i) { return wahl[i] === p.soll; });
+        if (!still) { status = res; zeichne(); }
+        var ok = res.every(function (s) { return s; });
         return { ok: ok, hinweise: ok ? [] : [q.hinweisFalsch] };
       },
       nochmal: function () { sz.punkte.forEach(function (p, i) { if (status[i] === false) { wahl[i] = null; knopfZeilen[i].markiere(null); } }); status = []; zeichne(); },
@@ -490,10 +492,11 @@
     zeichne();
     return {
       hatAntwort: function () { return true; }, fehlt: '',
-      pruefe: function () {
-        status = aufgaben.map(function (a, i) { return unten[i] === a.soll; }); zeichne();
-        var ok = status.every(function (s) { return s; }), hin = [];
-        status.forEach(function (s, i) { if (!s) hin.push(aufgaben[i].h); });
+      pruefe: function (still) {
+        var res = aufgaben.map(function (a, i) { return unten[i] === a.soll; });
+        if (!still) { status = res; zeichne(); }
+        var ok = res.every(function (s) { return s; }), hin = [];
+        res.forEach(function (s, i) { if (!s) hin.push(aufgaben[i].h); });
         return { ok: ok, hinweise: hin };
       },
       nochmal: function () { status = []; zeichne(); },
@@ -539,7 +542,7 @@
     host.appendChild(el('p', { 'class': 'hilfetext', text: 'Tippe auf das Bild. Ein Fadenkreuz zeigt, wo du getippt hast. Tippe auf eine andere Stelle, um es zu verschieben.' }));
     return {
       hatAntwort: function () { return !!marker; }, fehlt: 'Tippe zuerst auf eine Stelle im Bild.',
-      pruefe: function () { var r = ok(marker); ergebnis = r; zeichne(); return { ok: r, hinweise: r ? [] : [q.hinweisFalsch] }; },
+      pruefe: function (still) { var r = ok(marker); if (!still) { ergebnis = r; zeichne(); } return { ok: r, hinweise: r ? [] : [q.hinweisFalsch] }; },
       nochmal: function () { marker = null; ergebnis = null; zeichne(); },
       loesung: function () { zeigeLoesung = true; ergebnis = null; zeichne(); },
       sperren: function (b) { gesperrt = b; }
@@ -560,7 +563,7 @@
     var w = TYPEN[q.typ](q, wHost, { rnd: F.rnd(q) });
     var rueck = el('div', { 'class': 'rueck-platz', 'aria-live': 'polite' });
     var zeile = el('div', { 'class': 'knopfzeile' });
-    var pruefKnopf = G.knopf('Prüfen', function () { pruefen(); }, 'haupt');
+    var pruefKnopf = G.knopf(opt.test ? 'Antwort festhalten' : 'Prüfen', function () { pruefen(); }, 'haupt');
     var nochmalKnopf = G.knopf('Nochmal versuchen', function () {
       w.nochmal(); rueck.innerHTML = ''; zeile.innerHTML = ''; zeile.appendChild(pruefKnopf);
       if (w.fokus) w.fokus();
@@ -579,6 +582,14 @@
     }
     function pruefen() {
       if (!w.hatAntwort()) { meldung('info', 'ℹ', 'Noch nicht fertig.', [w.fehlt]); return; }
+      if (opt.test) {       // Testmodus: nur eine Antwort, keine Rückmeldung bis zum Schluss
+        var rt = w.pruefe(true);
+        st.versuche = 1; st.ersterOk = !!rt.ok; st.fertig = true; st.gezeigt = false;
+        w.sperren(true); zeile.innerHTML = '';
+        meldung('info', '✓', 'Antwort festgehalten.', ['Was richtig ist, siehst du am Ende.']);
+        if (opt.onFertig) opt.onFertig(st);
+        return;
+      }
       st.versuche = (st.versuche || 0) + 1;
       var r = w.pruefe();
       if (r.ok) {
@@ -598,7 +609,10 @@
         nochmalKnopf.focus();
       }
     }
-    if (st.fertig) {      // schon bearbeitet: Lösung zeigen
+    if (st.fertig && opt.test) {      // Testmodus: nichts verraten
+      w.sperren(true); zeile.innerHTML = '';
+      meldung('info', '✓', 'Antwort festgehalten.', ['Was richtig ist, siehst du am Ende.']);
+    } else if (st.fertig) {      // schon bearbeitet: Lösung zeigen
       w.loesung(); w.sperren(true); zeile.innerHTML = '';
       if (st.ersterOk) meldung('ok', '✓', st.vorab ? 'Schon gekonnt (Blitz-Check).' : 'Richtig!', ['**Warum?** ' + q.warum]);
       else meldung('nein', '✗', 'Hier siehst du die richtige Lösung.', ['**Warum?** ' + q.warum]);

@@ -200,6 +200,13 @@ a { color: var(--marine); }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }
 @media (max-width: 520px) { body { font-size: 18px; } h1 { font-size: 27px; } .frage { padding: 12px; } main { padding: 12px 12px 90px; } }
 
+/* Auswertung: alle Fragen mit Lösung */
+.auswertung { margin-top: 28px; }
+.rev { border: 3px solid var(--rand); border-radius: 12px; margin: 10px 0; padding: 0 12px; background: #fff; }
+.rev.rev-ok { border-color: var(--gruen); } .rev.rev-falsch { border-color: var(--rot); }
+.rev summary { min-height: 48px; padding: 10px 4px; cursor: pointer; font-weight: bold; list-style-position: inside; touch-action: manipulation; }
+.rev .fragenhost { padding-bottom: 12px; }
+
 </style>
 </head>
 <body>
@@ -1226,9 +1233,9 @@ window.FRAGEN = [
     return {
       hatAntwort: function () { return sel() >= 0; },
       fehlt: 'Wähle zuerst eine Antwort.',
-      pruefe: function () {
+      pruefe: function (still) {
         var i = sel(), ok = !!items[i].a.ok;
-        labels[i].classList.add(ok ? 'richtig' : 'falsch'); marke(marken[i], ok);
+        if (!still) { labels[i].classList.add(ok ? 'richtig' : 'falsch'); marke(marken[i], ok); }
         return { ok: ok, hinweise: ok ? [] : [items[i].a.h || 'Das stimmt nicht.'] };
       },
       nochmal: function () { var i = sel(); if (i >= 0) inputs[i].checked = false; leeren(); },
@@ -1257,13 +1264,13 @@ window.FRAGEN = [
     return {
       hatAntwort: function () { return inputs.some(function (i) { return i.checked; }); },
       fehlt: 'Kreuze mindestens eine Antwort an.',
-      pruefe: function () {
+      pruefe: function (still) {
         var ok = true, hin = [];
         items.forEach(function (it, i) {
           var soll = !!it.a.ok, ist = inputs[i].checked;
-          if (soll === ist) { if (ist) { labels[i].classList.add('richtig'); marke(marken[i], true); } return; }
-          ok = false; labels[i].classList.add('falsch');
-          marken[i].textContent = ist ? '✗ falsch angekreuzt' : '✗ fehlt'; marken[i].className = 'marke m-falsch';
+          if (soll === ist) { if (ist && !still) { labels[i].classList.add('richtig'); marke(marken[i], true); } return; }
+          ok = false;
+          if (!still) { labels[i].classList.add('falsch'); marken[i].textContent = ist ? '✗ falsch angekreuzt' : '✗ fehlt'; marken[i].className = 'marke m-falsch'; }
           hin.push(ist ? '„' + it.a.t + '“ stimmt nicht. ' + (it.a.h || '') : 'Du hast „' + it.a.t + '“ nicht angekreuzt. ' + (it.a.h || ''));
         });
         return { ok: ok, hinweise: hin };
@@ -1341,9 +1348,10 @@ window.FRAGEN = [
     return {
       hatAntwort: function () { return leerIndex() < 0; },
       fehlt: 'Fülle zuerst alle Lücken.',
-      pruefe: function () {
-        status = bewerte(); zeichne();
-        var alle = status.every(function (s) { return s; });
+      pruefe: function (still) {
+        var res = bewerte();
+        if (!still) { status = res; zeichne(); }
+        var alle = res.every(function (s) { return s; });
         return { ok: alle, hinweise: alle ? [] : ['Prüfe die Lücken mit ✗. Tippe auf eine Lücke, um das Wort zu entfernen.'] };
       },
       nochmal: function () {
@@ -1389,9 +1397,10 @@ window.FRAGEN = [
     zeichne();
     return {
       hatAntwort: function () { return true; }, fehlt: '',
-      pruefe: function () {
-        status = folge.map(function (s, k) { return s.i === k; }); zeichne();
-        var ok = status.every(function (s) { return s; });
+      pruefe: function (still) {
+        var res = folge.map(function (s, k) { return s.i === k; });
+        if (!still) { status = res; zeichne(); }
+        var ok = res.every(function (s) { return s; });
         return { ok: ok, hinweise: ok ? [] : ['Die Schritte mit ✗ stehen noch nicht an der richtigen Stelle. Verschiebe sie mit den Pfeilknöpfen.'] };
       },
       nochmal: function () { status = []; zeichne(); },
@@ -1444,14 +1453,13 @@ window.FRAGEN = [
     return {
       hatAntwort: function () { return karten.every(function (c) { return c.platz >= 0; }); },
       fehlt: 'Lege zuerst alle Karten in die Felder.',
-      pruefe: function () {
-        var ok = true, hin = [];
-        status = {};
+      pruefe: function (still) {
+        var ok = true, hin = [], res = {};
         karten.forEach(function (c) {
-          var r = c.platz === c.k.ziel; status[c.i] = r;
+          var r = c.platz === c.k.ziel; res[c.i] = r;
           if (!r) { ok = false; hin.push('„' + c.k.t + '“: ' + (c.k.h || 'Das gehört in ein anderes Feld.')); }
         });
-        zeichne();
+        if (!still) { status = res; zeichne(); }
         return { ok: ok, hinweise: hin };
       },
       nochmal: function () { karten.forEach(function (c) { if (status[c.i] === false) c.platz = -1; }); status = {}; gewaehlt = null; zeichne(); },
@@ -1534,9 +1542,10 @@ window.FRAGEN = [
     zeichne();
     return {
       hatAntwort: function () { return wahl.every(function (w) { return w != null; }); }, fehlt: 'Stelle zuerst alle drei Kompasse ein.',
-      pruefe: function () {
-        status = sz.punkte.map(function (p, i) { return wahl[i] === p.soll; }); zeichne();
-        var ok = status.every(function (s) { return s; });
+      pruefe: function (still) {
+        var res = sz.punkte.map(function (p, i) { return wahl[i] === p.soll; });
+        if (!still) { status = res; zeichne(); }
+        var ok = res.every(function (s) { return s; });
         return { ok: ok, hinweise: ok ? [] : [q.hinweisFalsch] };
       },
       nochmal: function () { sz.punkte.forEach(function (p, i) { if (status[i] === false) { wahl[i] = null; knopfZeilen[i].markiere(null); } }); status = []; zeichne(); },
@@ -1582,10 +1591,11 @@ window.FRAGEN = [
     zeichne();
     return {
       hatAntwort: function () { return true; }, fehlt: '',
-      pruefe: function () {
-        status = aufgaben.map(function (a, i) { return unten[i] === a.soll; }); zeichne();
-        var ok = status.every(function (s) { return s; }), hin = [];
-        status.forEach(function (s, i) { if (!s) hin.push(aufgaben[i].h); });
+      pruefe: function (still) {
+        var res = aufgaben.map(function (a, i) { return unten[i] === a.soll; });
+        if (!still) { status = res; zeichne(); }
+        var ok = res.every(function (s) { return s; }), hin = [];
+        res.forEach(function (s, i) { if (!s) hin.push(aufgaben[i].h); });
         return { ok: ok, hinweise: hin };
       },
       nochmal: function () { status = []; zeichne(); },
@@ -1631,7 +1641,7 @@ window.FRAGEN = [
     host.appendChild(el('p', { 'class': 'hilfetext', text: 'Tippe auf das Bild. Ein Fadenkreuz zeigt, wo du getippt hast. Tippe auf eine andere Stelle, um es zu verschieben.' }));
     return {
       hatAntwort: function () { return !!marker; }, fehlt: 'Tippe zuerst auf eine Stelle im Bild.',
-      pruefe: function () { var r = ok(marker); ergebnis = r; zeichne(); return { ok: r, hinweise: r ? [] : [q.hinweisFalsch] }; },
+      pruefe: function (still) { var r = ok(marker); if (!still) { ergebnis = r; zeichne(); } return { ok: r, hinweise: r ? [] : [q.hinweisFalsch] }; },
       nochmal: function () { marker = null; ergebnis = null; zeichne(); },
       loesung: function () { zeigeLoesung = true; ergebnis = null; zeichne(); },
       sperren: function (b) { gesperrt = b; }
@@ -1652,7 +1662,7 @@ window.FRAGEN = [
     var w = TYPEN[q.typ](q, wHost, { rnd: F.rnd(q) });
     var rueck = el('div', { 'class': 'rueck-platz', 'aria-live': 'polite' });
     var zeile = el('div', { 'class': 'knopfzeile' });
-    var pruefKnopf = G.knopf('Prüfen', function () { pruefen(); }, 'haupt');
+    var pruefKnopf = G.knopf(opt.test ? 'Antwort festhalten' : 'Prüfen', function () { pruefen(); }, 'haupt');
     var nochmalKnopf = G.knopf('Nochmal versuchen', function () {
       w.nochmal(); rueck.innerHTML = ''; zeile.innerHTML = ''; zeile.appendChild(pruefKnopf);
       if (w.fokus) w.fokus();
@@ -1671,6 +1681,14 @@ window.FRAGEN = [
     }
     function pruefen() {
       if (!w.hatAntwort()) { meldung('info', 'ℹ', 'Noch nicht fertig.', [w.fehlt]); return; }
+      if (opt.test) {       // Testmodus: nur eine Antwort, keine Rückmeldung bis zum Schluss
+        var rt = w.pruefe(true);
+        st.versuche = 1; st.ersterOk = !!rt.ok; st.fertig = true; st.gezeigt = false;
+        w.sperren(true); zeile.innerHTML = '';
+        meldung('info', '✓', 'Antwort festgehalten.', ['Was richtig ist, siehst du am Ende.']);
+        if (opt.onFertig) opt.onFertig(st);
+        return;
+      }
       st.versuche = (st.versuche || 0) + 1;
       var r = w.pruefe();
       if (r.ok) {
@@ -1690,7 +1708,10 @@ window.FRAGEN = [
         nochmalKnopf.focus();
       }
     }
-    if (st.fertig) {      // schon bearbeitet: Lösung zeigen
+    if (st.fertig && opt.test) {      // Testmodus: nichts verraten
+      w.sperren(true); zeile.innerHTML = '';
+      meldung('info', '✓', 'Antwort festgehalten.', ['Was richtig ist, siehst du am Ende.']);
+    } else if (st.fertig) {      // schon bearbeitet: Lösung zeigen
       w.loesung(); w.sperren(true); zeile.innerHTML = '';
       if (st.ersterOk) meldung('ok', '✓', st.vorab ? 'Schon gekonnt (Blitz-Check).' : 'Richtig!', ['**Warum?** ' + q.warum]);
       else meldung('nein', '✗', 'Hier siehst du die richtige Lösung.', ['**Warum?** ' + q.warum]);
@@ -2952,6 +2973,7 @@ window.FRAGEN = [
   'use strict';
   var G = window.G, F = window.F, el = G.el;
   var KEY = 'lern-magnetismus-v1';
+  var ABSCHLUSS_ANZAHL = 20;                         // Fragen im Abschlusscheck (mindestens 2 je Modul, siehe waehleAbschluss)
   var app = document.getElementById('app');
   var Z;
 
@@ -3040,7 +3062,7 @@ window.FRAGEN = [
     // 1 Blitz-Check
     var s1 = el('li', { 'class': 'schrittkarte' });
     s1.appendChild(el('h2', { text: '1. Blitz-Check' }));
-    s1.appendChild(el('p', { text: 'Acht Fragen, eine pro Modul. Dauert etwa fünf Minuten. Danach siehst du, was du schon kannst und wo sich Üben lohnt.' }));
+    s1.appendChild(el('p', { text: 'Acht Fragen, eine pro Modul. Dauert etwa fünf Minuten. Du siehst erst am Ende, was richtig war, und erfährst dann, was du schon kannst und wo sich Üben lohnt.' }));
     var bz = el('div', { 'class': 'knopfzeile' });
     var fertig = Z.blitzFertig;
     bz.appendChild(el('a', { 'class': 'btn haupt', href: '#/blitz', text: fertig ? 'Ergebnis ansehen' : (Object.keys(Z.bq).length ? 'Blitz-Check fortsetzen' : 'Blitz-Check starten') }));
@@ -3068,7 +3090,7 @@ window.FRAGEN = [
     // 3 Abschluss
     var s3 = el('li', { 'class': 'schrittkarte' });
     s3.appendChild(el('h2', { text: '3. Abschlusscheck' }));
-    s3.appendChild(el('p', { text: 'Zwölf gemischte Fragen aus allen Modulen. Am Ende siehst du deine Punktzahl und welche Module du noch wiederholen solltest.' }));
+    s3.appendChild(el('p', { text: 'Zwanzig gemischte Fragen aus allen Modulen. Du siehst erst am Ende, was richtig war, dazu deine Punktzahl und welche Module du noch wiederholen solltest.' }));
     s3.appendChild(el('div', { 'class': 'knopfzeile' }, [el('a', { 'class': 'btn haupt', href: '#/abschluss', text: Z.aFertig ? 'Ergebnis ansehen' : (Z.auswahl ? 'Abschlusscheck fortsetzen' : 'Abschlusscheck starten') })]));
     ablauf.appendChild(s3);
     app.appendChild(ablauf);
@@ -3179,6 +3201,7 @@ window.FRAGEN = [
     var qs = opt.ids.map(frage), n = qs.length;
     app.appendChild(zurStart());
     seitenkopf(opt.titel).forEach(function (x) { app.appendChild(x); });
+    app.appendChild(el('p', { 'class': 'hilfetext', text: 'Du hast pro Frage einen Versuch. Was richtig ist, siehst du erst am Ende.' }));
     var box = el('div', { 'class': 'folge' }); app.appendChild(box);
     function zeige() {
       var i = Z[opt.idxKey];
@@ -3192,11 +3215,28 @@ window.FRAGEN = [
       var nav = el('div', { 'class': 'knopfzeile' });
       var weiter = G.knopf(i === n - 1 ? 'Ergebnis ansehen' : 'Weiter →', function () { Z[opt.idxKey] = i + 1; speichern(); zeige(); window.scrollTo(0, 0); var h = document.getElementById('haupt'); if (h) h.focus({ preventScroll: true }); }, 'haupt');
       weiter.hidden = !s.fertig;
-      F.zeigeFrage(host, q, s, { onFertig: function () { weiter.hidden = false; if (opt.beiFertig) opt.beiFertig(q, s); speichern(); weiter.focus(); } });
+      F.zeigeFrage(host, q, s, { test: true, onFertig: function () { weiter.hidden = false; if (opt.beiFertig) opt.beiFertig(q, s); speichern(); weiter.focus(); } });
       nav.appendChild(weiter); box.appendChild(nav);
     }
     zeige();
     fokusHaupt();
+  }
+
+  /* ---------- Auswertung: alle Fragen mit Lösung ---------- */
+  function antwortenAnsehen(ids, kontext) {
+    var wrap = el('div', { 'class': 'auswertung' }, [el('h2', { text: 'Alle Fragen mit Lösung' }), el('p', { text: 'Tippe auf eine Frage, um die richtige Lösung mit Begründung zu sehen.' })]);
+    ids.map(frage).forEach(function (q, i) {
+      var s = Z[kontext][q.id] || {}, ok = !!s.ersterOk;
+      var d = el('details', { 'class': 'rev' + (ok ? ' rev-ok' : ' rev-falsch') });
+      var kurz = q.frage.length > 80 ? q.frage.slice(0, 80) + ' …' : q.frage;
+      d.appendChild(el('summary', { text: (ok ? '✓ richtig: ' : '✗ falsch: ') + 'Frage ' + (i + 1) + ' (Modul ' + q.modul + '). ' + kurz }));
+      var host = el('div', { 'class': 'fragenhost' }), fertig = false;
+      d.addEventListener('toggle', function () {
+        if (d.open && !fertig) { fertig = true; F.zeigeFrage(host, q, { versuche: 1, ersterOk: ok, fertig: true, gezeigt: !ok }, {}); }
+      });
+      d.appendChild(host); wrap.appendChild(d);
+    });
+    return wrap;
   }
 
   /* ---------- Blitz-Check ---------- */
@@ -3230,6 +3270,7 @@ window.FRAGEN = [
     app.appendChild(liste);
     app.appendChild(el('p', { 'class': 'fliess', text: ueben.length ? 'Beginne mit den Modulen, die mit einem Pfeil markiert sind.' : 'Super! Du hast alle Blitz-Fragen auf Anhieb richtig. Mach trotzdem den Abschlusscheck.' }));
     app.appendChild(el('div', { 'class': 'knopfzeile' }, [el('a', { 'class': 'btn haupt', href: '#/', text: 'Zur Startseite' }), el('a', { 'class': 'btn zweit', href: '#/abschluss', text: 'Zum Abschlusscheck' })]));
+    app.appendChild(antwortenAnsehen(blitzFragen().map(function (q) { return q.id; }), 'bq'));
     fokusHaupt();
   }
 
@@ -3237,20 +3278,20 @@ window.FRAGEN = [
   function waehleAbschluss() {
     var rnd = G.zufall(Z.salt * 31 + (Z.lauf || 0) * 977 + 5);
     var pool = FR.filter(function (q) { return !q.blitz && !q.zusatz; }), ids = [];
-    MO.forEach(function (m) {
+    MO.forEach(function (m) {                                    // je Modul zwei Fragen
       var c = F.mischen(pool.filter(function (q) { return q.modul === m.id; }), rnd);
-      ids.push(c[0].id);
+      ids.push(c[0].id); if (c[1]) ids.push(c[1].id);
     });
     var rest = F.mischen(pool.filter(function (q) { return ids.indexOf(q.id) < 0; }), rnd);
-    while (ids.length < 12 && rest.length) ids.push(rest.shift().id);
-    return F.mischen(ids.map(function (id) { return frage(id); }), rnd).sort(function (a, b) { return a.modul - b.modul; }).map(function (q) { return q.id; });
+    while (ids.length < ABSCHLUSS_ANZAHL && rest.length) ids.push(rest.shift().id);
+    return F.mischen(ids, rnd);
   }
   function ansichtAbschluss() {
     if (Z.aFertig) { abschlussErgebnis(); return; }
     if (!Z.auswahl) {
       leeren();
       app.appendChild(zurStart());
-      seitenkopf('Abschlusscheck', 'Zwölf Fragen aus allen Modulen. Du siehst keine Frage aus dem Blitz-Check. Gewertet wird, was du beim ersten Versuch richtig hast.').forEach(function (x) { app.appendChild(x); });
+      seitenkopf('Abschlusscheck', 'Zwanzig gemischte Fragen aus allen Modulen. Du siehst keine Frage aus dem Blitz-Check. Du hast pro Frage einen Versuch und siehst erst am Ende, was richtig war.').forEach(function (x) { app.appendChild(x); });
       app.appendChild(el('div', { 'class': 'knopfzeile' }, [G.knopf('Abschlusscheck starten', function () { Z.auswahl = waehleAbschluss(); Z.aq = {}; Z.aIdx = 0; speichern(); ansichtAbschluss(); }, 'haupt')]));
       fokusHaupt(); return;
     }
@@ -3267,7 +3308,7 @@ window.FRAGEN = [
     });
     seitenkopf('Abschlusscheck: dein Ergebnis').forEach(function (x) { app.appendChild(x); });
     app.appendChild(el('p', { 'class': 'punktzahl', text: punkte + ' von ' + qs.length + ' Punkten' }));
-    app.appendChild(el('p', { 'class': 'fliess', text: 'Für jede Frage, die du beim ersten Versuch richtig hattest, gibt es einen Punkt.' }));
+    app.appendChild(el('p', { 'class': 'fliess', text: 'Für jede richtig beantwortete Frage gibt es einen Punkt.' }));
     var tab = el('table', { 'class': 'tabelle' });
     tab.appendChild(el('thead', {}, [el('tr', {}, [el('th', { text: 'Modul' }), el('th', { text: 'Richtig' }), el('th', { text: 'Hinweis' })])]));
     var tb = el('tbody'); var wdh = [];
@@ -3279,6 +3320,7 @@ window.FRAGEN = [
     });
     tab.appendChild(tb); app.appendChild(tab);
     app.appendChild(el('p', { 'class': 'fliess', text: wdh.length ? 'Wiederhole noch: ' + wdh.map(function (m) { return 'Modul ' + m.id + ' (' + m.titel + ')'; }).join(', ') + '.' : 'Stark! In allen Modulen hast du die Fragen auf Anhieb richtig beantwortet.' }));
+    app.appendChild(antwortenAnsehen(Z.auswahl, 'aq'));
     app.appendChild(el('div', { 'class': 'knopfzeile' }, [
       el('a', { 'class': 'btn haupt', href: '#/', text: 'Zur Startseite' }),
       G.knopf('Nochmal mit neuen Fragen', function () { Z.lauf = (Z.lauf || 0) + 1; Z.auswahl = waehleAbschluss(); Z.aq = {}; Z.aIdx = 0; Z.aFertig = false; speichern(); ansichtAbschluss(); }, 'zweit')
