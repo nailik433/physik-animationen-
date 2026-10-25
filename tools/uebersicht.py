@@ -30,17 +30,19 @@ def baustein(href, pos):
 
 def eintraege():
     js = (WURZEL / 'daten' / 'animationen.js').read_text(encoding='utf-8')
-    return re.findall(r"klasse:\s*(\d+),.*?datei:\s*'([^']+)'", js, re.S)
+    # (fach, klasse, datei); fach steht optional als erste Zeile eines Eintrags
+    return re.findall(r"(?:fach:\s*'([^']+)',\s*)?klasse:\s*(\d+),.*?datei:\s*'([^']+)'", js, re.S)
 
 def entfernen(text):
     return re.sub(re.escape(START) + r'.*?' + re.escape(ENDE) + r'\n?', '', text, flags=re.S)
 
-def einfuegen(datei, klasse):
+def einfuegen(datei, klasse, fach=''):
     pfad = WURZEL / datei
     roh = pfad.read_bytes()
     text = roh.decode('utf-8')
     text = entfernen(text)                                         # immer frisch setzen (idempotent)
-    href = os.path.relpath(WURZEL / 'index.html', pfad.parent).replace(os.sep, '/') + f'#klasse-{klasse}'
+    ziel = '#informatik' if fach == 'Informatik' else f'#klasse-{klasse}'
+    href = os.path.relpath(WURZEL / 'index.html', pfad.parent).replace(os.sep, '/') + ziel
     block = baustein(href, POSITION.get(datei, 'bl'))
     i = text.lower().rfind('</body>')
     text = text[:i] + block + text[i:] if i >= 0 else text + '\n' + block
@@ -50,11 +52,11 @@ def main():
     if len(sys.argv) > 2 and sys.argv[1] == '--entfernen':
         p = pathlib.Path(sys.argv[2]); p.write_bytes(entfernen(p.read_text(encoding='utf-8')).encode('utf-8')); return
     fehlt = []
-    for klasse, datei in eintraege():
+    for fach, klasse, datei in eintraege():
         if '--pruefen' in sys.argv:
             if START not in (WURZEL / datei).read_text(encoding='utf-8'): fehlt.append(datei)
         else:
-            einfuegen(datei, klasse); print('Button gesetzt:', datei)
+            einfuegen(datei, klasse, fach); print('Button gesetzt:', datei)
     if '--pruefen' in sys.argv:
         print('FEHLT in:', *fehlt, sep='\n  ') if fehlt else print('OK: alle Animationen haben den Übersicht-Button')
         sys.exit(1 if fehlt else 0)

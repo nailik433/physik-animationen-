@@ -3,6 +3,7 @@
    Die Übersichtsseite (index.html) baut sich komplett aus dieser Liste auf.
    Neue Unterkategorie = einfach einen neuen "thema"-Namen verwenden.
    Neue Animation     = einen Eintrag unten ergänzen (siehe README.md).
+   Informatik         = zusätzlich  fach: 'Informatik',  als erste Zeile im Eintrag (eigener Reiter in der Übersicht).
    ========================================================== */
 window.PHYSIK = {
   klassen: [7, 8, 9, 10],
@@ -97,6 +98,16 @@ window.PHYSIK = {
       datei: 'animationen/klasse-10/elektrische-energieversorgung/vom-kraftwerk-zur-steckdose/index.html',
       icon: '🏭',
       tags: ['Kraftwerk', 'Generator', 'Hochspannung', 'Transformator', 'Stromnetz', 'Leistung', 'Wärmeverlust']
+    },
+    {
+      fach: 'Informatik',
+      klasse: 7,
+      thema: 'Daten und Codierung',
+      titel: 'Mission Bitti: Bit, Byte und Buchstaben',
+      beschreibung: 'Lernmission zu Bit und Byte: Wie viele Muster entstehen aus Bits, wie viel Platz braucht das Alphabet, und wie funktioniert ein Geheimcode?',
+      datei: 'animationen/informatik/klasse-7/daten-codierung/mission-bitti/index.html',
+      icon: '💾',
+      tags: ['Bit', 'Byte', 'Binärcode', 'Codierung', 'Buchstaben', 'Mission']
     }
   ]
 };

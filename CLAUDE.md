@@ -37,6 +37,7 @@ Jede Animation hat unten links (bei Platzproblemen anders, siehe `POSITION` im S
 ## Wenn eine neue Animation entsteht (immer alle Schritte)
 
 1. Datei aus `animationen/_vorlage.html` ableiten (oder, wenn der Prompt eine eigenständige Einzeldatei verlangt, als `…/<name>/index.html` mit eingebettetem CSS/JS ohne `assets/`), Ablage: `animationen/klasse-<N>/<thema-slug>/<name>.html` (Slug: Kleinbuchstaben, Umlaute ausgeschrieben, z. B. `elektrizitaet`).
+1a. **Informatik:** Einträge für den Reiter „Informatik“ bekommen `fach: 'Informatik',` als erste Zeile und liegen unter `animationen/informatik/klasse-<N>/<thema-slug>/`. Der Button „← Übersicht“ führt dann zu `#informatik` (macht `tools/uebersicht.py` selbst).
 2. **Eintrag in `daten/animationen.js` ergänzen.** Nur dadurch erscheint die Animation in der Übersicht. Unterkategorien (`thema`) entstehen automatisch; vorhandene Schreibweise exakt wiederverwenden (z. B. `Elektrizität`), neue Themen nur, wenn wirklich keins passt.
 3. `python3 tools/uebersicht.py` ausführen (Button „← Übersicht“ einfügen).
 4. Tabelle „Aktueller Stand“ in `README.md` aktualisieren.

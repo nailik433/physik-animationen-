@@ -40,6 +40,14 @@
   }
   .suche input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
+  .faecher { display: flex; gap: 10px; margin: 0 0 16px; }
+  .fach {
+    min-height: 48px; padding: 0 22px; font: inherit; font-weight: 700; font-size: 1.05rem; cursor: pointer;
+    border: 2px solid var(--accent); border-radius: 12px; background: var(--card, #fff); color: var(--accent);
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  }
+  .fach[aria-selected="true"] { background: var(--accent); color: #fff; }
+  .fach .zaehler { margin-left: 8px; opacity: .85; font-weight: 600; }
   .klasse { margin-top: 40px; scroll-margin-top: 90px; --kl: var(--accent); }
   .klasse[data-klasse="7"]  { --kl: #1f9d55; }
   .klasse[data-klasse="8"]  { --kl: #2f6fed; }
@@ -94,9 +102,11 @@
 <body>
 <main class="seite">
   <div class="hero">
-    <h1>Physik-Animationen</h1>
+    <h1 id="titel">Physik-Animationen</h1>
     <p id="untertitel">Interaktive Simulationen für den Unterricht, sortiert nach Klasse und Thema.</p>
   </div>
+
+  <div class="faecher" id="faecher" role="tablist" aria-label="Fach"></div>
 
   <div class="werkzeug">
     <nav class="pillen" id="pillen" aria-label="Klassenstufen"></nav>
@@ -132,23 +142,49 @@
     return e;
   }
   const anzahl = (n, e, m) => n + ' ' + (n === 1 ? e : m);
-  const zaehle = k => D.animationen.filter(a => a.klasse === k).length;
+  const FAECHER = ['Physik', 'Informatik'];
+  const fachVon = a => a.fach || 'Physik';
+  const faecherNav = document.getElementById('faecher');
+  let fach = /^#informatik/.test(location.hash) ? 'Informatik' : 'Physik';
 
-  /* Klassen: die festen 7–10 plus alles, was in den Daten sonst noch vorkommt */
-  const klassen = Array.from(new Set(D.klassen.concat(D.animationen.map(a => a.klasse)))).sort((a, b) => a - b);
+  const eintraegeVon = f => D.animationen.filter(a => fachVon(a) === f);
+  const zaehle = k => eintraegeVon(fach).filter(a => a.klasse === k).length;
+  /* Klassen: bei Physik die festen 7–10 plus alles, was in den Daten sonst noch vorkommt; bei den übrigen Fächern nur belegte */
+  const klassenVon = f => Array.from(new Set((f === 'Physik' ? D.klassen : []).concat(eintraegeVon(f).map(a => a.klasse)))).sort((a, b) => a - b);
+  const praefix = () => (fach === 'Physik' ? '' : fach.toLowerCase() + '-');
 
-  document.getElementById('untertitel').textContent =
-    anzahl(D.animationen.length, 'Animation', 'Animationen') + ' · interaktive Simulationen für den Unterricht, sortiert nach Klasse und Thema.';
+  function kopfzeile() {
+    document.getElementById('titel').textContent = fach + '-Animationen';
+    const n = eintraegeVon(fach).length;
+    document.getElementById('untertitel').textContent =
+      anzahl(n, 'Animation', 'Animationen') + ' · interaktive Simulationen für den Unterricht, sortiert nach Klasse und Thema.';
+    document.title = fach + '-Animationen';
+    suche.placeholder = fach === 'Physik' ? 'Suchen, z. B. Ohm, Reihenschaltung …' : 'Suchen, z. B. Bit, Byte …';
+  }
 
-  /* Navigation */
-  klassen.forEach(k => {
-    const n = zaehle(k);
-    const a = el('a', 'pille' + (n ? '' : ' leer'));
-    a.href = '#klasse-' + k;
-    a.dataset.klasse = k;
-    a.append('Klasse ' + k, el('span', 'zaehler', n));
-    pillen.append(a);
-  });
+  function faecherZeichnen() {
+    faecherNav.replaceChildren();
+    FAECHER.forEach(f => {
+      const b = el('button', 'fach');
+      b.type = 'button'; b.setAttribute('role', 'tab');
+      b.setAttribute('aria-selected', f === fach ? 'true' : 'false');
+      b.append(f, el('span', 'zaehler', eintraegeVon(f).length));
+      b.addEventListener('click', () => { fach = f; history.replaceState(null, '', f === 'Physik' ? location.pathname : '#informatik'); alles(); window.scrollTo(0, 0); });
+      faecherNav.append(b);
+    });
+  }
+
+  function navigation() {
+    pillen.replaceChildren();
+    klassenVon(fach).forEach(k => {
+      const n = zaehle(k);
+      const a = el('a', 'pille' + (n ? '' : ' leer'));
+      a.href = '#' + praefix() + 'klasse-' + k;
+      a.dataset.klasse = k;
+      a.append('Klasse ' + k, el('span', 'zaehler', n));
+      pillen.append(a);
+    });
+  }
 
   function passt(a, q) {
     if (!q) return true;
@@ -173,13 +209,13 @@
     inhalt.replaceChildren();
     let treffer = 0;
 
-    klassen.forEach(k => {
-      const liste = D.animationen.filter(a => a.klasse === k && passt(a, q));
+    klassenVon(fach).forEach(k => {
+      const liste = eintraegeVon(fach).filter(a => a.klasse === k && passt(a, q));
       if (q && !liste.length) return;               // bei der Suche leere Klassen ausblenden
       treffer += liste.length;
 
       const sec = el('section', 'klasse');
-      sec.id = 'klasse-' + k;
+      sec.id = praefix() + 'klasse-' + k;
       sec.dataset.klasse = k;
 
       const kopf = el('header');
@@ -210,12 +246,18 @@
     keine.style.display = q && !treffer ? 'block' : 'none';
   }
 
+  function alles() { kopfzeile(); faecherZeichnen(); navigation(); zeichne(); }
+
   suche.addEventListener('input', zeichne);
-  zeichne();
+  alles();
   if (location.hash) {                              // Sprung zu #klasse-9 nach dem Aufbau
     const z = document.getElementById(location.hash.slice(1));
     if (z) z.scrollIntoView();
   }
+  window.addEventListener('hashchange', () => {
+    const neu = /^#informatik/.test(location.hash) ? 'Informatik' : (/^#klasse-/.test(location.hash) ? 'Physik' : fach);
+    if (neu !== fach) { fach = neu; alles(); }
+  });
 })();
 </script>
 </body>

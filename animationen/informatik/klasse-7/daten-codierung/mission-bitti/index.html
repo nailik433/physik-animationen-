@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mission Bitti: Bit, Byte und Buchstaben</title>
+<style>
+:root {
+  --board: #0E4634; --board-2: #0B3A2B; --copper: #D19A45; --copper-dim: rgba(209,154,69,.30);
+  --silk: #F4F2E8; --paper: #FFFDF7; --ink: #1D2A25; --muted: #5A6A63; --line: #DAD6C8;
+  --led: #FFCF33; --led-hot: #FFF6C2; --led-edge: #D9A100; --led-glow: rgba(255,207,51,.65);
+  --led-off: #E7E4D8; --led-off-edge: #B3AE9C;
+  --ok: #157F51; --ok-bg: #DDF4E7; --bad: #BF3434; --bad-bg: #FCE3E0; --note: #2F6BD8;
+  --font: ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; color: var(--ink); font: 500 19px/1.5 var(--font);
+  background-color: var(--board);
+  background-image:
+    radial-gradient(circle at 20px 20px, var(--copper-dim) 2.6px, transparent 3.2px),
+    linear-gradient(90deg, transparent 19px, rgba(209,154,69,.10) 19px, rgba(209,154,69,.10) 21px, transparent 21px),
+    linear-gradient(0deg, transparent 59px, rgba(209,154,69,.07) 59px, rgba(209,154,69,.07) 61px, transparent 61px);
+  background-size: 80px 80px, 160px 80px, 80px 160px;
+}
+[hidden] { display: none !important; }
+:focus-visible { outline: 3px solid var(--led); outline-offset: 3px; }
+.app { max-width: 800px; margin: 0 auto; padding: 16px max(16px, env(safe-area-inset-right)) 90px max(16px, env(safe-area-inset-left)); }
+
+/* Kopfzeile */
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--silk); margin-bottom: 10px; }
+.brand { font-weight: 800; font-size: 19px; display: flex; align-items: center; gap: 10px; }
+.brand i { width: 14px; height: 14px; border-radius: 50%; background: var(--led); box-shadow: 0 0 10px var(--led-glow); }
+.score { font-weight: 800; font-size: 16px; background: rgba(0,0,0,.25); border: 2px solid var(--copper-dim); padding: 6px 14px; border-radius: 999px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* Missionskarte: Leiterbahn mit LEDs */
+.map { position: relative; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); margin: 0 0 20px; padding: 6px 0 0; }
+.map::before { content: ""; position: absolute; left: 6%; right: 6%; top: 23px; height: 4px; border-radius: 2px; background: var(--copper); opacity: .6; }
+.node { position: relative; background: none; border: 0; padding: 0; color: var(--silk); font: inherit; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.node .dot { width: 36px; height: 36px; border-radius: 50%; background: #123E30; border: 3px solid var(--copper); display: grid; place-items: center; font-weight: 800; font-size: 15px; color: var(--silk); position: relative; z-index: 1; transition: background .3s, box-shadow .3s; }
+.node.done .dot { background: var(--led); border-color: var(--led-edge); color: #3A2B00; box-shadow: 0 0 16px var(--led-glow); }
+.node[aria-current="true"] .dot { outline: 3px solid var(--silk); outline-offset: 3px; }
+.node .lbl { font-size: 13px; font-weight: 700; text-align: center; line-height: 1.15; opacity: .9; padding: 0 2px; }
+@media (max-width: 640px) { .node .lbl { display: none; } .map { margin-bottom: 12px; } }
+
+/* Levelkopf */
+.lvlhead { color: var(--silk); margin: 0 0 16px; }
+.lvlhead .count { font-size: 16px; font-weight: 700; color: var(--copper); margin: 0; }
+.lvlhead h1 { font-size: clamp(30px, 6.4vw, 44px); line-height: 1.06; margin: 2px 0 0; font-weight: 800; letter-spacing: -.01em; text-wrap: balance; }
+
+/* Schritte */
+.step { margin: 0 0 16px; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: no-preference) { .step.new { animation: rise .35s ease-out both; } }
+.panel { background: var(--paper); border-radius: 20px; padding: 18px 20px 20px; box-shadow: 0 3px 0 rgba(0,0,0,.22), 0 14px 28px rgba(0,0,0,.18); }
+.panel > h2 { font-size: 23px; line-height: 1.2; margin: 0 0 4px; font-weight: 800; }
+.panel > .lead { color: var(--muted); margin: 0 0 14px; }
+.panel p { margin: 0 0 10px; max-width: 62ch; }
+
+/* Bitti spricht */
+.say { display: flex; gap: 12px; align-items: flex-start; }
+.say .av { flex: none; width: 60px; margin-top: 2px; }
+.bub { position: relative; flex: 1; background: var(--paper); border-radius: 20px; padding: 14px 18px; box-shadow: 0 3px 0 rgba(0,0,0,.22), 0 14px 28px rgba(0,0,0,.16); }
+.bub::before { content: ""; position: absolute; left: -10px; top: 22px; border: 10px solid transparent; border-right-color: var(--paper); border-left: 0; }
+.bub p { margin: 0 0 10px; max-width: 60ch; }
+.bub p:last-child { margin-bottom: 0; }
+.bub b { font-weight: 800; }
+.ref { display: inline-block; background: #FFF1C7; border-radius: 6px; padding: 0 6px; font-weight: 700; }
+
+.bitti { display: block; width: 100%; height: auto; overflow: visible; }
+.bitti .ant { fill: var(--led); }
+.bitti .eye { fill: var(--ink); }
+.bitti .cl { fill: #3F6456; stroke: var(--ink); stroke-width: 2; }
+.bitti .cl.on { fill: var(--led); }
+@media (prefers-reduced-motion: no-preference) {
+  .bitti .ant { animation: blink 2.4s infinite; }
+  @keyframes blink { 0%, 70%, 100% { opacity: 1; } 80% { opacity: .25; } }
+}
+
+/* Merke */
+.merke { margin-top: 14px; background-color: #fff; border: 2.5px solid var(--note); border-radius: 14px; padding: 12px 18px 12px 18px;
+  background-image: repeating-linear-gradient(transparent 0 30px, rgba(47,107,216,.10) 30px 31px); }
+.merke h3 { margin: 0 0 2px; font-size: 18px; color: var(--note); font-weight: 800; }
+.merke p { margin: 0 0 4px; font-weight: 700; }
+.fact { margin-top: 10px; font-size: 16px; color: var(--muted); }
+
+/* LEDs */
+.leds { display: flex; gap: clamp(5px, 1.6vw, 12px); }
+.cell { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1 1 0; max-width: 76px; min-width: 0; }
+.wcard { width: 100%; background: #fff; border: 2px solid var(--ink); border-radius: 8px; text-align: center; font-weight: 800; font-size: clamp(13px, 3.4vw, 19px); padding: 1px 0; font-variant-numeric: tabular-nums; }
+.led { width: 100%; aspect-ratio: 1; border-radius: 50%; border: 3px solid var(--led-off-edge); padding: 0; font: inherit; font-weight: 800; font-size: clamp(16px, 4.4vw, 28px); color: var(--muted);
+  background: radial-gradient(circle at 34% 30%, #fff 0 10%, var(--led-off) 42%, #D9D5C6 100%);
+  display: grid; place-items: center; transition: background .15s, box-shadow .2s, transform .1s; }
+button.led { cursor: pointer; touch-action: manipulation; }
+button.led:active { transform: scale(.92); }
+.led.on { background: radial-gradient(circle at 34% 30%, var(--led-hot) 0 14%, var(--led) 50%, #F0AE00 100%); border-color: var(--led-edge); color: #4A3600;
+  box-shadow: 0 0 0 4px rgba(255,207,51,.28), 0 0 26px var(--led-glow); }
+.bitv { font-weight: 800; font-size: clamp(13px, 3.2vw, 16px); color: var(--ok); min-height: 1.3em; font-variant-numeric: tabular-nums; }
+.leds.small .cell { max-width: 40px; }
+.leds.small .led { border-width: 2px; font-size: 14px; }
+.ledbox { padding: 16px; border-radius: 16px; background: #F3F0E4; border: 2px solid var(--line); }
+.sumline { margin-top: 12px; font-weight: 800; font-size: clamp(20px, 4.8vw, 26px); font-variant-numeric: tabular-nums; min-height: 1.4em; overflow-wrap: anywhere; }
+.sumline small { font-size: 16px; color: var(--muted); font-weight: 700; }
+
+/* Knöpfe */
+.btn { font: inherit; font-weight: 800; font-size: 18px; border-radius: 14px; padding: 9px 18px; min-height: 48px; border: 2.5px solid var(--ink); background: #fff; color: var(--ink); cursor: pointer; box-shadow: 0 3px 0 var(--ink); touch-action: manipulation; }
+.btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+.btn.go { background: var(--led); border-color: #3A2B00; color: #2B2000; box-shadow: 0 3px 0 #3A2B00; }
+.btn.quiet { border-color: var(--line); box-shadow: 0 3px 0 var(--line); color: var(--muted); }
+.btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+.row { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; margin-top: 14px; }
+.nextrow { display: flex; justify-content: flex-end; gap: 10px 14px; align-items: center; margin: 4px 0 26px; color: var(--silk); flex-wrap: wrap; }
+.nextrow .why { font-size: 16px; font-weight: 700; opacity: .9; }
+
+/* Rückmeldung */
+.msg { font-weight: 800; min-height: 1.5em; margin-top: 10px; }
+.msg.good { color: var(--ok); }
+.msg.bad { color: var(--bad); }
+.goal { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; margin-bottom: 12px; }
+.goal .big { font-size: 40px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.pips { display: flex; gap: 6px; }
+.pips i { width: 14px; height: 14px; border-radius: 50%; background: var(--led-off); border: 2px solid var(--led-off-edge); }
+.pips i.on { background: var(--led); border-color: var(--led-edge); }
+
+/* Tafel mit x2 */
+.tafel { display: flex; gap: clamp(4px, 1.4vw, 10px); flex-wrap: nowrap; align-items: center; overflow-x: auto; padding-bottom: 4px; }
+.tafel .tc { flex: 1 1 0; min-width: 34px; max-width: 72px; text-align: center; background: #fff; border: 2px solid var(--ink); border-radius: 8px; font-weight: 800; font-size: clamp(14px, 3.6vw, 20px); padding: 4px 0; }
+.tafel .x2 { flex: none; font-size: 13px; font-weight: 800; color: var(--copper); }
+
+/* Muster-Sammler */
+.found { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.chip { display: flex; gap: 4px; padding: 7px 9px; border-radius: 12px; background: #fff; border: 2px solid var(--line); }
+.chip i { width: 18px; height: 18px; border-radius: 50%; background: var(--led-off); border: 2px solid var(--led-off-edge); }
+.chip i.on { background: var(--led); border-color: var(--led-edge); box-shadow: 0 0 6px var(--led-glow); }
+.chip.empty { border-style: dashed; background: transparent; }
+.chip.empty i { opacity: .25; }
+.chip.flash { border-color: var(--ok); background: var(--ok-bg); }
+
+/* Leiter: Verdoppeln */
+.ladder { display: grid; gap: 8px; margin-top: 6px; }
+.rung { display: grid; grid-template-columns: 7.5em 1fr auto; gap: 12px; align-items: center; }
+.rung .lab { font-weight: 800; }
+.rung .bar { height: 26px; border-radius: 8px; background: var(--led); border: 2px solid var(--led-edge); min-width: 8px; }
+.rung .num { font-weight: 800; font-variant-numeric: tabular-nums; min-width: 3ch; text-align: right; }
+.rung .x { color: var(--copper); font-weight: 800; font-size: 15px; }
+.rung.q .bar { background: repeating-linear-gradient(45deg, #F3F0E4, #F3F0E4 6px, #fff 6px, #fff 12px); border-style: dashed; border-color: var(--led-off-edge); }
+
+/* Sitzplätze */
+.stepper { display: inline-flex; align-items: center; gap: 10px; }
+.stepper button { width: 48px; height: 48px; border-radius: 50%; border: 2.5px solid var(--ink); background: #fff; font: 800 26px/1 var(--font); cursor: pointer; padding: 0; color: var(--ink); }
+.stepper button:disabled { opacity: .3; }
+.stepper output { font-weight: 800; font-size: 22px; min-width: 6ch; text-align: center; }
+.seats { display: grid; grid-template-columns: repeat(auto-fill, minmax(36px, 1fr)); gap: 5px; margin-top: 12px; }
+.seat { aspect-ratio: 1; border-radius: 9px; border: 2px dashed var(--led-off-edge); display: grid; place-items: center; font-weight: 800; font-size: 16px; color: var(--muted); background: #fff; }
+.seat.taken { background: var(--ok-bg); border: 2px solid var(--ok); color: var(--ok); }
+.outside { margin-top: 12px; padding: 10px 12px; border-radius: 14px; background: var(--bad-bg); border: 2px solid var(--bad); }
+.outside h4 { margin: 0 0 8px; color: var(--bad); font-size: 17px; }
+.outside .seats { margin-top: 0; }
+.outside .seat { background: #fff; border: 2px solid var(--bad); color: var(--bad); }
+.verdict { margin-top: 12px; font-weight: 800; padding: 10px 14px; border-radius: 12px; }
+.verdict.good { background: var(--ok-bg); color: var(--ok); }
+.verdict.bad { background: var(--bad-bg); color: var(--bad); }
+
+/* Code-Automat */
+.machine { display: flex; flex-wrap: wrap; gap: 16px 22px; align-items: center; }
+.machine .ledbox { flex: 1 1 300px; }
+.letter { flex: 0 0 auto; width: 132px; text-align: center; border: 3px solid var(--ink); border-radius: 18px; background: #fff; padding: 8px 6px 10px; }
+.letter .big { font-size: 76px; font-weight: 800; line-height: 1.05; }
+.letter .big.none { color: var(--line); }
+.letter .cap { font-size: 15px; color: var(--muted); font-weight: 700; }
+.abc { display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 6px; margin-top: 14px; }
+.abc button { font: inherit; border: 2px solid var(--line); border-radius: 10px; background: #fff; cursor: pointer; padding: 4px 0 3px; color: var(--ink); line-height: 1.1; touch-action: manipulation; }
+.abc button b { display: block; font-size: 20px; }
+.abc button small { font-size: 12px; color: var(--muted); font-weight: 700; }
+.abc button[aria-pressed="true"] { border-color: var(--led-edge); background: #FFF1C7; }
+details.spick { margin-top: 14px; border: 2px solid var(--line); border-radius: 14px; padding: 4px 14px; background: #fff; }
+details.spick summary { cursor: pointer; font-weight: 800; padding: 8px 0; min-height: 44px; display: flex; align-items: center; }
+.ctab { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px 18px; padding: 4px 0 10px; font-variant-numeric: tabular-nums; }
+.ctab div { display: grid; grid-template-columns: 1.6em 2.2em 1fr; gap: 4px; font-size: 17px; padding: 2px 4px; border-radius: 6px; }
+.ctab div:nth-child(4n+1), .ctab div:nth-child(4n+2) { background: #F6F3E9; }
+.ctab span:first-child { font-weight: 800; }
+.ctab span:nth-child(2) { color: var(--muted); }
+.ctab span:last-child { letter-spacing: .08em; font-weight: 700; }
+@media (max-width: 480px) { .ctab { grid-template-columns: 1fr; } .ctab div:nth-child(n) { background: none; } .ctab div:nth-child(odd) { background: #F6F3E9; } }
+
+/* Aufgaben */
+.qa { background: var(--paper); border-radius: 20px; padding: 16px 20px 18px; border: 3px solid transparent; box-shadow: 0 3px 0 rgba(0,0,0,.22), 0 14px 28px rgba(0,0,0,.18); }
+.qa.done { border-color: var(--ok); }
+.qa .qh { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+.qa .qn { font-weight: 800; font-size: 16px; color: #fff; background: var(--ink); border-radius: 999px; padding: 2px 12px; }
+.qa.extra .qn { background: var(--copper); }
+.qa .pts { font-weight: 800; font-size: 15px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.qa .qt { font-weight: 800; font-size: 21px; line-height: 1.3; margin: 6px 0 6px; max-width: 60ch; }
+.qa .qsub { color: var(--muted); margin: 0 0 8px; }
+.qa .qsub ol { margin: 4px 0 0; padding-left: 1.3em; }
+.gline { margin: 4px 0; line-height: 2.6; font-weight: 700; }
+.gline.given { color: var(--muted); }
+.gap { font: inherit; font-weight: 800; font-size: 20px; width: 4.6em; padding: 4px 8px; border: 2.5px solid var(--led-off-edge); border-radius: 10px; background: #fff; color: var(--ink); margin: 0 4px; text-align: center; min-height: 46px; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+.gap.wide { width: 6.4em; letter-spacing: .06em; }
+select.gap { width: auto; text-transform: none; text-align: left; }
+.gap.ok { border-color: var(--ok); background: var(--ok-bg); }
+.gap.no { border-color: var(--bad); background: var(--bad-bg); }
+.gap.shown { border-style: dashed; }
+.opt { display: flex; gap: 12px; align-items: center; padding: 10px 14px; border: 2.5px solid var(--line); border-radius: 14px; margin: 8px 0; cursor: pointer; min-height: 50px; max-width: 600px; background: #fff; font-weight: 700; }
+.opt input { width: 24px; height: 24px; accent-color: var(--ink); flex: none; margin: 0; }
+.opt.ok { border-color: var(--ok); background: var(--ok-bg); }
+.opt.no { border-color: var(--bad); background: var(--bad-bg); }
+.plabel { display: block; font-weight: 800; margin: 12px 0 4px; }
+.ptext { font: inherit; font-weight: 800; font-size: 20px; padding: 8px 12px; border: 2.5px solid var(--led-off-edge); border-radius: 12px; background: #fff; color: var(--ink); width: min(100%, 480px); letter-spacing: .04em; }
+.ptext.ok { border-color: var(--ok); background: var(--ok-bg); }
+.codeline { font-weight: 800; letter-spacing: .1em; font-variant-numeric: tabular-nums; }
+
+/* Start */
+.hero { display: grid; grid-template-columns: 170px 1fr; gap: 10px 26px; align-items: center; color: var(--silk); margin: 10px 0 22px; }
+.hero h1 { font-size: clamp(40px, 9vw, 64px); line-height: .98; margin: 0 0 10px; font-weight: 800; letter-spacing: -.02em; }
+.hero p { margin: 0 0 8px; font-size: 20px; max-width: 34ch; }
+.hero .bot { filter: drop-shadow(0 0 24px rgba(255,207,51,.25)); }
+@media (max-width: 560px) { .hero { grid-template-columns: 1fr; text-align: left; } .hero .bot { width: 130px; } }
+.steps-how { margin: 0; padding-left: 1.3em; }
+.steps-how li { margin: 4px 0; }
+
+/* Abgabe */
+.sumgrid { display: grid; gap: 6px; margin: 8px 0 4px; }
+.sumrow { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: center; padding: 6px 4px; border-bottom: 1.5px solid var(--line); }
+.sumrow i { width: 18px; height: 18px; border-radius: 50%; background: var(--led-off); border: 2px solid var(--led-off-edge); }
+.sumrow i.on { background: var(--led); border-color: var(--led-edge); box-shadow: 0 0 8px var(--led-glow); }
+.sumrow i.half { background: linear-gradient(90deg, var(--led) 50%, var(--led-off) 50%); border-color: var(--led-edge); }
+.sumrow .p { font-weight: 800; font-variant-numeric: tabular-nums; }
+.sumrow.x { color: var(--muted); }
+.total { font-size: 30px; font-weight: 800; margin: 10px 0 0; font-variant-numeric: tabular-nums; }
+.confirm { margin-top: 14px; border: 2.5px solid var(--ink); background: #FFF1C7; border-radius: 14px; padding: 12px 16px; font-weight: 700; }
+.sol { margin: 6px 0; }
+
+/* Konfetti */
+.spark { position: fixed; width: 10px; height: 10px; border-radius: 3px; pointer-events: none; z-index: 50; animation: fly .95s cubic-bezier(.2,.7,.3,1) forwards; }
+@keyframes fly { to { transform: translate(var(--dx), var(--dy)) rotate(var(--r)); opacity: 0; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="bar"><div class="brand"><i></i>Mission Bitti</div><div class="score" id="score"></div></header>
+  <nav class="map" id="map" aria-label="Missionskarte"></nav>
+  <main id="main"></main>
+</div>
+<script>
+const PlatformState = {
+  load(callback) {
+    let done = false;
+    const finish = s => { if (!done) { done = true; callback(s); } };
+    addEventListener('message', e => {
+      if (e.source === parent && e.data && e.data.type === 'lesson_state') finish(e.data.state);
+    });
+    parent.postMessage({type: 'lesson_state_request'}, '*');
+    setTimeout(() => finish(null), 1500);   // keine Antwort (z. B. Vorschau) = neu beginnen
+  },
+  save(state, progress) { parent.postMessage({type: 'lesson_state_save', state, progress}, '*'); },
+  result(r) { parent.postMessage(Object.assign({type: 'lesson_result'}, r), '*'); }
+};
+(function () {
+'use strict';
+var L = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+var RM = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+function $(s, r) { return (r || document).querySelector(s); }
+function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+function pad(v, n) { var s = v.toString(2); while (s.length < n) s = '0' + s; return s; }
+function h(tag, props) {
+  var e = document.createElement(tag); props = props || {};
+  for (var k in props) {
+    var v = props[k];
+    if (v == null || v === false) continue;
+    if (k === 'class') e.className = v;
+    else if (k === 'text') e.textContent = v;
+    else if (k === 'html') e.innerHTML = v;
+    else if (k.indexOf('on') === 0 && typeof v === 'function') e.addEventListener(k.slice(2), v);
+    else if (v === true) e.setAttribute(k, '');
+    else e.setAttribute(k, v);
+  }
+  for (var i = 2; i < arguments.length; i++) {
+    var c = arguments[i];
+    if (c == null || c === false) continue;
+    if (Array.isArray(c)) { c.forEach(function (x) { if (x) e.appendChild(x.nodeType ? x : document.createTextNode(x)); }); continue; }
+    e.appendChild(c.nodeType ? c : document.createTextNode(c));
+  }
+  return e;
+}
+var timers = [];
+function every(fn, ms) { timers.push(setInterval(fn, ms)); }
+function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+function clearTimers() { timers.forEach(function (t) { clearInterval(t); clearTimeout(t); }); timers = []; }
+
+function burst(el, many) {
+  if (RM || !el) return;
+  var r = el.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + Math.min(r.height / 2, 80);
+  var cols = ['#FFCF33', '#3DDC97', '#FFFFFF', '#D19A45', '#7FB2FF'], n = many ? 40 : 20;
+  for (var i = 0; i < n; i++) {
+    var s = document.createElement('span'), a = Math.random() * Math.PI * 2, d = 50 + Math.random() * (many ? 170 : 100);
+    s.className = 'spark'; s.style.left = cx + 'px'; s.style.top = cy + 'px'; s.style.background = cols[i % cols.length];
+    s.style.setProperty('--dx', Math.cos(a) * d + 'px'); s.style.setProperty('--dy', (Math.sin(a) * d - 40) + 'px'); s.style.setProperty('--r', Math.round(Math.random() * 540) + 'deg');
+    document.body.appendChild(s);
+    (function (x) { setTimeout(function () { if (x.parentNode) x.parentNode.removeChild(x); }, 1000); })(s);
+  }
+}
+
+/* ---------- Bitti ---------- */
+function bitti(pat, cls) {
+  pat = pat || '00000'; var leds = '';
+  for (var i = 0; i < 5; i++) leds += '<circle class="cl' + (pat.charAt(i) === '1' ? ' on' : '') + '" cx="' + (32 + i * 14) + '" cy="113" r="5.5"/>';
+  return '<svg class="bitti ' + (cls || '') + '" viewBox="0 0 120 142" aria-hidden="true">' +
+    '<line x1="60" y1="12" x2="60" y2="30" stroke="#1D2A25" stroke-width="4" stroke-linecap="round"/>' +
+    '<circle class="ant" cx="60" cy="11" r="8.5" stroke="#1D2A25" stroke-width="3"/>' +
+    '<rect x="16" y="30" width="88" height="58" rx="20" fill="#F4F2E8" stroke="#1D2A25" stroke-width="4"/>' +
+    '<rect x="8" y="48" width="8" height="20" rx="4" fill="#D19A45" stroke="#1D2A25" stroke-width="3"/><rect x="104" y="48" width="8" height="20" rx="4" fill="#D19A45" stroke="#1D2A25" stroke-width="3"/>' +
+    '<circle class="eye" cx="44" cy="56" r="8.5"/><circle cx="47" cy="53" r="2.6" fill="#fff"/><circle class="eye" cx="76" cy="56" r="8.5"/><circle cx="79" cy="53" r="2.6" fill="#fff"/>' +
+    '<path d="M48 73 Q60 82 72 73" fill="none" stroke="#1D2A25" stroke-width="4" stroke-linecap="round"/>' +
+    '<rect x="20" y="93" width="80" height="42" rx="13" fill="#2A6B53" stroke="#1D2A25" stroke-width="4"/>' + leds + '</svg>';
+}
+function setChest(root, pat) { $$('.cl', root).forEach(function (c, i) { c.classList.toggle('on', pat.charAt(i) === '1'); }); }
+function say(html, pat) { return h('div', { class: 'say' }, h('div', { class: 'av', html: bitti(pat) }), h('div', { class: 'bub', html: html })); }
+function merke(lines, fact) {
+  return h('div', { class: 'merke' }, h('h3', { text: 'Merke dir' }), lines.map(function (l) { return h('p', { html: l }); }), fact ? h('div', { class: 'fact', html: fact }) : null);
+}
+function panel(title, lead) {
+  var p = h('div', { class: 'panel' });
+  if (title) p.appendChild(h('h2', { html: title }));
+  if (lead) p.appendChild(h('p', { class: 'lead', html: lead }));
+  for (var i = 2; i < arguments.length; i++) if (arguments[i]) p.appendChild(arguments[i]);
+  return p;
+}
+
+/* ---------- Lampenreihe ---------- */
+function ledRow(o) {
+  var n = o.n, bits = o.bits ? String(o.bits).split('').map(Number) : [];
+  while (bits.length < n) bits.push(0);
+  var wrap = h('div', { class: 'leds' + (o.small ? ' small' : '') }), cells = [];
+  for (var i = 0; i < n; i++) (function (i) {
+    var w = Math.pow(2, n - 1 - i);
+    var led = h(o.edit ? 'button' : 'div', { class: 'led', type: o.edit ? 'button' : null });
+    if (o.edit) led.addEventListener('click', function () { bits[i] = bits[i] ? 0 : 1; paint(); if (o.onchange) o.onchange(api); });
+    var bv = o.sums ? h('div', { class: 'bitv' }) : null;
+    wrap.appendChild(h('div', { class: 'cell' }, o.weights ? h('div', { class: 'wcard', text: String(w) }) : null, led, bv));
+    cells.push({ led: led, bv: bv, w: w });
+  })(i);
+  function paint() {
+    cells.forEach(function (c, i) {
+      var on = bits[i] === 1;
+      c.led.classList.toggle('on', on); c.led.textContent = o.small ? '' : (on ? '1' : '0');
+      if (o.edit) c.led.setAttribute('aria-label', 'Lampe mit Wert ' + c.w + ': ' + (on ? 'an' : 'aus'));
+      if (c.bv) c.bv.textContent = on ? '+' + c.w : '';
+    });
+  }
+  var api = {
+    el: wrap,
+    get: function () { return bits.join(''); },
+    value: function () { return parseInt(bits.join(''), 2) || 0; },
+    set: function (s) { bits = String(s).split('').map(Number); while (bits.length < n) bits.unshift(0); paint(); },
+    sum: function () {
+      var on = []; cells.forEach(function (c, i) { if (bits[i]) on.push(c.w); });
+      return on.length ? on.join(' + ') + ' = ' + api.value() : 'Alle Lampen aus: 0';
+    }
+  };
+  paint(); return api;
+}
+function tafel(ws) {
+  var t = h('div', { class: 'tafel', 'aria-label': 'Stellenwerttafel ' + ws.join(', ') });
+  ws.forEach(function (w, i) { if (i) t.appendChild(h('span', { class: 'x2', text: '×2' })); t.appendChild(h('div', { class: 'tc', text: String(w) })); });
+  return t;
+}
+function stepperEl(get, set, min, max, unit) {
+  var out = h('output', { 'aria-live': 'polite' });
+  var minus = h('button', { type: 'button', 'aria-label': 'weniger', text: '−' }), plus = h('button', { type: 'button', 'aria-label': 'mehr', text: '+' });
+  function ref() { out.textContent = get() + ' ' + unit(get()); minus.disabled = get() <= min; plus.disabled = get() >= max; }
+  minus.addEventListener('click', function () { if (get() > min) { set(get() - 1); ref(); } });
+  plus.addEventListener('click', function () { if (get() < max) { set(get() + 1); ref(); } });
+  ref();
+  return h('div', { class: 'stepper' }, minus, out, plus);
+}
+
+/* ---------- Zustand ---------- */
+var S = { v: 1, cur: 0, rev: {}, g: {}, t: {}, w: {}, submitted: false, sec: 0 };
+var ready = false;
+function save() { if (!ready) return; try { PlatformState.save(S, progress()); } catch (e) {} }
+
+/* ---------- Aufgaben ---------- */
+var TASKS = [
+  { id: 'a1', short: 'Was ist ein Bit', nr: 1, type: 'choice', q: 'Was ist ein Bit?',
+    options: ['Eine einzelne Stelle, die nur 0 oder 1 sein kann', 'Eine Reihe aus 8 Stellen', 'Eine Ziffer von 0 bis 9', 'Ein Punkt auf dem Bildschirm'], correct: 0,
+    good: 'Genau! Bei Bitti ist ein Bit eine Lampe: aus oder an.', badmsg: 'Noch nicht. Schau noch mal in den Merke-Zettel oben.' },
+  { id: 'a2', short: 'Byte umrechnen', nr: 2, type: 'gaps', q: 'Rechne um.', lines: ['1 Byte = {0} Bit', '3 Byte = {1} Bit', '16 Bit = {2} Byte'], ans: ['8', '24', '2'],
+    hint: 'Ein Byte ist eine Leiste mit 8 Lampen. Der Baukasten oben hilft dir.' },
+  { id: 'a3', short: 'Muster verdoppeln', nr: 3, type: 'gaps', q: 'Wie viele Muster gibt es? Verdopple immer weiter.',
+    lines: ['1 Bit: 2 Muster', '2 Bit: 4 Muster', '3 Bit: {0} Muster', '4 Bit: {1} Muster', '5 Bit: {2} Muster', '6 Bit: {3} Muster', '7 Bit: {4} Muster', '8 Bit: {5} Muster'],
+    ans: ['8', '16', '32', '64', '128', '256'], good: 'Richtig! Und die Knobelaufgabe vom Arbeitsblatt ist gelöst: Mit 5 Stellen gibt es 32 Zahlen, von 0 bis 31.', hint: 'Jede Lampe mehr heißt: mal 2. Also 4 · 2 = 8, dann 8 · 2 = …' },
+  { id: 'a4', short: '10 Bit', nr: 4, type: 'gaps', q: 'Bitti bekommt 10 Lampen. Wie viele Muster kann er dann zeigen?',
+    lines: ['Mit 10 Bit gibt es {0} Muster.'], ans: ['1024'], hint: '8 Bit sind 256 Muster. Jetzt noch zweimal verdoppeln!' },
+  { id: 'a5', short: 'Alphabet braucht 5 Bit', nr: 5, type: 'gaps', q: 'Warum reichen 4 Lampen nicht für das Alphabet? Ergänze.',
+    lines: ['Mit 4 Lampen gibt es nur {0} Muster.', 'Das sind {1} als 26 Buchstaben.', 'Mit 5 Lampen gibt es {2} Muster.', 'Für das Alphabet braucht man also mindestens {3} Bit.'],
+    ans: ['16', 'weniger', '32', '5'], selects: { 1: ['mehr', 'weniger', 'genauso viele'] }, hint: 'Probier es oben mit den Sitzplätzen aus.' },
+  { id: 'a6', short: 'BIT codieren', nr: 6, type: 'gaps', wide: true, bin: true, q: 'Schreib das Wort BIT in Bittis Code.',
+    lines: ['B = {0}', 'I = {1}', 'T = {2}'], ans: ['00010', '01001', '10100'], hint: 'Tippe im Code-Automaten oben auf den Buchstaben und lies die Lampen ab.' },
+  { id: 'a7', short: 'Wörter decodieren', nr: 7, type: 'gaps', wide: true, q: 'Bitti hat dir zwei Wörter geschickt. Übersetze sie.',
+    lines: ['<span class="codeline">00011 01111 00100 00101</span> → {0}', '<span class="codeline">01001 01110 00110 01111</span> → {1}'], ans: ['CODE', 'INFO'],
+    hint: 'Nimm eine 5er-Gruppe nach der anderen. Rechne sie in eine Zahl um, zum Beispiel 00011 = 2 + 1 = 3. Der 3. Buchstabe ist C.' },
+  { id: 'a8', short: 'Partnercode', nr: 8, type: 'partner', q: 'Geheimbotschaft mit deinem Partner',
+    sub: '<ol><li>Denk dir ein Wort mit mindestens 4 Buchstaben aus.</li><li>Schreib es in Bittis Code. Nach jeder 5er-Gruppe kommt ein Leerzeichen.</li><li>Zeig nur den Code deinem Partner. Er übersetzt ihn.</li><li>Tragt beides hier ein.</li></ol>' },
+  { id: 'a9', short: 'Bit für INFO', nr: 9, extra: true, type: 'gaps', q: 'Wie viele Bit braucht das Wort INFO in Bittis Code?',
+    lines: ['INFO braucht {0} Bit.'], ans: ['20'], hint: 'Jeder Buchstabe braucht 5 Lampen. Wie viele Buchstaben hat INFO?' },
+  { id: 'a10', short: 'Was fehlt im Code', nr: 10, extra: true, type: 'multi', q: 'Mit Bittis Code kann man nur Großbuchstaben schicken. Was fehlt noch für richtige Texte?',
+    sub: 'Kreuze mindestens drei richtige an.',
+    options: ['Kleinbuchstaben', 'Lautstärke', 'Ziffern (0 bis 9)', 'Satzzeichen (Punkt, Komma …)', 'Bildschirmhelligkeit', 'Leerzeichen', 'Umlaute und ß'], good: [0, 2, 3, 5, 6], min: 3 },
+  { id: 'a11', short: '100 Zeichen', nr: 11, extra: true, type: 'gaps', q: 'Bitti will 100 verschiedene Zeichen schicken. Wie viele Lampen braucht jedes Muster mindestens?',
+    lines: ['Für 100 Zeichen braucht man mindestens {0} Bit.'], ans: ['7'], hint: 'Verdopple so lange, bis du über 100 bist: 2, 4, 8, 16 …' }
+];
+var TBY = {}; TASKS.forEach(function (t) { TBY[t.id] = t; });
+function itemsOf(t) { return t.type === 'gaps' ? t.ans.length : 1; }
+var MAX = 0, XMAX = 0;
+TASKS.forEach(function (t) { if (t.extra) XMAX += itemsOf(t); else MAX += itemsOf(t); });
+function normalize() { TASKS.forEach(function (t) { var o = S.t[t.id] || {}; o.v = o.v || []; o.ok = o.ok || []; o.shown = o.shown || []; o.tries = o.tries || 0; S.t[t.id] = o; }); }
+function norm(v) { return String(v == null ? '' : v).toUpperCase().replace(/\s+/g, '').replace(/[.,']/g, ''); }
+function points(t) { var o = S.t[t.id], p = 0; for (var i = 0; i < itemsOf(t); i++) if (o.ok[i] && !o.shown[i]) p++; return p; }
+function complete(t) { var o = S.t[t.id]; for (var i = 0; i < itemsOf(t); i++) if (!o.ok[i] && !o.shown[i]) return false; return true; }
+function totals() { var p = 0, x = 0; TASKS.forEach(function (t) { if (t.extra) x += points(t); else p += points(t); }); return { p: p, x: x }; }
+function decode5(code) {
+  if (!code || !String(code).trim()) return null;
+  var g = String(code).trim().split(/\s+/), out = '';
+  for (var i = 0; i < g.length; i++) {
+    if (!/^[01]{5}$/.test(g[i])) return { err: 'Die Gruppe „' + g[i] + '“ hat nicht genau 5 Ziffern aus 0 und 1. Denk an die Nullen vorne!' };
+    var n = parseInt(g[i], 2);
+    if (n < 1 || n > 26) return { err: 'Die Gruppe ' + g[i] + ' ist die Zahl ' + n + '. Dafür gibt es keinen Buchstaben.' };
+    out += L.charAt(n - 1);
+  }
+  return { word: out };
+}
+
+function taskEl(id) {
+  var t = TBY[id], o = S.t[t.id];
+  var box = h('div', { class: 'qa' + (t.extra ? ' extra' : ''), id: 'q-' + t.id });
+  var ptsEl = h('span', { class: 'pts' });
+  box.appendChild(h('div', { class: 'qh' }, h('span', { class: 'qn', text: (t.extra ? 'Profi-Aufgabe ' : 'Aufgabe ') + t.nr }), ptsEl));
+  box.appendChild(h('div', { class: 'qt', text: t.q }));
+  if (t.sub) box.appendChild(h('div', { class: 'qsub', html: t.sub }));
+  var fields = [];
+  if (t.type === 'gaps') {
+    t.lines.forEach(function (line) {
+      var parts = line.split(/(\{\d+\})/), div = h('div', { class: 'gline' + (/\{\d+\}/.test(line) ? '' : ' given') });
+      parts.forEach(function (part) {
+        var m = part.match(/^\{(\d+)\}$/);
+        if (!m) { if (part) div.appendChild(h('span', { html: part })); return; }
+        var k = +m[1], el;
+        if (t.selects && t.selects[k]) {
+          el = h('select', { class: 'gap', 'aria-label': 'Lücke ' + (k + 1) });
+          el.appendChild(h('option', { value: '', text: 'wählen …' }));
+          t.selects[k].forEach(function (op) { el.appendChild(h('option', { value: op, text: op })); });
+        } else {
+          el = h('input', { class: 'gap' + (t.wide ? ' wide' : ''), type: 'text', 'aria-label': 'Lücke ' + (k + 1), autocomplete: 'off', spellcheck: 'false', autocapitalize: 'characters',
+            inputmode: (t.bin || /^\d+$/.test(t.ans[k])) ? 'numeric' : 'text' });
+        }
+        el.value = o.v[k] || '';
+        el.addEventListener('input', function () { o.v[k] = el.value; save(); });
+        el.addEventListener('change', function () { o.v[k] = el.value; save(); });
+        el.addEventListener('keydown', function (e) { if (e.key === 'Enter') check(); });
+        fields[k] = el; div.appendChild(el);
+      });
+      box.appendChild(div);
+    });
+  } else if (t.type === 'choice' || t.type === 'multi') {
+    t.options.forEach(function (op, i) {
+      var inp = h('input', { type: t.type === 'choice' ? 'radio' : 'checkbox', name: 'n-' + t.id, value: String(i) });
+      var sel = o.v[0];
+      inp.checked = t.type === 'choice' ? sel === i : (Array.isArray(sel) && sel.indexOf(i) >= 0);
+      inp.addEventListener('change', function () {
+        if (t.type === 'choice') o.v[0] = i;
+        else o.v[0] = fields.map(function (f, j) { return f.input.checked ? j : -1; }).filter(function (j) { return j >= 0; });
+        save();
+      });
+      var lab = h('label', { class: 'opt' }, inp, h('span', { text: op }));
+      fields.push({ input: inp, label: lab }); box.appendChild(lab);
+    });
+  } else if (t.type === 'partner') {
+    var c = h('input', { class: 'ptext', type: 'text', autocomplete: 'off', spellcheck: 'false', inputmode: 'numeric', placeholder: 'z. B. 01000 00001 …', id: 'p-code' });
+    var w = h('input', { class: 'ptext', type: 'text', autocomplete: 'off', spellcheck: 'false', autocapitalize: 'characters', id: 'p-word', style: 'text-transform:uppercase' });
+    c.value = o.v[0] || ''; w.value = o.v[1] || '';
+    c.addEventListener('input', function () { o.v[0] = c.value; save(); });
+    w.addEventListener('input', function () { o.v[1] = w.value; save(); });
+    box.appendChild(h('label', { class: 'plabel', for: 'p-code', text: 'Mein Code' })); box.appendChild(c);
+    box.appendChild(h('label', { class: 'plabel', for: 'p-word', text: 'Das hat mein Partner herausgefunden' })); box.appendChild(w);
+    fields = [c, w];
+  }
+  var fb = h('div', { class: 'msg', 'aria-live': 'polite' });
+  var btn = h('button', { type: 'button', class: 'btn go', text: 'Prüfen' });
+  var solBtn = h('button', { type: 'button', class: 'btn quiet', text: 'Lösung zeigen', hidden: true });
+  box.appendChild(h('div', { class: 'row' }, btn, solBtn));
+  box.appendChild(fb);
+
+  function paint(msg, good) {
+    var done = complete(t), lock = done || S.submitted;
+    box.classList.toggle('done', done && points(t) === itemsOf(t));
+    ptsEl.textContent = points(t) + ' von ' + itemsOf(t) + (itemsOf(t) === 1 ? ' Punkt' : ' Punkten');
+    if (t.type === 'gaps') {
+      fields.forEach(function (f, k) {
+        f.classList.remove('ok', 'no', 'shown');
+        if (o.shown[k]) { f.value = t.ans[k]; f.classList.add('ok', 'shown'); }
+        else if (o.ok[k]) f.classList.add('ok');
+        else if (o.tries && o.v[k]) f.classList.add('no');
+        f.disabled = lock || !!o.ok[k] || !!o.shown[k];
+      });
+    } else if (t.type === 'choice' || t.type === 'multi') {
+      fields.forEach(function (f, i) {
+        var right = t.type === 'choice' ? i === t.correct : t.good.indexOf(i) >= 0;
+        if (o.shown[0]) f.input.checked = right;
+        f.label.classList.remove('ok', 'no'); f.input.disabled = lock;
+        if ((o.ok[0] || o.shown[0]) && right && f.input.checked) f.label.classList.add('ok');
+        else if (o.tries && f.input.checked && !right) f.label.classList.add('no');
+      });
+    } else {
+      fields.forEach(function (f) { f.disabled = lock; f.classList.toggle('ok', !!o.ok[0]); });
+    }
+    btn.hidden = lock; solBtn.hidden = lock || o.tries < 2;
+    if (msg != null) { fb.textContent = msg; fb.className = 'msg ' + (good ? 'good' : 'bad'); }
+    else if (done && o.shown.some(Boolean)) { fb.textContent = 'Lösung angezeigt. Schau sie dir genau an.'; fb.className = 'msg'; }
+    else if (done) { fb.textContent = t.good || 'Richtig!'; fb.className = 'msg good'; }
+    else if (S.submitted) { fb.textContent = 'Schon abgegeben.'; fb.className = 'msg'; }
+    else { fb.textContent = ''; fb.className = 'msg'; }
+  }
+  function check() {
+    if (S.submitted) return;
+    var msg, good = false;
+    if (t.type === 'gaps') {
+      if (fields.some(function (f, k) { return !o.ok[k] && !String(f.value).trim(); })) { paint('Füll zuerst alle Lücken aus.', false); return; }
+      o.tries++;
+      var wrong = 0, shortBin = false;
+      fields.forEach(function (f, k) {
+        if (o.ok[k] || o.shown[k]) return;
+        var v = norm(f.value), a = norm(t.ans[k]);
+        if (v === a) o.ok[k] = true;
+        else { wrong++; if (t.bin && /^[01]+$/.test(v) && v.length !== 5 && parseInt(v, 2) === parseInt(a, 2)) shortBin = true; }
+      });
+      good = !wrong;
+      msg = good ? (t.good || 'Richtig! Stark.') : ((wrong === 1 ? 'Eine Lücke stimmt' : wrong + ' Lücken stimmen') + ' noch nicht. ' + (shortBin ? 'Stolperfalle: Jeder Code hat genau 5 Ziffern. Vergiss die Nullen vorne nicht!' : (t.hint || '')));
+    } else if (t.type === 'choice') {
+      if (o.v[0] == null) { paint('Wähl zuerst eine Antwort.', false); return; }
+      o.tries++; good = o.v[0] === t.correct; o.ok[0] = good; msg = good ? t.good : t.badmsg;
+    } else if (t.type === 'multi') {
+      var sel = o.v[0] || [];
+      if (!sel.length) { paint('Kreuz zuerst etwas an.', false); return; }
+      o.tries++;
+      var bad = sel.filter(function (i) { return t.good.indexOf(i) < 0; });
+      good = !bad.length && sel.length >= t.min; o.ok[0] = good;
+      msg = good ? 'Richtig! Für all das braucht Bitti noch eigene Muster.' : (bad.length ? 'Da ist etwas dabei, das man nicht schreiben kann.' : 'Stimmt schon, aber kreuz mindestens drei an.');
+    } else {
+      var d = decode5(fields[0].value), word = norm(fields[1].value);
+      if (!d || !word) { paint('Tragt den Code und das Wort ein.', false); return; }
+      o.tries++;
+      if (d.err) msg = d.err;
+      else if (d.word.length < 4) msg = 'Das Wort braucht mindestens 4 Buchstaben. Dein Code ergibt ' + d.word + '.';
+      else if (d.word !== word) msg = 'Code und Wort passen nicht zusammen. Geht jede 5er-Gruppe gemeinsam durch.';
+      else { good = true; o.ok[0] = true; msg = 'Geknackt! ' + d.word + ' braucht ' + d.word.length * 5 + ' Bit.'; }
+    }
+    save(); paint(msg, good); if (good) burst(box); onProgress(); sendResult(false);
+  }
+  btn.addEventListener('click', check);
+  solBtn.addEventListener('click', function () {
+    if (S.submitted) return;
+    for (var i = 0; i < itemsOf(t); i++) if (!o.ok[i]) o.shown[i] = true;
+    if (t.type === 'partner') { fields[0].value = '01000 00001 01100 01100 01111'; fields[1].value = 'HALLO'; }
+    save(); paint(t.type === 'partner' ? 'Beispiel: 01000 00001 01100 01100 01111 heißt HALLO.' : null, false); onProgress(); sendResult(false);
+  });
+  paint();
+  return box;
+}
+
+/* ---------- Bausteine der Level ---------- */
+// Zahlen bauen (Aufwärmen)
+function buildChallenge(ctx) {
+  var targets = [5, 12, 19], k = ctx.isDone ? targets.length : Math.min(ctx.w.k || 0, targets.length);
+  var big = h('span', { class: 'big' }), pips = h('div', { class: 'pips' }), msg = h('div', { class: 'msg', 'aria-live': 'polite' });
+  var sum = h('div', { class: 'sumline' });
+  var row = ledRow({ n: 8, weights: true, sums: true, edit: true, bits: ctx.w.bits, onchange: upd });
+  targets.forEach(function () { pips.appendChild(h('i')); });
+  function upd() {
+    ctx.w.bits = row.get(); ctx.w.k = k; save();
+    sum.textContent = row.sum();
+    $$('i', pips).forEach(function (p, i) { p.classList.toggle('on', i < k); });
+    if (k >= targets.length) { big.textContent = '✓'; msg.textContent = 'Alle drei geschafft. Du kannst es noch!'; msg.className = 'msg good'; return; }
+    big.textContent = targets[k];
+    if (row.value() === targets[k]) {
+      msg.textContent = 'Richtig: ' + row.sum() + '. In der Tafel steht ' + row.get() + '.'; msg.className = 'msg good';
+      burst(row.el); k++; ctx.w.k = k; save();
+      if (k >= targets.length) { ctx.done(); later(upd, 900); }
+      else later(function () { row.set('00000000'); msg.textContent = 'Nächste Zahl!'; msg.className = 'msg'; upd(); }, 1400);
+    } else { msg.textContent = ''; msg.className = 'msg'; }
+  }
+  upd();
+  return panel('Aufwärmen: Bau die Zahlen', 'Das sind die ersten Zahlen von deinem Arbeitsblatt. Tippe die Lampen an, bis die Zielzahl herauskommt.',
+    h('div', { class: 'goal' }, h('span', { text: 'Zielzahl' }), big, pips),
+    h('div', { class: 'ledbox' }, row.el, sum), msg,
+    h('p', { class: 'fact', html: 'Tipp vom Arbeitsblatt: Fang links an. Passt der Stellenwert in die Zahl? Ja: Lampe an und abziehen. Nein: Lampe aus.' }));
+}
+function buildRead(ctx) {
+  var row = ledRow({ n: 8, weights: true, bits: '00001001' });
+  var inp = h('input', { class: 'gap', type: 'text', inputmode: 'numeric', 'aria-label': 'Dezimalzahl' });
+  var msg = h('div', { class: 'msg', 'aria-live': 'polite' }), tries = ctx.w.tries || 0;
+  inp.value = ctx.w.v || '';
+  inp.addEventListener('input', function () { ctx.w.v = inp.value; save(); });
+  var btn = h('button', { type: 'button', class: 'btn go', text: 'Prüfen' });
+  function check() {
+    if (norm(inp.value) === '9') { msg.textContent = 'Richtig: 8 + 1 = 9.'; msg.className = 'msg good'; inp.classList.add('ok'); burst(btn); ctx.done(); return; }
+    tries++; ctx.w.tries = tries; save(); inp.classList.add('no');
+    msg.textContent = tries >= 2 ? 'Zähl nur die Werte über den leuchtenden Lampen zusammen: 8 + 1 = 9.' : 'Noch nicht. Welche Lampen leuchten? Zähl ihre Werte zusammen.';
+    msg.className = 'msg bad'; if (tries >= 2) ctx.done();
+  }
+  btn.addEventListener('click', check);
+  inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') check(); });
+  if (ctx.isDone) { inp.value = '9'; inp.classList.add('ok'); msg.textContent = 'Richtig: 8 + 1 = 9.'; msg.className = 'msg good'; }
+  return panel('Und andersherum', 'Welche Dezimalzahl zeige ich?', h('div', { class: 'ledbox' }, row.el),
+    h('div', { class: 'row' }, h('span', { style: 'font-weight:800', text: 'Das ist die Zahl' }), inp, btn), msg);
+}
+// Byte-Baukasten
+function buildBytes(ctx) {
+  var n = Math.max(ctx.w.n || 1, ctx.isDone ? 3 : 1), host = h('div'), eq = h('div', { class: 'sumline' }), msg = h('div', { class: 'msg', 'aria-live': 'polite' });
+  var pats = ['01001000', '01101001', '00100001', '01010100'];
+  function draw() {
+    host.textContent = ''; ctx.w.n = n; save();
+    for (var b = 0; b < n; b++) host.appendChild(h('div', { style: 'display:flex;align-items:center;gap:10px;margin:8px 0' },
+      h('span', { style: 'font-weight:800;min-width:4.4em', text: (b + 1) + '. Byte' }), ledRow({ n: 8, small: true, bits: pats[b] }).el));
+    eq.innerHTML = n + ' Byte = ' + n + ' · 8 Bit = ' + (n * 8) + ' Bit';
+    if (n >= 3 && !S.g[ctx.key]) { msg.textContent = 'Super, du hast schon 3 Byte gebaut!'; msg.className = 'msg good'; ctx.done(); }
+  }
+  draw();
+  return panel('Leisten-Baukasten', 'Steck Leisten zusammen. Jede Leiste ist ein Byte. Zähl die Lampen. Bau mindestens 3 Byte.',
+    h('div', { class: 'row', style: 'margin-top:0' }, h('span', { style: 'font-weight:800', text: 'Leisten:' }), stepperEl(function () { return n; }, function (v) { n = v; draw(); }, 1, 4, function () { return 'Byte'; })),
+    h('div', { class: 'ledbox', style: 'margin-top:12px' }, host, eq), msg);
+}
+// Muster-Sammler
+function buildCollector(n, ctx) {
+  var total = Math.pow(2, n), found = {}, count = 0;
+  var row = ledRow({ n: n, edit: true, bits: ctx.w.bits, onchange: function () { ctx.w.bits = row.get(); save(); } }), list = h('div', { class: 'found' }), msg = h('div', { class: 'msg', 'aria-live': 'polite' });
+  var counter = h('span', { style: 'font-weight:800' });
+  var saveBtn = h('button', { type: 'button', class: 'btn go', text: 'Muster speichern' });
+  var hintBtn = n >= 2 ? h('button', { type: 'button', class: 'btn quiet', text: 'Tipp' }) : null;
+  (ctx.w.found || []).forEach(function (q) { if (/^[01]+$/.test(q) && q.length === n && !found[q]) { found[q] = true; count++; } });
+  if (ctx.isDone) for (var v = 0; v < total; v++) { found[pad(v, n)] = true; count = total; }
+  function chip(p, empty) {
+    var c = h('div', { class: 'chip' + (empty ? ' empty' : '') });
+    for (var i = 0; i < n; i++) c.appendChild(h('i', { class: !empty && p.charAt(i) === '1' ? 'on' : null }));
+    return c;
+  }
+  function draw(flash) {
+    list.textContent = '';
+    Object.keys(found).sort().forEach(function (p) { var c = chip(p); if (p === flash) c.classList.add('flash'); list.appendChild(c); });
+    for (var i = count; i < total; i++) list.appendChild(chip('', true));
+    counter.textContent = count + ' von ' + total + ' gefunden';
+  }
+  saveBtn.addEventListener('click', function () {
+    if (count >= total) return;
+    var p = row.get();
+    if (found[p]) { msg.textContent = 'Dieses Muster hast du schon. Probier ein anderes!'; msg.className = 'msg bad'; draw(p); return; }
+    found[p] = true; count++; ctx.w.found = Object.keys(found); save();
+    if (count >= total) { msg.textContent = 'Alle gefunden! Mit ' + n + (n === 1 ? ' Lampe' : ' Lampen') + ' gibt es genau ' + total + ' Muster.'; msg.className = 'msg good'; burst(list, true); ctx.done(); }
+    else { msg.textContent = 'Neu! Weiter so.'; msg.className = 'msg good'; }
+    draw(p);
+  });
+  if (hintBtn) hintBtn.addEventListener('click', function () {
+    msg.className = 'msg'; msg.textContent = n === 2 ? 'Tipp: Lass die linke Lampe aus und probier rechts alles. Dann mach die linke Lampe an und probier rechts wieder alles.' : 'Tipp: Nimm die 4 Muster von vorhin. Setz jedes einmal mit Lampe aus davor und einmal mit Lampe an davor.';
+  });
+  draw();
+  var title = 'Finde alle Muster mit ' + n + (n === 1 ? ' Lampe' : ' Lampen');
+  var lead = n === 1 ? 'Stell ein Muster ein und tippe auf „Muster speichern“. Wie viele verschiedene gibt es?' : 'Jedes Muster zählt nur einmal. Die leeren Kästchen zeigen, wie viele noch fehlen.';
+  if (count >= total) { msg.textContent = 'Alle gefunden!'; msg.className = 'msg good'; }
+  return panel(title, lead, h('div', { class: 'ledbox', style: 'max-width:' + (n * 92 + 40) + 'px' }, row.el),
+    h('div', { class: 'row' }, saveBtn, hintBtn, counter), list, msg);
+}
+// Leiter
+function buildLadder() {
+  var lad = h('div', { class: 'ladder' }), vals = [[1, 2], [2, 4], [3, 8], [4, 16], [5, 32]];
+  vals.forEach(function (v, i) {
+    var q = i >= 3;
+    lad.appendChild(h('div', { class: 'rung' + (q ? ' q' : '') },
+      h('span', { class: 'lab', text: v[0] + (v[0] === 1 ? ' Lampe' : ' Lampen') }),
+      h('div', { class: 'bar', style: 'width:' + Math.max(4, v[1] / 32 * 100) + '%' }),
+      h('span', { class: 'num', text: q ? '?' : String(v[1]) })));
+    if (i < vals.length - 1) lad.appendChild(h('div', { class: 'rung' }, h('span'), h('span', { class: 'x', text: '↓ mal 2' }), h('span')));
+  });
+  return lad;
+}
+// Sitzplätze
+function buildSeats(ctx) {
+  var n = ctx.w.n || 3, tried = ctx.w.tried || {}, body = h('div'), msg = h('div');
+  function draw() {
+    tried[n] = true; ctx.w.n = n; ctx.w.tried = tried; save(); var cap = Math.pow(2, n); body.textContent = '';
+    body.appendChild(h('p', { style: 'font-weight:800;margin:10px 0 0', text: 'Mit ' + n + (n === 1 ? ' Lampe' : ' Lampen') + ' gibt es ' + cap + ' Muster, also ' + cap + ' Plätze.' }));
+    var g = h('div', { class: 'seats' });
+    for (var i = 0; i < cap; i++) g.appendChild(h('div', { class: 'seat' + (i < 26 ? ' taken' : ''), text: i < 26 ? L.charAt(i) : '' }));
+    body.appendChild(g);
+    if (cap < 26) {
+      var o = h('div', { class: 'seats' });
+      for (var j = cap; j < 26; j++) o.appendChild(h('div', { class: 'seat', text: L.charAt(j) }));
+      body.appendChild(h('div', { class: 'outside' }, h('h4', { text: (26 - cap) + ' Buchstaben haben keinen Platz' }), o));
+      body.appendChild(h('div', { class: 'verdict bad', text: 'Das reicht nicht. Probier eine Lampe mehr.' }));
+    } else {
+      var prev = Math.pow(2, n - 1);
+      body.appendChild(h('div', { class: 'verdict good', text: prev < 26 ? 'Passt! Alle 26 Buchstaben haben einen Platz. ' + (cap - 26) + ' Plätze bleiben frei. Mit einer Lampe weniger hätte es nicht gereicht.' : 'Passt, aber das sind viel zu viele Plätze. Es geht auch mit weniger Lampen.' }));
+    }
+    if (tried[4] && tried[5] && !S.g[ctx.key]) ctx.done();
+  }
+  draw();
+  return panel('Genug Plätze für alle?', 'Stell dir jedes Muster wie einen Sitzplatz vor. Jeder Buchstabe braucht einen eigenen Platz. Stell ein, wie viele Lampen ich benutze. Probier 4 und 5 Lampen aus.',
+    stepperEl(function () { return n; }, function (v) { n = v; draw(); }, 1, 6, function (v) { return v === 1 ? 'Lampe' : 'Lampen'; }), body, msg);
+}
+// Code-Automat
+function codeTable() {
+  var t = h('div', { class: 'ctab' });
+  for (var i = 0; i < 13; i++) [i, i + 13].forEach(function (k) { t.appendChild(h('div', null, h('span', { text: L.charAt(k) }), h('span', { text: String(k + 1) }), h('span', { text: pad(k + 1, 5) }))); });
+  return t;
+}
+function buildMachine(ctx) {
+  var big = h('div', { class: 'big' }), cap = h('div', { class: 'cap' }), sum = h('div', { class: 'sumline' });
+  var abc = h('div', { class: 'abc' }), btns = [];
+  var row = ledRow({ n: 5, weights: true, sums: true, edit: true, bits: ctx.w.bits || '01001', onchange: upd });
+  for (var i = 0; i < 26; i++) (function (i) {
+    var b = h('button', { type: 'button', 'aria-pressed': 'false', 'aria-label': L.charAt(i) + ', Nummer ' + (i + 1) }, h('b', { text: L.charAt(i) }), h('small', { text: String(i + 1) }));
+    b.addEventListener('click', function () { row.set(pad(i + 1, 5)); upd(); });
+    btns.push(b); abc.appendChild(b);
+  })(i);
+  function upd() {
+    ctx.w.bits = row.get(); save();
+    var v = row.value();
+    sum.textContent = row.sum();
+    if (v >= 1 && v <= 26) { big.textContent = L.charAt(v - 1); big.className = 'big'; cap.textContent = v + '. Buchstabe'; }
+    else { big.textContent = '?'; big.className = 'big none'; cap.textContent = v === 0 ? 'Kein Buchstabe' : 'Nach Z ist Schluss'; }
+    btns.forEach(function (b, i) { b.setAttribute('aria-pressed', i + 1 === v ? 'true' : 'false'); });
+  }
+  upd();
+  return panel('Der Code-Automat', 'Tippe auf die Lampen oder auf einen Buchstaben. Der Automat zeigt dir beides.',
+    h('div', { class: 'machine' }, h('div', { class: 'ledbox' }, row.el, sum), h('div', { class: 'letter' }, big, cap)),
+    abc, h('details', { class: 'spick' }, h('summary', { text: 'Spickzettel: die ganze Codetabelle' }), codeTable()));
+}
+function buildFinale(ctx) {
+  var r1 = ledRow({ n: 5, weights: true, bits: '01000' }), r2 = ledRow({ n: 5, weights: true, bits: '01001' });
+  var inp = h('input', { class: 'gap wide', type: 'text', autocapitalize: 'characters', 'aria-label': 'Bittis Nachricht' });
+  var msg = h('div', { class: 'msg', 'aria-live': 'polite' }), btn = h('button', { type: 'button', class: 'btn go', text: 'Prüfen' }), tries = ctx.w.tries || 0;
+  inp.value = ctx.w.v || '';
+  inp.addEventListener('input', function () { ctx.w.v = inp.value; save(); });
+  function check() {
+    if (norm(inp.value) === 'HI') { msg.textContent = 'HI! Du hast meine Nachricht gelesen. Danke, dass du mir hilfst!'; msg.className = 'msg good'; inp.classList.add('ok'); burst(btn, true); ctx.done(); return; }
+    tries++; ctx.w.tries = tries; save(); inp.classList.add('no'); msg.className = 'msg bad';
+    msg.textContent = tries >= 2 ? 'Oben: 8 = H. Unten: 8 + 1 = 9 = I.' : 'Noch nicht. Rechne jede Reihe in eine Zahl um und such den Buchstaben.';
+    if (tries >= 2) ctx.done();
+  }
+  btn.addEventListener('click', check);
+  inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') check(); });
+  if (ctx.isDone) { inp.value = 'HI'; inp.classList.add('ok'); }
+  return panel('Meine Nachricht vom Anfang', 'Am Anfang habe ich dir zwei Muster gezeigt. Jetzt kannst du sie lesen!',
+    h('div', { class: 'ledbox' }, r1.el, h('div', { style: 'height:12px' }), r2.el),
+    h('div', { class: 'row' }, h('span', { style: 'font-weight:800', text: 'Bitti sagt:' }), inp, btn), msg);
+}
+
+/* ---------- Level ---------- */
+var LV = [
+  { id: 'start', map: 'Start', title: 'Mission Bitti', steps: [{ build: buildStart }] },
+  { id: 'erinnern', map: 'Erinnern', title: 'Erinnerst du dich?', steps: [
+    { build: function () { return say('<p>Letzte Stunde hast du mit dem <b>Binärsystem</b> gearbeitet. Da gibt es nur zwei Ziffern: 0 und 1.</p><p>Weißt du noch, die <b>Stellenwerttafel</b> von deinem Arbeitsblatt? Jede Stelle ist doppelt so viel wert wie die Stelle rechts daneben.</p>', '10101'); } },
+    { build: function () { return panel('Die Stellenwerttafel', 'Von rechts nach links wird jeder Stellenwert verdoppelt.', tafel([128, 64, 32, 16, 8, 4, 2, 1])); } },
+    { build: function () { return say('<p>Bei mir ist jede Stelle eine <b>Lampe</b>. Leuchtet die Lampe, steht dort eine 1. Ist sie aus, steht dort eine 0.</p><p>Wie auf dem Arbeitsblatt zählst du die Stellenwerte zusammen, über denen eine 1 steht.</p>', '01101'); } },
+    { build: buildChallenge, gate: true, why: 'Bau zuerst alle drei Zahlen.' },
+    { build: buildRead, gate: true, why: 'Prüf zuerst deine Zahl.' }
+  ] },
+  { id: 'bit', map: 'Bit und Byte', title: 'Bit und Byte', steps: [
+    { build: function () { return say('<p>Informatiker haben für eine einzelne Stelle einen eigenen Namen. Sie sagen dazu <b>Bit</b>.</p><p>Bei mir ist ein Bit also eine Lampe: aus oder an, 0 oder 1. Mehr kann ein Bit nicht.</p>', '10000'); } },
+    { build: function (ctx) {
+      var r = ledRow({ n: 1, bits: ctx.w.bits || '1', edit: true, onchange: function () { ctx.w.bits = r.get(); save(); } });
+      return panel('Das ist ein Bit', 'Tippe die Lampe an. Ein Bit hat nur zwei Möglichkeiten.',
+        h('div', { class: 'ledbox', style: 'max-width:130px' }, r.el),
+        merke(['Ein Bit ist eine einzelne Stelle. Sie ist entweder 0 oder 1.'], 'Das Wort kommt aus dem Englischen: <i>binary digit</i>, auf Deutsch Binärziffer.')); } },
+    { build: function () { return say('<p>Auf deinem Arbeitsblatt hatte jede Zahl <b>8 Stellen</b>, von 128 bis 1. Das waren also 8 Bit.</p><p>8 Bit zusammen haben auch einen Namen: <b>Byte</b>. Du hast letzte Stunde also schon mit Bytes gerechnet!</p>', '11111'); } },
+    { build: function () {
+      var r = ledRow({ n: 8, weights: true, bits: '01100100' });
+      return panel('Ein Byte', 'Das ist die 100 aus dem Beispiel auf deinem Arbeitsblatt: 01100100. Acht Lampen, also acht Bit.',
+        h('div', { class: 'ledbox' }, r.el), merke(['8 Bit = 1 Byte'])); } },
+    { build: buildBytes, gate: true, why: 'Bau zuerst 3 Byte.' },
+    { task: 'a1' },
+    { task: 'a2' }
+  ] },
+  { id: 'muster', map: 'Muster', title: 'Wie viele Muster?', steps: [
+    { build: function () { return say('<p>Mit meinen Lampen zeige ich <b>Muster</b>. Jedes Muster kann etwas anderes bedeuten. Je mehr Muster ich habe, desto mehr kann ich sagen.</p><p>Auf deinem Arbeitsblatt gab es eine Knobelaufgabe: <span class="ref">Mit 5 Stellen kannst du … verschiedene Zahlen darstellen.</span> Das knacken wir jetzt!</p>', '00111'); } },
+    { build: function (ctx) { return buildCollector(1, ctx); }, gate: true, why: 'Finde zuerst alle Muster.' },
+    { build: function (ctx) { return buildCollector(2, ctx); }, gate: true, why: 'Finde zuerst alle Muster.' },
+    { build: function (ctx) { return buildCollector(3, ctx); }, gate: true, why: 'Finde zuerst alle Muster.' },
+    { build: function () { return say('<p>Hast du es gemerkt? <b>2, dann 4, dann 8.</b></p><p>Mit jeder neuen Lampe gibt es doppelt so viele Muster. Jedes alte Muster gibt es jetzt zweimal: einmal mit der neuen Lampe aus und einmal mit der neuen Lampe an.</p>', '11000'); } },
+    { build: function () {
+      return panel('Immer doppelt so viele', 'Wie geht es weiter?', buildLadder(),
+        merke(['Jede Lampe mehr verdoppelt die Anzahl der Muster.', 'Mit 8 Bit gibt es 256 Muster: die Zahlen 0 bis 255.'], 'Kommt dir 0 bis 255 bekannt vor? Das stand auf deinem Arbeitsblatt. Die 0 ist auch ein Muster, darum sind es 256.')); } },
+    { task: 'a3' },
+    { task: 'a4' }
+  ] },
+  { id: 'alphabet', map: 'Alphabet', title: 'Platz für das Alphabet', steps: [
+    { build: function () { return say('<p>Jetzt will ich <b>Buchstaben</b> schicken! Jeder Buchstabe braucht sein eigenes Muster. Das Alphabet hat 26 Buchstaben. Ä, Ö, Ü und ß lassen wir heute weg.</p><p>Alle Muster sollen gleich viele Lampen haben. Dann weiß man immer, wo ein Buchstabe aufhört und der nächste anfängt.</p>', '11010'); } },
+    { build: buildSeats, gate: true, why: 'Probier zuerst 4 und 5 Lampen aus.' },
+    { task: 'a5' }
+  ] },
+  { id: 'code', map: 'Geheimcode', title: 'Der Geheimcode', steps: [
+    { build: function () { return say('<p>Jetzt bauen wir meinen Code. Die Idee ist ganz einfach: Jeder Buchstabe bekommt seine <b>Nummer im Alphabet</b>. A ist 1, B ist 2, C ist 3 und so weiter bis Z ist 26.</p><p>Diese Nummer schreibe ich als Binärzahl mit 5 Stellen: 16, 8, 4, 2, 1. Das kannst du schon!</p>', '00010'); } },
+    { build: function () {
+      var r1 = ledRow({ n: 5, weights: true, sums: true, bits: '00010' }), r2 = ledRow({ n: 5, weights: true, sums: true, bits: '01101' });
+      return panel('So geht es', null,
+        h('p', { html: '<b>B</b> ist der 2. Buchstabe. 2 passt nur in die 2er-Stelle:' }), h('div', { class: 'ledbox' }, r1.el, h('div', { class: 'sumline', text: 'B = 00010' })),
+        h('p', { style: 'margin-top:14px', html: '<b>M</b> ist der 13. Buchstabe. 13 = 8 + 4 + 1:' }), h('div', { class: 'ledbox' }, r2.el, h('div', { class: 'sumline', text: 'M = 01101' })),
+        merke(['Jeder Buchstabe hat genau 5 Stellen.', 'Stolperfalle wie auf dem Arbeitsblatt: Vergiss die Nullen vorne nicht! B ist 00010, nicht 10.'])); } },
+    { build: buildMachine },
+    { task: 'a6' },
+    { task: 'a7' },
+    { task: 'a8' },
+    { build: buildFinale, gate: true, why: 'Lies zuerst meine Nachricht.' }
+  ] },
+  { id: 'bonus', map: 'Profi', title: 'Für Profis', steps: [
+    { build: function () { return say('<p>Du bist schon fertig? Dann hab ich noch drei knifflige Aufgaben für dich. Die geben Extrapunkte.</p>', '10101'); } },
+    { task: 'a9' }, { task: 'a10' }, { task: 'a11' }
+  ] },
+  { id: 'abgabe', map: 'Abgabe', title: 'Mission geschafft?', steps: [{ build: buildAbgabe }] }
+];
+
+function buildStart(ctx) {
+  var bot = h('div', { class: 'bot', html: bitti('01000') });
+  var msgs = ['01000', '01001'], k = 0;
+  if (!RM) every(function () { k = (k + 1) % 2; setChest(bot, msgs[k]); }, 1300);
+  var wrap = h('div');
+  wrap.appendChild(h('div', { class: 'hero' }, bot, h('div', null,
+    h('h1', { text: 'Mission Bitti' }),
+    h('p', { text: 'Hallo, ich bin Bitti! Ich kann nicht sprechen. Ich habe nur Lampen: an oder aus.' }),
+    h('p', { text: 'Gerade blinke ich dir eine Nachricht. Am Ende der Mission kannst du sie lesen.' }))));
+  wrap.appendChild(panel('So läuft die Mission', null, h('ol', { class: 'steps-how' },
+    h('li', { text: 'Lies, was ich dir sage. Es sind immer nur kurze Stücke.' }),
+    h('li', { text: 'Probier alles aus. Tippen ist ausdrücklich erlaubt!' }),
+    h('li', { text: 'Bei den Aufgaben tippst du auf „Prüfen“. Jede richtige Lücke gibt einen Punkt.' }),
+    h('li', { text: 'Ganz am Ende gibst du unter „Abgabe“ ab.' }))));
+  return wrap;
+}
+function buildAbgabe() {
+  var wrap = h('div'), grid = h('div', { class: 'sumgrid' }), tt = totals();
+  TASKS.forEach(function (t) {
+    var p = points(t), m = itemsOf(t);
+    grid.appendChild(h('div', { class: 'sumrow' + (t.extra ? ' x' : '') }, h('i', { class: p === m ? 'on' : (p > 0 ? 'half' : null) }),
+      h('span', { text: (t.extra ? 'Profi ' : 'Aufgabe ') + t.nr + ': ' + t.q.split(/[?.]/)[0] }), h('span', { class: 'p', text: p + '/' + m })));
+  });
+  var actions = h('div', { class: 'row' }), confirm = h('div', { class: 'confirm', hidden: true }), done = h('div', { class: 'verdict good', hidden: true });
+  var go = h('button', { type: 'button', class: 'btn go', text: 'Abgeben' }); actions.appendChild(go);
+  var sol = h('div', { hidden: true });
+  go.addEventListener('click', function () {
+    var open = TASKS.filter(function (t) { return !t.extra && !complete(t); }).map(function (t) { return t.nr; });
+    confirm.textContent = ''; confirm.hidden = false;
+    confirm.appendChild(h('p', { style: 'margin:0 0 8px', text: open.length ? 'Noch offen: Aufgabe ' + open.join(', ') + '. Willst du trotzdem abgeben? Danach kannst du nichts mehr ändern.' : 'Wirklich abgeben? Danach kannst du nichts mehr ändern.' }));
+    var yes = h('button', { type: 'button', class: 'btn go', text: 'Ja, abgeben' }), no = h('button', { type: 'button', class: 'btn', text: 'Noch nicht' });
+    yes.addEventListener('click', function () { S.submitted = true; save(); sendResult(true); render(); burst($('#main'), true); });
+    no.addEventListener('click', function () { confirm.hidden = true; });
+    confirm.appendChild(h('div', { class: 'row', style: 'margin-top:0' }, yes, no));
+  });
+  wrap.appendChild(say(S.submitted ? '<p>Mission geschafft! Danke für deine Hilfe. Hol dir jetzt das Sicherungsblatt.</p>' : '<p>Fast geschafft! Hier siehst du deine Punkte. Offene Aufgaben kannst du noch machen. Wenn du fertig bist, gibst du ab.</p>', '11111'));
+  wrap.appendChild(h('div', { style: 'height:16px' }));
+  var pnl = panel('Deine Punkte', null, grid, h('div', { class: 'total', text: tt.p + ' von ' + MAX + ' Punkten' + (tt.x ? ' + ' + tt.x + ' Extrapunkte' : '') }));
+  if (!S.submitted) { pnl.appendChild(actions); pnl.appendChild(confirm); }
+  else { done.hidden = false; done.textContent = 'Abgegeben. Vergleiche jetzt mit den Lösungen.'; pnl.appendChild(done); sol.hidden = false; }
+  wrap.appendChild(pnl);
+  TASKS.forEach(function (t) { sol.appendChild(h('p', { class: 'sol' }, h('b', { text: (t.extra ? 'Profi ' : 'Aufgabe ') + t.nr + ': ' }), solutionText(t))); });
+  wrap.appendChild(h('div', { style: 'height:16px' }));
+  if (S.submitted) wrap.appendChild(panel('Lösungen zum Vergleichen', 'Was du nicht verstehst, klären wir gleich bei der Sicherung.', sol));
+  return wrap;
+}
+function solutionText(t) {
+  if (t.type === 'choice') return t.options[t.correct];
+  if (t.type === 'multi') return t.good.map(function (i) { return t.options[i]; }).join(', ');
+  if (t.type === 'partner') return 'individuell, zum Beispiel 01000 00001 01100 01100 01111 = HALLO';
+  return t.lines.filter(function (l) { return /\{\d+\}/.test(l); }).map(function (l) { return l.replace(/<[^>]+>/g, '').replace(/\{(\d+)\}/g, function (_, k) { return t.ans[+k]; }); }).join('  |  ');
+}
+function gapLabel(t, k) {
+  var line = ''; t.lines.forEach(function (l) { if (l.indexOf('{' + k + '}') >= 0) line = l; });
+  return line.replace(/<[^>]+>/g, '').replace('{' + k + '}', '?').replace(/\{\d+\}/g, '…').replace(/\s+/g, ' ').trim();
+}
+function taskStatus(t) {
+  var o = S.t[t.id], m = itemsOf(t), pts = points(t), shown = o.shown.some(Boolean);
+  if (!o.tries && !shown) return 'offen';
+  if (pts === m) return o.tries > 1 ? 'richtig (' + o.tries + '. Versuch)' : 'richtig';
+  if (t.type === 'gaps') {
+    var wrong = [];
+    for (var k = 0; k < m; k++) if (!o.ok[k] && !o.shown[k] && o.v[k]) wrong.push(gapLabel(t, k) + ' → ' + String(o.v[k]).trim());
+    var s = pts + '/' + m + ' richtig';
+    if (shown) s += ', Lösung angezeigt';
+    if (wrong.length) s += ' (falsch: ' + wrong.join('; ') + ')';
+    return s.slice(0, 160);
+  }
+  if (shown) return 'Lösung angezeigt';
+  if (t.type === 'choice') return 'falsch (Antwort: ' + (o.v[0] != null ? t.options[o.v[0]] : '–') + ')';
+  if (t.type === 'multi') return 'falsch (gewählt: ' + (o.v[0] || []).map(function (i) { return t.options[i]; }).join(', ') + ')';
+  return 'noch nicht passend';
+}
+function gateCount() {
+  var all = 0, done = 0;
+  LV.forEach(function (lv) { lv.steps.forEach(function (st, i) { if (st.gate) { all++; if (S.g[lv.id + ':' + i]) done++; } }); });
+  return { all: all, done: done };
+}
+function progress() {
+  if (S.submitted) return 100;
+  var units = 0, done = 0;
+  LV.forEach(function (lv) {
+    lv.steps.forEach(function (st, i) {
+      if (st.task && TBY[st.task].extra) return;
+      if (st.task || st.gate) { units++; if (stepOk(lv, i)) done++; }
+    });
+  });
+  return Math.min(99, Math.round(done / units * 100));
+}
+function detail() {
+  var d = {};
+  TASKS.forEach(function (t) { d[(t.extra ? 'Profi ' : 'Aufgabe ') + t.nr + ' – ' + t.short] = taskStatus(t); });
+  var g = gateCount();
+  d['Erkunden (Ausprobier-Stationen)'] = g.done + ' von ' + g.all + ' geschafft';
+  d['Zuletzt im Level'] = LV[S.cur].map;
+  d['Zeit (s)'] = S.sec;
+  return d;
+}
+function sendResult(completed) {
+  if (S.submitted && !completed) return;
+  var tt = totals();
+  try { PlatformState.result({ score: tt.p, max: MAX, completed: !!completed, extra: tt.x, extra_max: XMAX, detail: detail() }); } catch (e) {}
+}
+
+/* ---------- Ablauf ---------- */
+var main = $('#main'), nextRow = null;
+function revealed(lv) { return Math.min(S.rev[lv.id] || 1, lv.steps.length); }
+function stepOk(lv, i) { var st = lv.steps[i]; if (st.task) return complete(TBY[st.task]); if (st.gate) return !!S.g[lv.id + ':' + i]; return true; }
+function levelDone(lv) {
+  if (lv.id === 'start') return (S.rev.start || 0) >= 2;
+  if (lv.id === 'abgabe') return !!S.submitted;
+  if (revealed(lv) < lv.steps.length) return false;
+  for (var i = 0; i < lv.steps.length; i++) if (!stepOk(lv, i)) return false;
+  return true;
+}
+function stepEl(lv, i, isNew) {
+  var st = lv.steps[i], key = lv.id + ':' + i;
+  var ctx = { key: key, isDone: !!S.g[key], w: S.w[key] || (S.w[key] = {}), done: function () { if (!S.g[key]) { S.g[key] = true; save(); } refreshNext(); } };
+  var sec = h('section', { class: 'step' + (isNew ? ' new' : ''), id: 'step-' + i });
+  sec.appendChild(st.task ? taskEl(st.task) : st.build(ctx));
+  return sec;
+}
+function render() {
+  clearTimers();
+  var lv = LV[S.cur]; main.textContent = '';
+  if (lv.id !== 'start') main.appendChild(h('div', { class: 'lvlhead' }, h('p', { class: 'count', text: lv.id === 'bonus' ? 'Extra-Level' : (lv.id === 'abgabe' ? 'Ziel' : 'Level ' + S.cur + ' von 5') }), h('h1', { text: lv.title })));
+  var n = revealed(lv);
+  for (var i = 0; i < n; i++) main.appendChild(stepEl(lv, i, false));
+  nextRow = h('div', { class: 'nextrow' }); main.appendChild(nextRow);
+  refreshNext();
+}
+function refreshNext() {
+  var lv = LV[S.cur], n = revealed(lv), last = n - 1, more = n < lv.steps.length;
+  nextRow.textContent = '';
+  var ok = stepOk(lv, last), label = null;
+  if (more) label = 'Weiter';
+  else if (S.cur < LV.length - 1) label = lv.id === 'start' ? 'Mission starten' : (lv.id === 'code' ? 'Zu den Profi-Aufgaben' : (lv.id === 'bonus' ? 'Zur Abgabe' : 'Weiter zu: ' + LV[S.cur + 1].title));
+  if (label) {
+    if (!ok) nextRow.appendChild(h('span', { class: 'why', text: lv.steps[last].task ? 'Prüf zuerst die Aufgabe.' : (lv.steps[last].why || 'Schaff zuerst die Aufgabe oben.') }));
+    if (lv.id === 'code' && !more) {
+      var ab = h('button', { type: 'button', class: 'btn', text: 'Direkt zur Abgabe' });
+      ab.addEventListener('click', function () { goLevel(LV.length - 1); });
+      nextRow.appendChild(ab);
+    }
+    var b = h('button', { type: 'button', class: 'btn go', text: label });
+    b.disabled = !ok;
+    b.addEventListener('click', function () {
+      if (more) {
+        S.rev[lv.id] = n + 1; save();
+        var el = stepEl(lv, n, true); main.insertBefore(el, nextRow); refreshNext();
+        try { el.scrollIntoView({ behavior: RM ? 'auto' : 'smooth', block: 'start' }); } catch (e) { el.scrollIntoView(); }
+      } else {
+        if (lv.id === 'start') { S.rev.start = 2; }
+        goLevel(S.cur + 1);
+      }
+    });
+    nextRow.appendChild(b);
+  }
+  renderMap(); updateScore();
+}
+function onProgress() { refreshNext(); }
+function goLevel(i) { S.cur = Math.max(0, Math.min(LV.length - 1, i)); render(); save(); window.scrollTo(0, 0); }
+function renderMap() {
+  var map = $('#map'); map.textContent = '';
+  LV.forEach(function (lv, i) {
+    var b = h('button', { type: 'button', class: 'node' + (levelDone(lv) ? ' done' : ''), 'aria-current': i === S.cur ? 'true' : 'false', 'aria-label': lv.map + (levelDone(lv) ? ', erledigt' : '') },
+      h('span', { class: 'dot', text: lv.id === 'start' ? '▶' : (lv.id === 'abgabe' ? '★' : (lv.id === 'bonus' ? '+' : String(i))) }), h('span', { class: 'lbl', text: lv.map }));
+    b.addEventListener('click', function () { if (lv.id === 'start' || i !== S.cur) goLevel(i); });
+    map.appendChild(b);
+  });
+}
+function updateScore() { var tt = totals(); $('#score').textContent = tt.p + ' / ' + MAX + ' Punkte' + (tt.x ? ' + ' + tt.x : ''); }
+
+main.appendChild(h('div', { class: 'panel' }, h('p', { style: 'margin:0;font-weight:800', text: 'Mission wird geladen …' })));
+PlatformState.load(function (st) {
+  if (st && typeof st === 'object' && st.t && typeof st.t === 'object') S = st;
+  ['rev', 'g', 't', 'w'].forEach(function (k) { if (!S[k] || typeof S[k] !== 'object') S[k] = {}; });
+  if (typeof S.cur !== 'number' || !LV[S.cur]) S.cur = 0;
+  S.sec = +S.sec || 0; S.submitted = !!S.submitted; S.v = 1;
+  normalize();
+  ready = true;
+  render();
+  save();
+  setInterval(function () {
+    if (document.visibilityState === 'hidden') return;
+    S.sec++;
+    if (S.sec % 30 === 0) save();
+  }, 1000);
+});
+})();
+</script>
+<!--uebersicht--><a href="../../../../../index.html#informatik" aria-label="Zur Übersicht" style="position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);left:calc(env(safe-area-inset-left,0px) + 12px);z-index:2147483000;display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;background:rgba(27,42,74,.92);color:#fff;border:1px solid rgba(255,255,255,.4);font:600 16px/1 Arial,Helvetica,sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-user-select:none;user-select:none">&larr;&nbsp;Übersicht</a><!--/uebersicht-->
+</body>
+</html>
