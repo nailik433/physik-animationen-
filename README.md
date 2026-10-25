@@ -23,6 +23,12 @@ Reines HTML/CSS/JavaScript – kein Build, keine Installation, keine Internetver
 | 10 | Induktion und Transformator | Transformator-Labor |
 | 10 | Elektrische Energieversorgung | Vom Kraftwerk zur Steckdose |
 
+**Informatik** (eigener Reiter in der Übersicht):
+
+| Klasse | Thema | Animation |
+|---|---|---|
+| 7 | Daten und Codierung | Mission Bitti: Bit, Byte und Buchstaben |
+
 Die Klassenzuordnung steht in `daten/animationen.js` und lässt sich dort jederzeit ändern (Eintrag `klasse`/`thema` anpassen, Ordner bei Bedarf verschieben).
 
 ## Neue Animation hinzufügen
@@ -46,6 +52,8 @@ Die Klassenzuordnung steht in `daten/animationen.js` und lässt sich dort jederz
    ```
 
 Die Übersicht sortiert Klassen aufsteigend und Themen alphabetisch – sie muss nicht angefasst werden.
+
+Für den Reiter **Informatik** im Eintrag als erste Zeile `fach: 'Informatik',` ergänzen und die Datei unter `animationen/informatik/klasse-<N>/<thema>/` ablegen. Ohne `fach` gehört ein Eintrag zu Physik.
 
 ## Aufbau
 
