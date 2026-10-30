@@ -176,13 +176,13 @@ button.led:active { transform: scale(.92); }
 .abc button[aria-pressed="true"] { border-color: var(--led-edge); background: #FFF1C7; }
 details.spick { margin-top: 14px; border: 2px solid var(--line); border-radius: 14px; padding: 4px 14px; background: #fff; }
 details.spick summary { cursor: pointer; font-weight: 800; padding: 8px 0; min-height: 44px; display: flex; align-items: center; }
-.ctab { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px 18px; padding: 4px 0 10px; font-variant-numeric: tabular-nums; }
+.ctab { display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(13, auto); grid-auto-flow: column; gap: 2px 18px; padding: 4px 0 10px; font-variant-numeric: tabular-nums; }
 .ctab div { display: grid; grid-template-columns: 1.6em 2.2em 1fr; gap: 4px; font-size: 17px; padding: 2px 4px; border-radius: 6px; }
-.ctab div:nth-child(4n+1), .ctab div:nth-child(4n+2) { background: #F6F3E9; }
+.ctab div.z { background: #F6F3E9; }
 .ctab span:first-child { font-weight: 800; }
 .ctab span:nth-child(2) { color: var(--muted); }
 .ctab span:last-child { letter-spacing: .08em; font-weight: 700; }
-@media (max-width: 480px) { .ctab { grid-template-columns: 1fr; } .ctab div:nth-child(n) { background: none; } .ctab div:nth-child(odd) { background: #F6F3E9; } }
+@media (max-width: 480px) { .ctab { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-flow: row; } .ctab div.z { background: none; } .ctab div:nth-child(odd) { background: #F6F3E9; } }
 
 /* Aufgaben */
 .qa { background: var(--paper); border-radius: 20px; padding: 16px 20px 18px; border: 3px solid transparent; box-shadow: 0 3px 0 rgba(0,0,0,.22), 0 14px 28px rgba(0,0,0,.18); }
@@ -710,7 +710,7 @@ function buildSeats(ctx) {
 // Code-Automat
 function codeTable() {
   var t = h('div', { class: 'ctab' });
-  for (var i = 0; i < 13; i++) [i, i + 13].forEach(function (k) { t.appendChild(h('div', null, h('span', { text: L.charAt(k) }), h('span', { text: String(k + 1) }), h('span', { text: pad(k + 1, 5) }))); });
+  for (var k = 0; k < 26; k++) t.appendChild(h('div', k % 13 % 2 === 0 ? { class: 'z' } : null, h('span', { text: L.charAt(k) }), h('span', { text: String(k + 1) }), h('span', { text: pad(k + 1, 5) })));   // A–Z in Reihenfolge: am Tablet zwei Spalten (A–M, N–Z), am Handy eine
   return t;
 }
 function buildMachine(ctx) {
