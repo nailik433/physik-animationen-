@@ -32,7 +32,7 @@ Jede Animation hat unten links (bei Platzproblemen anders, siehe `POSITION` im S
 
 - Nach dem Eintrag in `daten/animationen.js`: `python3 tools/uebersicht.py` ausführen (setzt den Button in alle Animationen, mehrfaches Ausführen schadet nicht).
 - `python3 tools/uebersicht.py --pruefen` muss „OK" melden, bevor committet wird.
-- Der Button ist 44 px hoch, mit Sicherheitsabstand für das iPad. Verdeckt er in einer Animation ein Bedienelement, in `POSITION` eine andere Ecke (`tl`, `tr`, `bl`, `br`) eintragen.
+- Der Button ist bewusst dezent (klein, gedämpfte Farbe) und fragt beim Antippen mit einem Warnhinweis nach („Lernumgebung verlassen?“, „Hier bleiben“ / „Trotzdem zur Übersicht“), damit Schüler nicht versehentlich aussteigen. Das Werkzeug fügt beides ein. Der Button ist 44 px hoch, mit Sicherheitsabstand für das iPad. Verdeckt er in einer Animation ein Bedienelement, in `POSITION` eine andere Ecke (`tl`, `tr`, `bl`, `br`) eintragen.
 
 ## Wenn eine neue Animation entsteht (immer alle Schritte)
 
