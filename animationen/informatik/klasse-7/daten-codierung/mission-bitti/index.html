@@ -52,6 +52,44 @@ body {
 /* Schritte */
 .step { margin: 0 0 16px; }
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+/* Lösungen zum Vergleichen */
+.rvlist { display: grid; gap: 14px; margin-top: 12px; }
+.rv { border: 3px solid var(--line); border-radius: 16px; padding: 12px 14px; background: #fff; }
+.rv.ok { border-color: var(--ok); } .rv.no { border-color: var(--bad); } .rv.sh { border-color: var(--led-edge); } .rv.off { border-style: dashed; }
+.rvh { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; margin-bottom: 4px; }
+.rvb { font-weight: 800; color: var(--muted); }
+.rv.ok .rvb { color: var(--ok); } .rv.no .rvb { color: var(--bad); }
+.rvq { font-weight: 800; margin: 2px 0 8px; }
+.rvsub { color: var(--muted); margin: -4px 0 8px; }
+.rvline { margin: 6px 0; line-height: 2; }
+.ans { display: inline-block; font-weight: 800; padding: 1px 10px; border-radius: 10px; background: #F0EEE4; margin: 0 4px; }
+.ans.ok { background: var(--ok-bg); color: var(--ok); } .ans.no { background: var(--bad-bg); color: var(--bad); }
+.corr { display: inline-block; font-weight: 800; padding: 1px 10px; border-radius: 10px; background: var(--ok-bg); color: var(--ok); margin: 0 4px; }
+.rvopts { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 6px; }
+.rvopts li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 10px; padding: 8px 12px; border: 2px solid var(--line); border-radius: 12px; }
+.rvopts li.right { border-color: var(--ok); background: var(--ok-bg); } .rvopts li.wrongsel { border-color: var(--bad); background: var(--bad-bg); }
+.rvopts .mk { white-space: nowrap; }
+.rvchips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.rvchip { font-weight: 700; font-size: 16px; padding: 4px 10px; border-radius: 999px; background: #F0EEE4; border: 2px solid var(--line); font-variant-numeric: tabular-nums; }
+.rvchip.good { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); } .rvchip.bad { background: var(--bad-bg); border-color: var(--bad); color: var(--bad); }
+.rvleds { display: flex; flex-wrap: wrap; gap: 14px 22px; margin: 10px 0; }
+.rvled b { display: block; margin-bottom: 4px; }
+.rvexp { margin-top: 10px; padding: 8px 12px; border-radius: 12px; background: #F6F3E9; }
+
+/* Randknöpfe zum vorigen/nächsten Level */
+.edge { position: fixed; top: 50%; transform: translateY(-50%); z-index: 40; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  width: 74px; min-height: 104px; padding: 6px 4px; font: inherit; color: var(--silk); background: rgba(11,58,43,.9); border: 2px solid var(--copper); cursor: pointer;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
+.edge.l { left: 0; padding-left: max(4px, env(safe-area-inset-left)); border-left: 0; border-radius: 0 18px 18px 0; }
+.edge.r { right: 0; padding-right: max(4px, env(safe-area-inset-right)); border-right: 0; border-radius: 18px 0 0 18px; }
+.edge .arr { font-size: 38px; line-height: 1; font-weight: 800; }
+.edge .elbl { font-size: 12px; font-weight: 700; line-height: 1.1; text-align: center; max-width: 70px; }
+.edge:active { background: var(--copper); color: #2A1C00; }
+@media (max-width: 960px) { .app { padding-left: max(52px, calc(env(safe-area-inset-left) + 46px)); padding-right: max(52px, calc(env(safe-area-inset-right) + 46px)); } .edge { width: 44px; } .edge .elbl { display: none; } }
+@media (max-width: 640px) { .app { padding-left: max(34px, calc(env(safe-area-inset-left) + 30px)); padding-right: max(34px, calc(env(safe-area-inset-right) + 30px)); } .edge { width: 30px; min-height: 84px; opacity: .92; } .edge .arr { font-size: 34px; } .edge::after { content: ''; position: absolute; top: 0; bottom: 0; width: 16px; } .edge.l::after { right: -16px; } .edge.r::after { left: -16px; } }
+@media print { .edge { display: none; } }
+
 @media (prefers-reduced-motion: no-preference) { .step.new { animation: rise .35s ease-out both; } }
 .panel { background: var(--paper); border-radius: 20px; padding: 18px 20px 20px; box-shadow: 0 3px 0 rgba(0,0,0,.22), 0 14px 28px rgba(0,0,0,.18); }
 .panel > h2 { font-size: 23px; line-height: 1.2; margin: 0 0 4px; font-weight: 800; }
@@ -902,6 +940,109 @@ function buildStart(ctx) {
     h('li', { text: 'Ganz am Ende gibst du unter „Abgabe“ ab.' }))));
   return wrap;
 }
+/* ---------- Lösungen zum Vergleichen: Aufgabe, deine Antwort, richtige Lösung, Erklärung, Bild ---------- */
+var EXPL = {
+  a1: 'Ein Bit ist eine einzelne Stelle: 0 oder 1. Bei Bitti ist das eine Lampe, aus oder an.',
+  a2: 'Ein Byte sind 8 Bit. 3 Byte sind 3 · 8 = 24 Bit. 16 Bit sind 16 : 8 = 2 Byte.',
+  a3: 'Jede Lampe mehr verdoppelt die Anzahl der Muster. Mit 5 Stellen gibt es also 32 Zahlen, von 0 bis 31.',
+  a4: '8 Bit sind 256 Muster. Jede weitere Lampe verdoppelt: 9 Bit sind 512 Muster, 10 Bit sind 1024 Muster.',
+  a5: 'Mit 4 Lampen gibt es 16 Muster. Das sind weniger als 26 Buchstaben. Mit 5 Lampen gibt es 32 Muster, das reicht. Das Alphabet braucht mindestens 5 Bit.',
+  a6: 'Jeder Buchstabe hat eine Nummer im Alphabet (B = 2, I = 9, T = 20). Diese Nummer schreibst du mit 5 Lampen: Stellenwerte 16, 8, 4, 2, 1. Vergiss die Nullen vorne nicht.',
+  a7: 'Jede 5er-Gruppe ist eine Zahl. Rechne sie um und such den Buchstaben mit dieser Nummer, zum Beispiel 00011 = 2 + 1 = 3 = C.',
+  a8: 'Jeder Buchstabe bekommt sein eigenes Feld mit 5 Ziffern. Dein Partner rechnet jede Gruppe in eine Zahl um und sucht den Buchstaben.',
+  a9: 'INFO hat 4 Buchstaben. Jeder Buchstabe braucht 5 Bit. Also 4 · 5 = 20 Bit.',
+  a10: 'Bitti kennt nur die 26 Großbuchstaben. Es fehlen zum Beispiel Kleinbuchstaben, Ziffern, Satzzeichen, Leerzeichen und Umlaute. Lautstärke und Helligkeit sind keine Zeichen.',
+  a11: 'Mit 6 Bit gibt es 64 Muster, das ist zu wenig. Mit 7 Bit gibt es 128 Muster, das reicht für 100 Zeichen. Also mindestens 7 Bit.'
+};
+function chipRow(items) {
+  var row = h('div', { class: 'rvchips' });
+  items.forEach(function (c) { row.appendChild(h('span', { class: 'rvchip' + (c.cls ? ' ' + c.cls : ''), text: c.t })); });
+  return row;
+}
+function decodeChips(code) {
+  var g = String(code || '').trim().split(/\s+/).filter(Boolean);
+  return chipRow(g.map(function (x) {
+    if (!/^[01]{5}$/.test(x)) return { t: x + ' → ?', cls: 'bad' };
+    var n = parseInt(x, 2);
+    return { t: x + ' = ' + n + (n >= 1 && n <= 26 ? ' → ' + L.charAt(n - 1) : ' → kein Buchstabe'), cls: n >= 1 && n <= 26 ? '' : 'bad' };
+  }));
+}
+function reviewVisual(t) {
+  var o = S.t[t.id], k, items = [];
+  if (t.id === 'a4') {
+    for (k = 8; k <= 10; k++) items.push({ t: k + ' Bit: ' + Math.pow(2, k) + ' Muster' });
+    return chipRow(items);
+  }
+  if (t.id === 'a5') return chipRow([{ t: '4 Bit: 16 Muster (zu wenig für 26)', cls: 'bad' }, { t: '5 Bit: 32 Muster (reicht)', cls: 'good' }]);
+  if (t.id === 'a11') return chipRow([{ t: '6 Bit: 64 Muster (zu wenig)', cls: 'bad' }, { t: '7 Bit: 128 Muster (reicht)', cls: 'good' }]);
+  if (t.id === 'a9') return chipRow([{ t: 'I: 5 Bit' }, { t: 'N: 5 Bit' }, { t: 'F: 5 Bit' }, { t: 'O: 5 Bit' }, { t: '4 · 5 = 20 Bit', cls: 'good' }]);
+  if (t.id === 'a6') {
+    var box = h('div', { class: 'rvleds' });
+    t.ans.forEach(function (code, i) {
+      var n = parseInt(code, 2);
+      box.appendChild(h('div', { class: 'rvled' }, h('b', { text: t.lines[i].charAt(0) + ' = ' + n }), ledRow({ n: 5, weights: true, bits: code }).el));
+    });
+    return box;
+  }
+  if (t.id === 'a7') {
+    var wrap = h('div');
+    t.lines.forEach(function (line, i) { wrap.appendChild(decodeChips((line.match(/[01]{5}/g) || []).join(' '))); });
+    return wrap;
+  }
+  return null;
+}
+function reviewCard(t) {
+  var o = S.t[t.id], m = itemsOf(t), pts = points(t), shown = o.shown.some(Boolean), answered = !!o.tries || shown;
+  var cls = !answered ? 'off' : (pts === m ? 'ok' : (shown ? 'sh' : 'no'));
+  var badge = !answered ? 'nicht bearbeitet' : (pts === m ? '✓ richtig' + (o.tries > 1 ? ' (' + o.tries + '. Versuch)' : '') : (shown ? 'Lösung angezeigt' : (pts > 0 ? '✗ teilweise richtig' : '✗ falsch')));
+  var card = h('div', { class: 'rv ' + cls, 'data-ok': pts === m ? '1' : '0' });
+  card.appendChild(h('div', { class: 'rvh' }, h('b', { text: (t.extra ? 'Profi-Aufgabe ' : 'Aufgabe ') + t.nr }), h('span', { class: 'rvb', text: badge + ' · ' + pts + ' von ' + m + (m === 1 ? ' Punkt' : ' Punkten') })));
+  card.appendChild(h('div', { class: 'rvq', text: t.q }));
+  if (t.sub && t.type === 'multi') card.appendChild(h('div', { class: 'rvsub', text: t.sub }));
+  var k, i;
+  if (t.type === 'gaps') {
+    t.lines.forEach(function (line) {
+      var d = h('div', { class: 'rvline' });
+      line.split(/(\{\d+\})/).forEach(function (part) {
+        var mm = part.match(/^\{(\d+)\}$/);
+        if (!mm) { if (part) d.appendChild(h('span', { html: part })); return; }
+        var kk = +mm[1], val = String(o.v[kk] == null ? '' : o.v[kk]).trim(), good = !!o.ok[kk] && !o.shown[kk];
+        if (good) d.appendChild(h('span', { class: 'ans ok', text: val + ' ✓' }));
+        else {
+          d.appendChild(h('span', { class: 'ans no', text: (val || 'leer') + ' ✗' }));
+          d.appendChild(h('span', { class: 'corr', text: 'richtig: ' + t.ans[kk] }));
+        }
+      });
+      card.appendChild(d);
+    });
+  } else if (t.type === 'choice') {
+    var ul = h('ul', { class: 'rvopts' });
+    t.options.forEach(function (op, j) {
+      var sel = o.v[0] === j, right = j === t.correct;
+      var mark = sel && right ? '✓ deine Antwort, richtig' : (sel ? '✗ deine Antwort' : (right ? '✓ richtig' : ''));
+      ul.appendChild(h('li', { class: right ? 'right' : (sel ? 'wrongsel' : null) }, h('span', { text: op }), mark ? h('b', { class: 'mk', text: mark }) : null));
+    });
+    card.appendChild(ul);
+  } else if (t.type === 'multi') {
+    var ul2 = h('ul', { class: 'rvopts' }), chosen = o.v[0] || [];
+    t.options.forEach(function (op, j) {
+      var sel = chosen.indexOf(j) >= 0, right = t.good.indexOf(j) >= 0;
+      var mark = sel && right ? '✓ angekreuzt, richtig' : (sel ? '✗ angekreuzt, aber falsch' : (right ? '✓ hätte dazugehört' : ''));
+      ul2.appendChild(h('li', { class: right ? 'right' : (sel ? 'wrongsel' : null) }, h('span', { text: op }), mark ? h('b', { class: 'mk', text: mark }) : null));
+    });
+    card.appendChild(ul2);
+  } else if (t.type === 'partner') {
+    var code = String(o.v[0] == null ? '' : o.v[0]).trim(), word = String(o.v[1] == null ? '' : o.v[1]).trim(), dd = decode5(code);
+    card.appendChild(h('div', { class: 'rvline' }, h('span', { text: 'Dein Code: ' }), h('span', { class: 'ans', text: code || 'leer' })));
+    if (code) card.appendChild(decodeChips(code));
+    card.appendChild(h('div', { class: 'rvline' }, h('span', { text: 'Das hat dein Partner herausgefunden: ' }), h('span', { class: 'ans', text: word || 'leer' })));
+    if (dd && dd.word) card.appendChild(h('div', { class: 'rvline' }, h('span', { text: 'Dein Code heißt: ' }), h('span', { class: 'ans ' + (norm(word) === dd.word ? 'ok' : 'no'), text: dd.word + (norm(word) === dd.word ? ' ✓ passt' : ' ✗ passt nicht') })));
+    else if (dd && dd.err) card.appendChild(h('div', { class: 'rvline' }, h('span', { class: 'ans no', text: dd.err })));
+  }
+  var vis = reviewVisual(t); if (vis) card.appendChild(vis);
+  card.appendChild(h('div', { class: 'rvexp' }, h('b', { text: 'So kommt man darauf: ' }), h('span', { text: EXPL[t.id] || t.hint || '' })));
+  return card;
+}
 function buildAbgabe() {
   var wrap = h('div'), grid = h('div', { class: 'sumgrid' }), tt = totals();
   TASKS.forEach(function (t) {
@@ -927,9 +1068,17 @@ function buildAbgabe() {
   if (!S.submitted) { pnl.appendChild(actions); pnl.appendChild(confirm); }
   else { done.hidden = false; done.textContent = 'Abgegeben. Vergleiche jetzt mit den Lösungen.'; pnl.appendChild(done); sol.hidden = false; }
   wrap.appendChild(pnl);
-  TASKS.forEach(function (t) { sol.appendChild(h('p', { class: 'sol' }, h('b', { text: (t.extra ? 'Profi ' : 'Aufgabe ') + t.nr + ': ' }), solutionText(t))); });
+  var onlyBad = h('button', { type: 'button', class: 'btn quiet', text: 'Nur Aufgaben mit Fehlern zeigen', 'aria-pressed': 'false' });
+  var cards = h('div', { class: 'rvlist' });
+  TASKS.forEach(function (t) { cards.appendChild(reviewCard(t)); });
+  onlyBad.addEventListener('click', function () {
+    var on = onlyBad.getAttribute('aria-pressed') !== 'true';
+    onlyBad.setAttribute('aria-pressed', on ? 'true' : 'false'); onlyBad.textContent = on ? 'Alle Aufgaben zeigen' : 'Nur Aufgaben mit Fehlern zeigen';
+    $$('.rv', cards).forEach(function (c) { c.hidden = on && c.getAttribute('data-ok') === '1'; });
+  });
+  sol.appendChild(h('div', { class: 'row', style: 'margin-top:0' }, onlyBad)); sol.appendChild(cards);
   wrap.appendChild(h('div', { style: 'height:16px' }));
-  if (S.submitted) wrap.appendChild(panel('Lösungen zum Vergleichen', 'Was du nicht verstehst, klären wir gleich bei der Sicherung.', sol));
+  if (S.submitted) wrap.appendChild(panel('Lösungen zum Vergleichen', 'Hier siehst du jede Aufgabe, deine Antwort und die richtige Lösung. Was du nicht verstehst, klären wir gleich bei der Sicherung.', sol));
   return wrap;
 }
 function solutionText(t) {
@@ -1010,6 +1159,7 @@ function stepEl(lv, i, isNew) {
 }
 function render() {
   clearTimers();
+  edgeNav();
   var lv = LV[S.cur]; main.textContent = '';
   if (lv.id !== 'start') main.appendChild(h('div', { class: 'lvlhead' }, h('p', { class: 'count', text: lv.id === 'bonus' ? 'Extra-Level' : (lv.id === 'abgabe' ? 'Ziel' : 'Level ' + S.cur + ' von 5') }), h('h1', { text: lv.title })));
   var n = revealed(lv);
@@ -1047,6 +1197,23 @@ function refreshNext() {
   renderMap(); updateScore();
 }
 function onProgress() { refreshNext(); }
+/* ---------- Randknöpfe: zum vorigen / nächsten Level, auch weit unten auf der Seite ---------- */
+var edgeL = h('button', { type: 'button', class: 'edge l', hidden: true }), edgeR = h('button', { type: 'button', class: 'edge r', hidden: true });
+edgeL.addEventListener('click', function () { goLevel(S.cur - 1); });
+edgeR.addEventListener('click', function () { goLevel(S.cur + 1); });
+document.body.appendChild(edgeL); document.body.appendChild(edgeR);
+function edgeNav() {
+  function fill(btn, i, pfeil, wort) {
+    btn.textContent = '';
+    if (i < 0 || i >= LV.length || S.cur === 0) { btn.hidden = true; return; }
+    btn.hidden = false;
+    btn.appendChild(h('span', { class: 'arr', 'aria-hidden': 'true', text: pfeil }));
+    btn.appendChild(h('span', { class: 'elbl', text: LV[i].map }));
+    btn.setAttribute('aria-label', wort + ': ' + LV[i].title);
+  }
+  fill(edgeL, S.cur - 1, '‹', 'Zurück zu');
+  fill(edgeR, S.cur + 1, '›', 'Weiter zu');
+}
 function goLevel(i) { S.cur = Math.max(0, Math.min(LV.length - 1, i)); render(); save(); window.scrollTo(0, 0); }
 function renderMap() {
   var map = $('#map'); map.textContent = '';
