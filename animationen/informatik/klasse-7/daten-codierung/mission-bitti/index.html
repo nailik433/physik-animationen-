@@ -209,6 +209,11 @@ select.gap { width: auto; text-transform: none; text-align: left; }
 .plabel { display: block; font-weight: 800; margin: 12px 0 4px; }
 .ptext { font: inherit; font-weight: 800; font-size: 20px; padding: 8px 12px; border: 2.5px solid var(--led-off-edge); border-radius: 12px; background: #fff; color: var(--ink); width: min(100%, 480px); letter-spacing: .04em; }
 .ptext.ok { border-color: var(--ok); background: var(--ok-bg); }
+.cgrid { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 8px; }
+.cbox { font: inherit; font-weight: 800; font-size: 22px; letter-spacing: .1em; text-align: center; width: 7.4em; min-height: 48px; padding: 6px 8px; border: 2.5px solid var(--led-off-edge); border-radius: 12px; background: #fff; color: var(--ink); }
+.cbox::placeholder { color: #B9B5A6; }
+.cbox.ok { border-color: var(--ok); background: var(--ok-bg); }
+.cbox:disabled { opacity: .85; }
 .codeline { font-weight: 800; letter-spacing: .1em; font-variant-numeric: tabular-nums; }
 
 /* Start */
@@ -402,7 +407,7 @@ var TASKS = [
     lines: ['<span class="codeline">00011 01111 00100 00101</span> → {0}', '<span class="codeline">01001 01110 00110 01111</span> → {1}'], ans: ['CODE', 'INFO'],
     hint: 'Nimm eine 5er-Gruppe nach der anderen. Rechne sie in eine Zahl um, zum Beispiel 00011 = 2 + 1 = 3. Der 3. Buchstabe ist C.' },
   { id: 'a8', short: 'Partnercode', nr: 8, type: 'partner', q: 'Geheimbotschaft mit deinem Partner',
-    sub: '<ol><li>Denk dir ein Wort mit mindestens 4 Buchstaben aus.</li><li>Schreib es in Bittis Code. Nach jeder 5er-Gruppe kommt ein Leerzeichen.</li><li>Zeig nur den Code deinem Partner. Er übersetzt ihn.</li><li>Tragt beides hier ein.</li></ol>' },
+    sub: '<ol><li>Denk dir ein Wort mit mindestens 4 Buchstaben aus.</li><li>Schreib es in Bittis Code. Jeder Buchstabe bekommt ein eigenes Feld mit genau 5 Ziffern. Wenn du mehr Felder brauchst, tippe auf „+ Feld hinzufügen“.</li><li>Zeig nur den Code deinem Partner. Er übersetzt ihn und tippt sein Wort unten ein.</li><li>Danach kannst du dir die Übersetzung anzeigen lassen und vergleichen. Tragt dann beides ein und tippt auf „Prüfen“.</li></ol>' },
   { id: 'a9', short: 'Bit für INFO', nr: 9, extra: true, type: 'gaps', q: 'Wie viele Bit braucht das Wort INFO in Bittis Code?',
     lines: ['INFO braucht {0} Bit.'], ans: ['20'], hint: 'Jeder Buchstabe braucht 5 Lampen. Wie viele Buchstaben hat INFO?' },
   { id: 'a10', short: 'Was fehlt im Code', nr: 10, extra: true, type: 'multi', q: 'Mit Bittis Code kann man nur Großbuchstaben schicken. Was fehlt noch für richtige Texte?',
@@ -477,14 +482,76 @@ function taskEl(id) {
       fields.push({ input: inp, label: lab }); box.appendChild(lab);
     });
   } else if (t.type === 'partner') {
-    var c = h('input', { class: 'ptext', type: 'text', autocomplete: 'off', spellcheck: 'false', inputmode: 'numeric', placeholder: 'z. B. 01000 00001 …', id: 'p-code' });
+    // Mein Code: ein Feld pro Buchstabe (5 Ziffern), Standard 4 Felder, per Knopf mehr
+    var boxes = [], cgrid = h('div', { class: 'cgrid', role: 'group', 'aria-label': 'Mein Code: ein Feld pro Buchstabe' });
+    var hint = h('div', { class: 'msg', 'aria-live': 'polite' });
     var w = h('input', { class: 'ptext', type: 'text', autocomplete: 'off', spellcheck: 'false', autocapitalize: 'characters', id: 'p-word', style: 'text-transform:uppercase' });
-    c.value = o.v[0] || ''; w.value = o.v[1] || '';
-    c.addEventListener('input', function () { o.v[0] = c.value; save(); });
-    w.addEventListener('input', function () { o.v[1] = w.value; save(); });
-    box.appendChild(h('label', { class: 'plabel', for: 'p-code', text: 'Mein Code' })); box.appendChild(c);
+    var trBtn = h('button', { type: 'button', class: 'btn quiet', text: 'Übersetzung anzeigen', hidden: true });
+    var trOut = h('div', { class: 'msg', 'aria-live': 'polite' });
+    function persist() { o.v[0] = boxes.map(function (b) { return b.value; }).join(' '); o.v[1] = w.value; save(); }
+    function joined() { return boxes.map(function (b) { return b.value.trim(); }).filter(Boolean).join(' '); }
+    function resetTr() { trOut.textContent = ''; trOut.className = 'msg'; trBtn.hidden = !w.value.trim(); }
+    function addBox(val) {
+      var i = boxes.length;
+      var b = h('input', { class: 'cbox', type: 'text', inputmode: 'numeric', autocomplete: 'off', spellcheck: 'false', placeholder: '00000', 'aria-label': 'Code für Buchstabe ' + (i + 1) });
+      b.value = val || '';
+      b.addEventListener('input', function () {
+        var raw = b.value, parts = raw.split(/[^01]+/).filter(Boolean), at = boxes.indexOf(b);
+        hint.textContent = /[^01\s]/.test(raw) ? 'Bittis Code kennt nur 0 und 1.' : ''; hint.className = 'msg bad';
+        if (parts.length > 1) {                       // Einfügen mehrerer Gruppen: auf die nächsten Felder verteilen
+          while (boxes.length < at + parts.length) addBox();
+          parts.forEach(function (g, k) { boxes[at + k].value = g.slice(0, 5); });
+          boxes[Math.min(boxes.length - 1, at + parts.length)].focus();
+        } else {
+          b.value = (parts[0] || '').slice(0, 5);
+          if (b.value.length === 5 && at < boxes.length - 1) boxes[at + 1].focus();
+        }
+        persist(); resetTr();
+      });
+      b.addEventListener('keydown', function (e) {
+        var at = boxes.indexOf(b);
+        if (e.key === 'Enter') check();
+        else if (e.key === 'Backspace' && !b.value && at > 0) { e.preventDefault(); boxes[at - 1].focus(); }
+      });
+      boxes.push(b); cgrid.appendChild(b);
+      return b;
+    }
+    var saved = String(o.v[0] == null ? '' : o.v[0]).split(' ');
+    for (var bi = 0; bi < Math.max(4, saved.length); bi++) addBox(saved[bi]);
+    w.value = o.v[1] || '';
+    w.addEventListener('input', function () { persist(); resetTr(); });
+    var addBtn = h('button', { type: 'button', class: 'btn quiet', text: '+ Feld hinzufügen' });
+    var delBtn = h('button', { type: 'button', class: 'btn quiet', text: 'Letztes Feld entfernen' });
+    function syncDel() { delBtn.hidden = boxes.length <= 4; }
+    addBtn.addEventListener('click', function () { addBox().focus(); syncDel(); persist(); });
+    delBtn.addEventListener('click', function () { if (boxes.length > 4) { cgrid.removeChild(boxes.pop()); syncDel(); persist(); resetTr(); } });
+    syncDel(); resetTr();
+    trBtn.addEventListener('click', function () {
+      var d = decode5(joined()), word = norm(w.value);
+      if (!d) { trOut.textContent = 'Trag zuerst deinen Code in die Felder ein.'; trOut.className = 'msg bad'; return; }
+      if (d.err) { trOut.textContent = d.err; trOut.className = 'msg bad'; return; }
+      if (d.word === word) { trOut.textContent = 'Dein Code heißt ' + d.word + '. Das passt zu dem, was dein Partner herausgefunden hat. Super!'; trOut.className = 'msg good'; }
+      else { trOut.textContent = 'Dein Code heißt ' + d.word + '. Dein Partner hat ' + word + ' herausgefunden. Schaut gemeinsam nach, wo ihr euch unterschieden habt.'; trOut.className = 'msg bad'; }
+    });
+    // Stellvertreter, damit Prüfen, Lösung und Sperren wie bei den anderen Aufgaben funktionieren
+    var cp = { classList: { toggle: function (cl, on) { boxes.forEach(function (b) { b.classList.toggle(cl, !!on); }); } } };
+    Object.defineProperty(cp, 'value', {
+      get: function () { return joined(); },
+      set: function (v) {
+        var p = String(v).split(/\s+/).filter(Boolean);
+        while (boxes.length < Math.max(4, p.length)) addBox();
+        boxes.forEach(function (b, k) { b.value = p[k] || ''; });
+        syncDel(); persist();
+      }
+    });
+    Object.defineProperty(cp, 'disabled', { set: function (d) { boxes.forEach(function (b) { b.disabled = d; }); addBtn.disabled = d; delBtn.disabled = d; } });
+    box.appendChild(h('div', { class: 'plabel', text: 'Mein Code' }));
+    box.appendChild(cgrid);
+    box.appendChild(h('div', { class: 'row' }, addBtn, delBtn));
+    box.appendChild(hint);
     box.appendChild(h('label', { class: 'plabel', for: 'p-word', text: 'Das hat mein Partner herausgefunden' })); box.appendChild(w);
-    fields = [c, w];
+    box.appendChild(h('div', { class: 'row' }, trBtn)); box.appendChild(trOut);
+    fields = [cp, w];
   }
   var fb = h('div', { class: 'msg', 'aria-live': 'polite' });
   var btn = h('button', { type: 'button', class: 'btn go', text: 'Prüfen' });
