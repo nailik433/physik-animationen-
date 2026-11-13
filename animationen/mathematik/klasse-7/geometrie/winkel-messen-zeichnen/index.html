@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Winkel messen und zeichnen</title>
+<style>
+:root{
+  /* Layout: Bühne links füllt den Platz, rechts Seitenwahl und Bedienleiste; auf schmalen Geräten untereinander.
+     Farben mit Bedeutung: Navy = Zeichnung und Werkzeug, Orange = der Winkel α und sein Messwert,
+     Blau = Hilfswinkel (β, γ), Grün = richtig angelegt oder erledigt. */
+  --font: Arial, Helvetica, "Helvetica Neue", sans-serif;
+  --bg:#E9EDF4;
+  --surface:#FFFFFF;
+  --ink:#1F3864;
+  --ink-soft:rgba(31,56,100,.24);
+  --muted:#5D6C89;
+  --line:#CFD7E5;
+  --angle:#E0660B;
+  --angle-ink:#B84E00;
+  --angle-soft:rgba(224,102,11,.20);
+  --on-angle:#FFFFFF;
+  --aux:#2A6FDB;
+  --aux-ink:#1E57B5;
+  --aux-soft:rgba(42,111,219,.22);
+  --on-aux:#FFFFFF;
+  --ok:#1E8E4A;
+  --on-ok:#FFFFFF;
+  --focus:#2F6FED;
+  --geo-fill:rgba(31,56,100,.09);
+  --geo-edge:#1F3864;
+  --geo-ink:#1F3864;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C1322; --surface:#141E33; --ink:#E6ECF8; --ink-soft:rgba(230,236,248,.26); --muted:#9AA9C6; --line:#2A3858;
+    --angle:#FF9A3D; --angle-ink:#FFB066; --angle-soft:rgba(255,154,61,.24); --on-angle:#24140A;
+    --aux:#7FB0FF; --aux-ink:#A9C8FF; --aux-soft:rgba(127,176,255,.26); --on-aux:#06162E;
+    --ok:#4CCB7F; --on-ok:#06220F; --focus:#8AB4FF;
+    --geo-fill:rgba(160,190,255,.12); --geo-edge:#AFC4F2; --geo-ink:#D5E1FB;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C1322; --surface:#141E33; --ink:#E6ECF8; --ink-soft:rgba(230,236,248,.26); --muted:#9AA9C6; --line:#2A3858;
+  --angle:#FF9A3D; --angle-ink:#FFB066; --angle-soft:rgba(255,154,61,.24); --on-angle:#24140A;
+  --aux:#7FB0FF; --aux-ink:#A9C8FF; --aux-soft:rgba(127,176,255,.26); --on-aux:#06162E;
+  --ok:#4CCB7F; --on-ok:#06220F; --focus:#8AB4FF;
+  --geo-fill:rgba(160,190,255,.12); --geo-edge:#AFC4F2; --geo-ink:#D5E1FB;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html{height:100%;font-size:clamp(15px, calc(4px + .55vw + .55vh), 24px)}
+body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.3}
+button{font:inherit;color:inherit}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+.app{height:100%;display:grid;grid-template-columns:minmax(0,1fr) clamp(15rem,24vw,20rem);grid-template-rows:auto minmax(0,1fr);grid-template-areas:"board tabs" "board panel";gap:.7rem max(16px,1rem);padding:max(16px,1rem)}
+.board{grid-area:board;min-width:0;min-height:0;display:flex;flex-direction:column;gap:.7rem}
+
+/* Seitenwahl */
+.tabs{grid-area:tabs;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.25rem;padding:.25rem;background:var(--surface);border:1px solid var(--line);border-radius:.8rem}
+.tab{display:flex;align-items:center;justify-content:center;min-height:2.6rem;padding:.3rem .25rem;border-radius:.55rem;font-weight:700;font-size:.95rem;color:var(--muted);text-decoration:none;text-align:center;white-space:nowrap;touch-action:manipulation}
+.tab[aria-current="page"]{background:var(--ink);color:var(--surface)}
+.tab:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+/* Die Schritte über der Bühne */
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:var(--cols,repeat(3,minmax(0,1fr)));gap:.6rem}
+.steps li{display:flex;align-items:center;gap:.6rem;padding:.5rem .75rem;background:var(--surface);border:2px solid var(--line);border-radius:.7rem;color:var(--muted);font-weight:700;font-size:1.02rem;min-width:0;min-height:3.9rem}
+.steps .dot{flex:none;width:1.9em;height:1.9em;border-radius:50%;border:2px solid currentColor;display:grid;place-items:center;font-variant-numeric:tabular-nums}
+.steps .dot svg{display:none;width:1.05em;height:1.05em}
+.steps li.ok{border-color:var(--ok);color:var(--ink)}
+.steps li.ok .dot{background:var(--ok);border-color:var(--ok);color:var(--on-ok)}
+.steps li.ok .dot span{display:none}
+.steps li.ok .dot svg{display:block}
+.steps li.ready{border-color:var(--angle);color:var(--ink)}
+.steps li.ready .dot{background:var(--angle);border-color:var(--angle);color:var(--on-angle)}
+.steps li.read{border-color:var(--aux);color:var(--ink)}
+.steps li.read .dot{background:var(--aux);border-color:var(--aux);color:var(--on-aux)}
+.steps li.now{box-shadow:0 0 0 4px var(--angle-soft);border-color:var(--angle);color:var(--ink)}
+
+.stage{position:relative;flex:1;min-height:0;background:var(--surface);border:1px solid var(--line);border-radius:1rem;overflow:hidden}
+.stage svg{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+
+/* Bedienleiste */
+.panel{grid-area:panel;min-height:0;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:1rem;padding:.9rem 1rem;display:flex;flex-direction:column;gap:.65rem}
+.readout{display:flex;flex-direction:column;gap:.15rem}
+.readout .cap,.lbl{margin:0;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.readout .big{margin:0;font-size:2.8rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;color:var(--angle-ink);white-space:nowrap}
+.readout .big .sym{color:var(--ink);font-weight:400}
+.readout .kind{margin:0;font-size:1.05rem;font-weight:700;min-height:1.3em}
+.sec{display:flex;flex-direction:column;gap:.5rem;padding-top:.65rem;border-top:1px solid var(--line)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.quad{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem}
+.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:2.7rem;padding:.4rem .6rem;border-radius:.6rem;border:2px solid var(--ink);background:transparent;font-weight:700;cursor:pointer;text-align:center;touch-action:manipulation}
+.btn.primary{background:var(--ink);color:var(--surface)}
+.btn.quiet{border-color:var(--line);font-weight:400}
+.btn svg{flex:none;width:1.1em;height:1.1em;fill:currentColor}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
+.btn:focus-visible,.switch input:focus-visible,.seg button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:.25rem;padding:.25rem;border:2px solid var(--ink);border-radius:.7rem}
+.seg button{min-height:2.6rem;padding:.3rem .35rem;border:0;border-radius:.45rem;background:transparent;font-weight:700;font-size:.95rem;line-height:1.15;cursor:pointer;touch-action:manipulation}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.switch{display:flex;align-items:center;gap:.7rem;min-height:2.1rem;cursor:pointer;font-weight:700;touch-action:manipulation}
+.switch input{appearance:none;-webkit-appearance:none;flex:none;margin:0;width:3rem;height:1.7rem;border-radius:1rem;background:var(--line);position:relative;cursor:pointer;transition:background .15s}
+.switch input::before{content:"";position:absolute;top:.2rem;left:.2rem;width:1.3rem;height:1.3rem;border-radius:50%;background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.35);transition:transform .15s}
+.switch input:checked{background:var(--ink)}
+.switch input:checked::before{transform:translateX(1.3rem)}
+.help{margin:0;color:var(--muted);font-size:.85rem}
+
+/* Zeichnung */
+.leg{stroke:var(--ink);stroke-width:5;stroke-linecap:round}
+.sector{fill:var(--angle-soft)}
+.arc{fill:none;stroke:var(--angle);stroke-width:4;stroke-linecap:round}
+.auxsec{fill:var(--aux-soft)}
+.auxarc{fill:none;stroke:var(--aux);stroke-width:4;stroke-linecap:round}
+.band180{fill:none;stroke:var(--ink-soft);stroke-width:22}
+.bandg{fill:none;stroke:var(--aux);stroke-width:22;opacity:.42}
+.ext{stroke:var(--ink);stroke-width:3.5;stroke-dasharray:14 11;stroke-linecap:round;opacity:.7}
+.rdot{fill:var(--angle)}
+.vertex{fill:var(--ink)}
+.labels,.over,.mark{pointer-events:none}
+.lab{font-family:var(--font);font-size:20px;font-weight:700;fill:var(--ink);paint-order:stroke;stroke:var(--surface);stroke-width:6px;stroke-linejoin:round}
+.lab.alpha{font-size:28px;fill:var(--angle-ink)}
+.lab.aux{font-size:26px;fill:var(--aux-ink)}
+.lab.dim{font-size:20px;fill:var(--muted)}
+.lab.small{font-size:17px;fill:var(--muted)}
+.lab.small.ok{fill:var(--ok)}
+.lab.start{font-size:21px;fill:var(--angle-ink)}
+.mark circle{fill:var(--ink)}
+.mark path{fill:none;stroke:var(--ink);stroke-width:3;stroke-linecap:round}
+.mark .halo{stroke:var(--surface);stroke-width:8}
+
+/* Geodreieck */
+.geo-body{fill:var(--geo-fill);stroke:var(--geo-edge);stroke-width:2.5;stroke-linejoin:round;cursor:grab}
+.geo .tick{fill:none;stroke:var(--geo-ink);pointer-events:none}
+.geo .tick.t1{stroke-width:1}
+.geo .tick.t5{stroke-width:1.5}
+.geo .tick.t10{stroke-width:2.2}
+.geo text{font-family:var(--font);fill:var(--geo-ink);text-anchor:middle;pointer-events:none}
+.geo .rnum{font-size:12.5px;opacity:.8}
+.geo .num{font-size:14.5px;font-weight:700;paint-order:stroke;stroke:var(--surface);stroke-width:4px;stroke-linejoin:round}
+.geo .num.inner{opacity:.75}
+.geo .num.n90{font-size:16px}
+.geo.use-outer .num.inner,.geo.use-inner .num.outer{opacity:.3}
+.geo.use-inner .num.inner{opacity:1}
+.geo .num.lit{fill:var(--angle-ink);opacity:1}
+.base-hi{stroke:var(--muted);stroke-width:6;stroke-linecap:round;opacity:.55;pointer-events:none}
+.base-hi.ok{stroke:var(--ok);opacity:.9}
+.edge-hi{stroke:var(--angle);stroke-width:7;stroke-linecap:round;pointer-events:none}
+.zero-ring{fill:none;stroke:var(--muted);stroke-width:4;pointer-events:none}
+.zero-ring.ok{stroke:var(--ok)}
+.zero-dot{fill:var(--geo-ink);pointer-events:none}
+.trace{fill:none;stroke:var(--angle);stroke-width:9;stroke-linecap:round;stroke-linejoin:round;opacity:.8;pointer-events:none}
+.cross{fill:var(--surface);stroke:var(--angle);stroke-width:4;pointer-events:none}
+.ear{cursor:grab}
+.ear .hit,.handle .hit{fill:transparent}
+.ear .stem{stroke:var(--geo-edge);stroke-width:2.5}
+.ear .knob{fill:var(--surface);stroke:var(--geo-edge);stroke-width:2.5}
+.ear .ico{fill:none;stroke:var(--geo-edge);stroke-width:2.6;stroke-linecap:round}
+.tag rect{fill:var(--angle)}
+.tag text{font-family:var(--font);font-size:24px;font-weight:700;fill:var(--on-angle);text-anchor:middle}
+.tag line{stroke:var(--angle);stroke-width:3}
+/* Auf der Seite für überstumpfe Winkel gehört der Messwert zum blauen Hilfswinkel */
+svg.aux .trace{stroke:var(--aux)}
+svg.aux .cross{stroke:var(--aux)}
+svg.aux .geo .num.lit{fill:var(--aux-ink)}
+svg.aux .tag rect{fill:var(--aux)}
+svg.aux .tag text{fill:var(--on-aux)}
+svg.aux .tag line{stroke:var(--aux)}
+svg.aux .lab.start{fill:var(--aux-ink)}
+.pencil .body{fill:var(--angle);stroke:var(--ink);stroke-width:1.5;stroke-linejoin:round}
+.pencil .cone{fill:var(--surface);stroke:var(--ink);stroke-width:1.5;stroke-linejoin:round}
+.pencil .tip{fill:var(--ink)}
+
+/* Griffe an den Schenkeln */
+.handle{cursor:grab;outline:none}
+.h2 .knob{fill:var(--angle);stroke:var(--surface);stroke-width:3}
+.h2 .ico{fill:none;stroke:var(--on-angle);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.h1 .knob{fill:var(--ink);stroke:var(--surface);stroke-width:3}
+.h1 .ico{fill:none;stroke:var(--surface);stroke-width:2.6;stroke-linecap:round}
+.handle:focus-visible .knob{stroke:var(--focus);stroke-width:5}
+.pulse{fill:none;stroke:var(--angle);stroke-width:3;transform-box:fill-box;transform-origin:center;animation:pulse 2s ease-out infinite;pointer-events:none}
+.touched .pulse{display:none}
+@keyframes pulse{0%{transform:scale(1);opacity:.85}100%{transform:scale(2.2);opacity:0}}
+svg.dragging,svg.dragging *{cursor:grabbing !important}
+@media (prefers-reduced-motion: reduce){
+  .pulse{animation:none;opacity:0}
+  .switch input,.switch input::before{transition:none}
+}
+
+/* Hochkant und schmale Geräte: Seitenwahl oben, Bühne, Bedienung darunter */
+@media (max-aspect-ratio: 1/1), (max-width: 700px){
+  html,body{height:auto}
+  .app{height:auto;grid-template-columns:minmax(0,1fr);grid-template-rows:auto;grid-template-areas:"tabs" "board" "panel"}
+  .stage{flex:none;aspect-ratio:1/1}
+  .app.wide .stage{aspect-ratio:980/580}
+  .steps{grid-template-columns:minmax(0,1fr);gap:.4rem}
+  .steps li{padding:.4rem .6rem;min-height:0}
+  .panel{overflow:visible}
+}
+</style>
+</head>
+<body>
+<div class="app wide" id="app">
+  <nav class="tabs" aria-label="Seiten">
+    <a class="tab" href="#messen" data-go="messen" aria-current="page">Messen</a>
+    <a class="tab" href="#ueberstumpf" data-go="ueberstumpf">Über 180°</a>
+    <a class="tab" href="#zeichnen" data-go="zeichnen">Zeichnen</a>
+  </nav>
+
+  <section class="board">
+    <ol class="steps" id="steps" hidden aria-label="Schritte"></ol>
+    <div class="stage" id="stage">
+      <svg id="svg" viewBox="-490 -492 980 576" role="group" aria-label="Winkel mit Geodreieck"></svg>
+    </div>
+  </section>
+
+  <aside class="panel" aria-label="Bedienung">
+    <h1 class="vh">Winkel messen und zeichnen</h1>
+    <div class="readout">
+      <p class="cap" id="cap">Winkelgröße</p>
+      <p class="big"><span class="sym">α&nbsp;=</span> <span id="val" aria-live="polite">40°</span></p>
+      <p class="kind" id="kind">spitzer Winkel</p>
+    </div>
+    <div class="pair" data-pages="messen ueberstumpf">
+      <button type="button" class="btn" id="minus" aria-label="Winkel um 1 Grad verkleinern">−&nbsp;1°</button>
+      <button type="button" class="btn" id="plus" aria-label="Winkel um 1 Grad vergrößern">+&nbsp;1°</button>
+    </div>
+    <div class="quad" data-pages="zeichnen">
+      <button type="button" class="btn" id="m10" aria-label="10 Grad kleiner">−10</button>
+      <button type="button" class="btn" id="m1" aria-label="1 Grad kleiner">−1</button>
+      <button type="button" class="btn" id="p1" aria-label="1 Grad größer">+1</button>
+      <button type="button" class="btn" id="p10" aria-label="10 Grad größer">+10</button>
+    </div>
+    <button type="button" class="btn primary" id="play" data-pages="messen ueberstumpf">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><path id="playIco" d="M5 3l12 7-12 7z"/></svg>
+      <span id="playTxt">Winkel wachsen lassen</span>
+    </button>
+
+    <div class="sec" data-pages="ueberstumpf">
+      <p class="lbl">Rechenweg</p>
+      <div class="seg" role="group" aria-label="Rechenweg">
+        <button type="button" id="mRest" aria-pressed="true">360° − β</button>
+        <button type="button" id="mPlus" aria-pressed="false">180° + γ</button>
+      </div>
+    </div>
+
+    <div class="sec" data-pages="zeichnen">
+      <p class="lbl">Methode</p>
+      <div class="seg" role="group" aria-label="Methode">
+        <button type="button" id="mMark" aria-pressed="true">Punkt markieren</button>
+        <button type="button" id="mTurn" aria-pressed="false">Geodreieck drehen</button>
+      </div>
+      <button type="button" class="btn primary" id="next"><span id="nextTxt">Nächster Schritt</span></button>
+      <button type="button" class="btn" id="auto"><span id="autoTxt">Alle Schritte abspielen</span></button>
+    </div>
+
+    <div class="sec" data-pages="messen ueberstumpf">
+      <label class="switch" for="swGeo"><input type="checkbox" id="swGeo"><span>Geodreieck auflegen</span></label>
+      <button type="button" class="btn" id="demo"><span id="demoTxt">Anlegen vormachen</span></button>
+    </div>
+
+    <div class="sec">
+      <label class="switch" for="swValue" data-pages="messen ueberstumpf"><input type="checkbox" id="swValue" checked><span>Winkelgröße zeigen</span></label>
+      <label class="switch" for="swLabels"><input type="checkbox" id="swLabels" checked><span>Beschriftung zeigen</span></label>
+      <label class="switch" for="swHints"><input type="checkbox" id="swHints" checked><span>Mess-Hilfen zeigen</span></label>
+      <label class="switch" for="swFull" data-pages="messen"><input type="checkbox" id="swFull"><span>Ganzer Kreis (bis 360°)</span></label>
+    </div>
+
+    <div class="sec">
+      <div class="pair">
+        <button type="button" class="btn quiet" id="reset">Zurücksetzen</button>
+        <button type="button" class="btn quiet" id="fs">Vollbild</button>
+      </div>
+      <p class="help" id="help"></p>
+    </div>
+  </aside>
+</div>
+
+<script>
+(function(){
+'use strict';
+var NS='http://www.w3.org/2000/svg';
+var R=330;        // halbe lange Seite des Geodreiecks (entspricht 8 cm)
+var L=418;        // Länge der Schenkel
+var HR=24;        // Radius des Griffs
+var ARC=78;       // Radius des Winkelbogens
+var RB=96;        // Radius des Bandes für 180° + γ
+var CM=R/8;
+var $=function(id){return document.getElementById(id);};
+var svg=$('svg'), stage=$('stage');
+
+function mk(n,a,p){var e=document.createElementNS(NS,n);if(a)for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function txt(p,cls,s){var t=mk('text',{'class':cls,dy:'.35em','text-anchor':'middle'},p);t.textContent=s;return t;}
+function rad(d){return d*Math.PI/180;}
+function deg(r){return r*180/Math.PI;}
+function n360(a){return ((a%360)+360)%360;}
+function sdiff(a,b){var d=n360(a-b);return d>180?d-360:d;}          // a-b in (-180,180]
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function dirv(d){return [Math.cos(rad(d)),-Math.sin(rad(d))];}       // Richtung auf dem Bildschirm, Winkel gegen den Uhrzeigersinn
+function f(n){return Math.round(n*100)/100;}
+function show(e,on){e.style.display=on?'':'none';}
+function noop(){}
+
+/* ---------- Zustand: jede Seite merkt sich ihren eigenen ---------- */
+var cfg={value:true,labels:true,hints:true};
+var view={x:0,y:0,w:0,h:0};
+function fresh(page){
+  var s={page:page,base:0,alpha:40,geo:{on:false,x:null,y:0,rot:12},full:false,method:'',
+         trace:1,calc:1,playing:false,playEnd:180,demo:null,auto:false,
+         point:false,pk:0,line:0,lineLen:L,pen:null};
+  if(page==='ueberstumpf'){s.alpha=235;s.full=true;s.method='rest';s.geo.on=true;}
+  if(page==='zeichnen'){s.alpha=50;s.full=true;s.method='mark';s.geo.on=true;}
+  return s;
+}
+var pages={messen:fresh('messen'),ueberstumpf:fresh('ueberstumpf'),zeichnen:fresh('zeichnen')};
+var st=pages.messen;
+function hasPoint(){return st.point&&st.pk>=1;}
+function minA(){return st.page==='ueberstumpf'?180:(st.page==='zeichnen'?1:0);}
+function maxA(){return st.page==='zeichnen'?179:(st.full?360:180);}
+
+/* ---------- Zeichnung aufbauen ---------- */
+var gAngle=mk('g',null,svg);
+var auxSector=mk('path',{'class':'auxsec'},gAngle);
+var band180=mk('path',{'class':'band180'},gAngle);
+var bandG=mk('path',{'class':'bandg'},gAngle);
+var sector=mk('path',{'class':'sector'},gAngle);
+var auxArc=mk('path',{'class':'auxarc'},gAngle);
+var arc=mk('path',{'class':'arc'},gAngle);
+var rdot=mk('circle',{'class':'rdot',r:5},gAngle);
+var ext=mk('line',{'class':'ext',x1:0,y1:0},gAngle);
+var leg1=mk('line',{'class':'leg',x1:0,y1:0},gAngle);
+var leg2=mk('line',{'class':'leg',x1:0,y1:0},gAngle);
+mk('circle',{'class':'vertex',r:7},gAngle);
+
+var gLab=mk('g',{'class':'labels'},svg);
+var tS=txt(gLab,'lab','Scheitel S');
+var tL1=txt(gLab,'lab','Schenkel');
+var tL2=txt(gLab,'lab','Schenkel');
+var tA=txt(gLab,'lab alpha','');
+var tB=txt(gLab,'lab aux','');
+var t180=txt(gLab,'lab dim','180°');
+
+
+// Punkt auf der Winkelskala (kurze Seiten) für den Winkel t, in Koordinaten des Geodreiecks
+function edgePt(t,inset){
+  var Rr=R-(inset||0)*Math.SQRT2, c=Math.cos(rad(t)), s=Math.sin(rad(t));
+  var r=Rr/(Math.abs(c)+s);
+  return [r*c,-r*s];
+}
+
+var gGeo=mk('g',{'class':'geo'},svg);
+mk('path',{'class':'geo-body',d:'M'+(-R)+' 0H'+R+'L0 '+(-R)+'Z'},gGeo);
+(function(){
+  var i,x,len,seg,d1='',d5='',d10='';
+  // Zentimeterskala auf der langen Seite
+  for(i=-70;i<=70;i++){
+    x=f(i*CM/10);len=i%10===0?15:i%5===0?11:7;seg='M'+x+' 0V'+(-len);
+    if(i%10===0)d10+=seg;else if(i%5===0)d5+=seg;else d1+=seg;
+  }
+  for(i=-7;i<=7;i++){var t=mk('text',{'class':'rnum',x:f(i*CM),y:-25,dy:'.35em'},gGeo);t.textContent=Math.abs(i);}
+  // Mittellinie zur 90
+  d5+='M0 -37V'+(-(R-64));
+  // Winkelskala
+  for(i=1;i<180;i++){
+    var p=edgePt(i),r=Math.hypot(p[0],p[1]);len=i%10===0?18:i%5===0?12:7;
+    seg='M'+f(p[0])+' '+f(p[1])+'L'+f(p[0]-p[0]/r*len)+' '+f(p[1]-p[1]/r*len);
+    if(i%10===0)d10+=seg;else if(i%5===0)d5+=seg;else d1+=seg;
+  }
+  mk('path',{'class':'tick t1',d:d1},gGeo);
+  mk('path',{'class':'tick t5',d:d5},gGeo);
+  mk('path',{'class':'tick t10',d:d10},gGeo);
+})();
+var nums=[];   // {el, outer, inner}: Wert auf der äußeren (gegen den Uhrzeigersinn) bzw. inneren Skala
+(function(){
+  for(var t=10;t<=170;t+=10){
+    if(t===90)continue;
+    var p=edgePt(t,30),q=edgePt(t,56);
+    var o=mk('text',{'class':'num outer',x:f(p[0]),y:f(p[1]),dy:'.35em'},gGeo);o.textContent=t;
+    nums.push({el:o,outer:t,inner:null});
+    var n=mk('text',{'class':'num inner',x:f(q[0]),y:f(q[1]),dy:'.35em'},gGeo);n.textContent=180-t;
+    nums.push({el:n,outer:null,inner:180-t});
+  }
+  var e=mk('text',{'class':'num n90',x:0,y:-(R-42),dy:'.35em'},gGeo);e.textContent='90';
+  nums.push({el:e,outer:90,inner:90});
+})();
+var baseHi=mk('line',{'class':'base-hi',x1:-R,y1:0,x2:R,y2:0},gGeo);
+var edgeHi=mk('line',{'class':'edge-hi',x1:0,y1:0,x2:-R,y2:0},gGeo);
+var trace=mk('path',{'class':'trace'},gGeo);
+var cross=mk('circle',{'class':'cross',r:9},gGeo);
+var zeroRing=mk('circle',{'class':'zero-ring',r:13},gGeo);
+mk('circle',{'class':'zero-dot',r:3.2},gGeo);
+var ICO='M7.8 -4.5A9 9 0 1 0 7.8 4.5M7.8 4.5l-5.4 2.5M7.8 4.5l.5 6';
+function ear(sign){
+  var g=mk('g',{'class':'ear',transform:'translate('+sign*(R+34)+' 0)'},gGeo);
+  mk('line',{'class':'stem',x1:-sign*34,y1:0,x2:-sign*20,y2:0},g);
+  mk('circle',{'class':'hit',r:38},g);
+  mk('circle',{'class':'knob',r:20},g);
+  mk('path',{'class':'ico',d:ICO},g);
+  mk('title',null,g).textContent='Geodreieck drehen';
+  return g;
+}
+ear(1);ear(-1);
+
+var gMark=mk('g',{'class':'mark'},svg);
+mk('path',{'class':'halo',d:'M-11 -11L11 11M-11 11L11 -11'},gMark);
+mk('path',{d:'M-11 -11L11 11M-11 11L11 -11'},gMark);
+mk('circle',{r:4.5},gMark);
+var gOver=mk('g',{'class':'over'},svg);
+var tNull=txt(gOver,'lab small','Nullpunkt');
+var tStart=txt(gOver,'lab start','0°');
+var gTag=mk('g',{'class':'tag'},gOver);
+var tagLine=mk('line',null,gTag);
+var tagRect=mk('rect',{rx:9,ry:9,height:36},gTag);
+var tagTxt=mk('text',{dy:'.35em'},gTag);
+var gPencil=mk('g',{'class':'pencil'},gOver);
+(function(){
+  var g=mk('g',{transform:'rotate(-58)'},gPencil);
+  mk('path',{'class':'body',d:'M16 -6H84V6H16Z'},g);
+  mk('path',{'class':'cone',d:'M0 0L16 -6V6Z'},g);
+  mk('path',{'class':'tip',d:'M0 0L6 -2.2V2.2Z'},g);
+})();
+
+var gH=mk('g',null,svg);
+var h1=mk('g',{'class':'handle h1',tabindex:0,role:'slider','aria-label':'Ganzen Winkel drehen','aria-valuemin':0,'aria-valuemax':359},gH);
+mk('circle',{'class':'hit',r:40},h1);
+mk('circle',{'class':'knob',r:17},h1);
+mk('path',{'class':'ico',d:ICO,transform:'scale(.82)'},h1);
+mk('title',null,h1).textContent='Ganzen Winkel drehen';
+var h2=mk('g',{'class':'handle h2',tabindex:0,role:'slider','aria-label':'Winkel ändern'},gH);
+mk('circle',{'class':'pulse',r:HR},h2);
+mk('circle',{'class':'hit',r:46},h2);
+mk('circle',{'class':'knob',r:HR},h2);
+mk('path',{'class':'ico',d:'M0 -12V12M-6 -6L0 -12L6 -6M-6 6L0 12L6 6'},h2);
+mk('title',null,h2).textContent='Schenkel ziehen: Winkel ändern';
+
+/* ---------- Geometrie ---------- */
+function toLocal(x,y){
+  var g=st.geo,c=Math.cos(rad(g.rot)),s=Math.sin(rad(g.rot)),dx=x-g.x,dy=y-g.y;
+  return [dx*c-dy*s,dx*s+dy*c];
+}
+function toWorld(lx,ly){
+  var g=st.geo,c=Math.cos(rad(g.rot)),s=Math.sin(rad(g.rot));
+  return [g.x+lx*c+ly*s,g.y-lx*s+ly*c];
+}
+function covered(x,y){
+  if(!st.geo.on)return false;
+  var p=toLocal(x,y),m=12;
+  return p[1]<=m&&Math.abs(p[0])<=R+p[1]+m*1.5;
+}
+// Bogen gegen den Uhrzeigersinn von a0 nach a1
+function arcD(r,a0,a1,wedge){
+  var s=dirv(a0),e=dirv(a1),lg=(a1-a0)>180?1:0;
+  var d=f(s[0]*r)+' '+f(s[1]*r)+'A'+r+' '+r+' 0 '+lg+' 0 '+f(e[0]*r)+' '+f(e[1]*r);
+  return wedge?'M0 0L'+d+'Z':'M'+d;
+}
+// Liegt die lange Seite auf einem der Strahlen (vom Scheitel in Richtung dirs[i])?
+function baseOn(dirs){
+  var g=st.geo,s=toLocal(0,0),i,rel,side,lo,hi;
+  if(Math.abs(s[1])>=1.5)return null;
+  for(i=0;i<dirs.length;i++){
+    rel=n360(dirs[i]-g.rot);
+    side=Math.abs(sdiff(rel,0))<0.6?1:(Math.abs(sdiff(rel,180))<0.6?-1:0);
+    if(side){
+      lo=Math.min(s[0],s[0]+side*L);hi=Math.max(s[0],s[0]+side*L);
+      if(hi>-R+8&&lo<R-8)return {i:i,side:side};
+    }
+  }
+  return null;
+}
+// Stelle, an der beim Zeichnen der Punkt markiert wird
+function pointPos(){
+  var a=st.alpha,u=dirv(st.base+a),r=Math.min(R/(Math.abs(Math.cos(rad(a)))+Math.sin(rad(a)))+6,R-2);
+  return [u[0]*r,u[1]*r];
+}
+/* Was zeigt das Geodreieck gerade?
+   from: an welchem Ende der langen Seite die abgelesene Skala bei 0 beginnt (+1 rechts, -1 links),
+   theta: Stelle auf der Skala, v: abgelesener Wert */
+function info(){
+  var g=st.geo,b=st.base,a=st.alpha,bo,th;
+  var m={zero:false,base:false,side:0,from:0,read:false,uncovered:false,theta:0,v:0,reflex:false,condA:false,condB:false,onTarget:false,sx:0,px:0};
+  if(!g.on||g.x===null)return m;
+  m.zero=Math.hypot(g.x,g.y)<1.5;
+  if(st.page==='zeichnen'){
+    if(st.method==='mark'){
+      bo=baseOn([b]);
+      m.base=!!bo;
+      m.condA=m.zero&&!!bo&&bo.side===1;
+      if(hasPoint()){
+        var P=pointPos(),p=toLocal(P[0],P[1]),s=toLocal(0,0);
+        m.sx=s[0];m.px=p[0];
+        m.condB=Math.abs(p[1])<1.5&&Math.abs(s[1])<1.5&&Math.abs(p[0])<=R+1&&Math.abs(s[0])<=R+1;
+      }else if(m.condA){m.read=true;m.from=1;m.theta=a;m.v=a;}
+    }else if(m.zero){
+      th=n360(b-g.rot);if(th>359.99)th=0;
+      if(th<=180.01){th=Math.min(th,180);m.read=true;m.from=-1;m.theta=th;m.v=180-th;}
+      m.onTarget=Math.abs(sdiff(g.rot,b+a+180))<0.6;
+    }
+    return m;
+  }
+  var legs=[b,b+a];
+  bo=baseOn(legs);
+  if(bo){m.base=true;m.side=bo.side;}
+  if(m.zero&&bo){
+    th=n360(legs[1-bo.i]-g.rot);
+    if(th>359.99)th=0;
+    if(th<=180.01){
+      th=Math.min(th,180);
+      m.read=true;m.theta=th;
+      m.from=(st.page==='ueberstumpf'&&st.method==='plus')?-bo.side:bo.side;
+      m.v=m.from>0?th:180-th;
+      m.reflex=st.page==='messen'&&Math.abs(m.v-a)>0.5;
+    }else m.uncovered=true;
+  }
+  return m;
+}
+function kindOf(a){
+  if(a===0)return 'Nullwinkel';
+  if(a<90)return 'spitzer Winkel';
+  if(a===90)return 'rechter Winkel';
+  if(a<180)return 'stumpfer Winkel';
+  if(a===180)return 'gestreckter Winkel';
+  if(a<360)return 'überstumpfer Winkel';
+  return 'Vollwinkel';
+}
+function tracePath(t0,t1){
+  var pts=[edgePt(t0,-9)],k;
+  if(t1>t0){for(k=Math.floor(t0)+1;k<t1;k++)pts.push(edgePt(k,-9));}
+  else{for(k=Math.ceil(t0)-1;k>t1;k--)pts.push(edgePt(k,-9));}
+  pts.push(edgePt(t1,-9));
+  return 'M'+pts.map(function(p){return f(p[0])+' '+f(p[1]);}).join('L');
+}
+function park(){
+  return {x:clamp(view.x+view.w-345,140,600),y:Math.min(view.y+350,-140),rot:12};
+}
+
+/* ---------- Darstellung ---------- */
+// Text parallel zur Richtung phi setzen, immer lesbar herum
+function along(t,x,y,phi){
+  var rot=-phi;
+  if(Math.cos(rad(phi))<-1e-6)rot+=180;
+  t.setAttribute('transform','translate('+f(x)+' '+f(y)+') rotate('+f(rot)+')');
+}
+function legLabel(t,phi,side,r,off,on){
+  var u=dirv(phi),n=dirv(phi+90*side),x=u[0]*r+n[0]*off,y=u[1]*r+n[1]*off;
+  along(t,x,y,phi);
+  show(t,on!==false&&cfg.labels&&!covered(x,y));
+}
+function putLabel(t,dirDeg,r,on){
+  var u=dirv(dirDeg),x=u[0]*r,y=u[1]*r;
+  t.setAttribute('x',f(x));t.setAttribute('y',f(y));
+  show(t,on&&!covered(x,y));
+}
+function labelRadius(size,minR){
+  return Math.max(minR,Math.min(215,30/Math.sin(rad(Math.max(size,2)/2))));
+}
+var stepEls=[];
+var CHECK='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function setSteps(items,cols){
+  var ol=$('steps'),i,li;
+  if(stepEls.length!==items.length){
+    ol.textContent='';stepEls=[];
+    for(i=0;i<items.length;i++){
+      li=document.createElement('li');
+      li.innerHTML='<span class="dot"><span>'+(i+1)+'</span>'+CHECK+'</span><span class="txt"></span>';
+      ol.appendChild(li);stepEls.push({li:li,txt:li.lastChild});
+    }
+  }
+  if(ol.getAttribute('data-cols')!==cols){ol.setAttribute('data-cols',cols);ol.style.setProperty('--cols',cols);}
+  for(i=0;i<items.length;i++){
+    if(stepEls[i].li.className!==items[i].c)stepEls[i].li.className=items[i].c;
+    if(stepEls[i].txt.textContent!==items[i].t)stepEls[i].txt.textContent=items[i].t;
+  }
+}
+function stepItems(m){
+  var ar=Math.round(st.alpha),v=Math.round(m.v),p=st.trace,step=st.demo?st.demo.step:0,items,t3,i,first;
+  function c(ok,n,okCls){return ok?(okCls||'ok'):(step===n?'now':'');}
+  if(st.page==='messen'){
+    t3='Von 0° aus am anderen Schenkel ablesen';
+    if(m.read&&p>=1){
+      if(!cfg.value)t3='Jetzt ablesen: Skala, die bei 0° startet';
+      else if(m.reflex)t3='Abgelesen: '+v+'°, α = 360° − '+v+'° = '+ar+'°';
+      else t3='Abgelesen: '+v+'°';
+    }else if(m.uncovered)t3='Geodreieck liegt nicht über dem Winkel';
+    return {cols:'minmax(0,1fr) minmax(0,1fr) minmax(0,1.35fr)',items:[
+      {t:'Nullpunkt auf den Scheitel',c:c(m.zero,1)},
+      {t:'Lange Seite auf einen Schenkel',c:c(m.base,2)},
+      {t:t3,c:c(m.read&&p>0,3,'ready')}]};
+  }
+  if(st.page==='ueberstumpf'){
+    var rest=st.method==='rest',sym=rest?'β':'γ',done=m.read&&p>=1&&st.calc>=1,t4;
+    t3=rest?'Restwinkel β ablesen':'Winkel γ ab der Verlängerung ablesen';
+    if(m.uncovered)t3='Geodreieck liegt nicht über dem anderen Schenkel';
+    else if(m.read&&p>=1&&cfg.value)t3=sym+' ablesen: '+v+'°';
+    t4=rest?'Rechnen: α = 360° − β':'Rechnen: α = 180° + γ';
+    if(done&&cfg.value)t4=rest?('α = 360° − '+v+'° = '+(360-v)+'°'):('α = 180° + '+v+'° = '+(180+v)+'°');
+    return {cols:'repeat(4,minmax(0,1fr))',items:[
+      {t:'Nullpunkt auf den Scheitel',c:c(m.zero,1)},
+      {t:rest?'Lange Seite auf einen Schenkel':'Lange Seite auf Schenkel und Verlängerung',c:c(m.base,2)},
+      {t:t3,c:c(m.read&&p>0,3,'read')},
+      {t:t4,c:c(done,4,'ready')}]};
+  }
+  if(st.method==='mark'){
+    items=[
+      {t:'Anlegen wie beim Messen',ok:m.condA||st.point},
+      {t:'Bei '+ar+'° einen Punkt markieren',ok:hasPoint()},
+      {t:'Lange Seite an S und den Punkt legen',ok:hasPoint()&&(m.condB||st.line>0)},
+      {t:'Verbinden: Schenkel zeichnen',ok:st.line>=1}];
+  }else{
+    items=[
+      {t:'Nullpunkt auf S, lange Seite auf den Schenkel',ok:m.zero||st.line>0},
+      {t:'Hochdrehen, bis der Schenkel bei '+ar+'° liegt',ok:m.onTarget||st.line>0},
+      {t:'An der langen Seite den Schenkel zeichnen',ok:st.line>=1}];
+  }
+  first=true;
+  for(i=0;i<items.length;i++){
+    if(items[i].ok)items[i].c='ok';
+    else{items[i].c=first?'now':'';first=false;}
+  }
+  return {cols:items.length===4?'repeat(4,minmax(0,1fr))':'minmax(0,1.15fr) minmax(0,1.1fr) minmax(0,1.1fr)',items:items};
+}
+
+function render(){
+  var a=st.alpha,b=st.base,ar=Math.round(a),g=st.geo,pg=st.page;
+  var draw=pg==='zeichnen',over=pg==='ueberstumpf';
+  if(g.on&&g.x===null){var pk=park();g.x=pk.x;g.y=pk.y;g.rot=pk.rot;}
+  var u1=dirv(b),u2=dirv(b+a),len2=draw?st.lineLen*st.line:L;
+  leg1.setAttribute('x2',f(u1[0]*L));leg1.setAttribute('y2',f(u1[1]*L));
+  leg2.setAttribute('x2',f(u2[0]*len2));leg2.setAttribute('y2',f(u2[1]*len2));
+  show(leg2,len2>0.5);
+  show(h2,!draw);show(h1,!draw&&st.full);
+  if(!draw){
+    h1.setAttribute('transform','translate('+f(u1[0]*L)+' '+f(u1[1]*L)+') rotate('+f(-b)+')');
+    h2.setAttribute('transform','translate('+f(u2[0]*L)+' '+f(u2[1]*L)+') rotate('+f(-(b+a))+')');
+    h1.setAttribute('aria-valuenow',Math.round(n360(b)));
+    h2.setAttribute('aria-valuemin',minA());h2.setAttribute('aria-valuemax',maxA());
+    h2.setAttribute('aria-valuenow',ar);
+    h2.setAttribute('aria-valuetext',cfg.value?ar+' Grad':'verdeckt');
+  }
+  svg.classList.toggle('aux',over);
+
+  // Winkelfeld und Bogen (beim Zeichnen erst, wenn der zweite Schenkel fertig ist)
+  var showAngle=!draw||st.line>=1,dS='',dA='';
+  if(showAngle){
+    if(a>=359.95){
+      dA='M'+ARC+' 0A'+ARC+' '+ARC+' 0 1 0 '+(-ARC)+' 0A'+ARC+' '+ARC+' 0 1 0 '+ARC+' 0Z';dS=dA;
+    }else if(a>0.05){dA=arcD(ARC,b,b+a);dS=arcD(ARC,b,b+a,true);}
+  }
+  sector.setAttribute('d',dS);arc.setAttribute('d',dA);
+  var isRight=showAngle&&Math.abs(a-90)<0.5,ub=dirv(b+a/2);
+  show(rdot,isRight);
+  if(isRight){rdot.setAttribute('cx',f(ub[0]*ARC*0.52));rdot.setAttribute('cy',f(ub[1]*ARC*0.52));}
+
+  // Hilfswinkel für überstumpfe Winkel
+  var rest=over&&st.method==='rest',plus=over&&st.method==='plus',beta=360-a,gamma=a-180;
+  show(auxSector,rest&&beta>0.05&&beta<359.9);show(auxArc,rest&&beta>0.05&&beta<359.9);
+  if(rest&&beta>0.05&&beta<359.9){auxSector.setAttribute('d',arcD(ARC,b+a,b+360,true));auxArc.setAttribute('d',arcD(ARC,b+a,b+360));}
+  show(band180,plus);show(bandG,plus&&gamma>0.05);show(ext,plus);
+  if(plus){
+    band180.setAttribute('d',arcD(RB,b,b+180));
+    if(gamma>0.05)bandG.setAttribute('d',arcD(RB,b+180,b+a));
+    var ue=dirv(b+180);ext.setAttribute('x2',f(ue[0]*L));ext.setAttribute('y2',f(ue[1]*L));
+  }
+
+  // Beschriftung
+  var out=a<=180?1:-1;
+  legLabel(tS,b,-out,-90,32,!over);
+  legLabel(tL1,b,-out,126,26,!over);
+  legLabel(tL2,b+a,out,126,26,!over&&(!draw||st.line>=1));
+  var rr=ARC+36;
+  if(a<=180)rr=labelRadius(a,rr);
+  if(plus)rr=RB+38;
+  var aTxt=draw?ar+'°':(cfg.value?ar+'°':(cfg.labels?'α':''));
+  tA.textContent=aTxt;
+  putLabel(tA,b+a/2,rr,showAngle&&aTxt!=='');
+  if(rest){tB.textContent='β';putLabel(tB,b+a+beta/2,labelRadius(beta,52),cfg.labels&&beta>0.5);}
+  else if(plus){tB.textContent='γ';putLabel(tB,b+180+gamma/2,RB+36,cfg.labels&&gamma>0.5);}
+  else show(tB,false);
+  putLabel(t180,b+45,RB+36,plus&&cfg.labels);
+
+  // Markierung beim Zeichnen
+  show(gMark,draw&&st.point&&st.pk>0);
+  if(draw&&st.point){var mp=pointPos();gMark.setAttribute('transform','translate('+f(mp[0])+' '+f(mp[1])+') scale('+f(Math.max(st.pk,0.01))+')');}
+
+  // Geodreieck
+  show(gGeo,g.on);
+  var m=info(),hints=g.on&&cfg.hints,p=st.trace,i,n,val;
+  if(g.on)gGeo.setAttribute('transform','translate('+f(g.x)+' '+f(g.y)+') rotate('+f(-g.rot)+')');
+  var showZero=hints&&!(draw&&st.method==='mark'&&hasPoint());
+  var baseOk=draw?(st.method==='mark'?(hasPoint()?m.condB:m.condA):false):m.base;
+  show(baseHi,hints&&!(draw&&(st.method==='turn'||st.line>0)));show(zeroRing,showZero);
+  baseHi.setAttribute('class','base-hi'+(baseOk?' ok':''));
+  zeroRing.setAttribute('class','zero-ring'+(m.zero?' ok':''));
+  show(edgeHi,hints&&draw&&st.method==='turn'&&m.onTarget&&st.line<1);
+  var vNow=m.v*p,showTrace=hints&&m.read;
+  show(trace,showTrace&&vNow>0.2);
+  if(showTrace&&vNow>0.2)trace.setAttribute('d',m.from>0?tracePath(0,vNow):tracePath(180,180-vNow));
+  gGeo.setAttribute('class','geo'+(showTrace?(m.from>0?' use-outer':' use-inner'):''));
+  for(i=0;i<nums.length;i++){
+    n=nums[i];val=m.from>0?n.outer:n.inner;
+    n.el.classList.toggle('lit',showTrace&&val!==null&&val<=vNow+0.01);
+  }
+  var showTag=m.read&&p>=1&&(draw?hints:cfg.value);
+  var showCross=m.read&&p>=1&&(hints||showTag);
+  show(cross,showCross);
+  if(showCross){var c=edgePt(m.theta);cross.setAttribute('cx',f(c[0]));cross.setAttribute('cy',f(c[1]));}
+
+  // Beschriftungen am Geodreieck
+  var showNull=showZero&&!(draw&&m.zero);
+  show(tNull,showNull);
+  if(showNull){var np=toWorld(0,50);along(tNull,np[0],np[1],g.rot);tNull.setAttribute('class','lab small'+(m.zero?' ok':''));}
+  show(tStart,showTrace);
+  if(showTrace){var sp=toWorld(m.from*(R-34),30);tStart.setAttribute('x',f(sp[0]));tStart.setAttribute('y',f(sp[1]));}
+  show(gTag,showTag);
+  if(showTag){
+    var th=m.theta,phi=th<=80?45:(th>=100?135:45+90*(function(k){return k*k*(3-2*k);})((th-80)/20));
+    var dist=52-8*(1-Math.abs(phi-90)/45),cp=edgePt(th);
+    var w0=toWorld(cp[0],cp[1]),w1=toWorld(cp[0]+dist*Math.cos(rad(phi)),cp[1]-dist*Math.sin(rad(phi)));
+    var label=Math.round(m.v)+'°',tw=label.length*13.5+19;
+    if(over){label=(st.method==='rest'?'β':'γ')+' = '+label;tw=label.length*13.5+2;}
+    tagLine.setAttribute('x1',f(w0[0]));tagLine.setAttribute('y1',f(w0[1]));tagLine.setAttribute('x2',f(w1[0]));tagLine.setAttribute('y2',f(w1[1]));
+    tagRect.setAttribute('x',f(w1[0]-tw/2));tagRect.setAttribute('y',f(w1[1]-18));tagRect.setAttribute('width',f(tw));
+    tagTxt.setAttribute('x',f(w1[0]));tagTxt.setAttribute('y',f(w1[1]));tagTxt.textContent=label;
+  }
+  show(gPencil,!!st.pen);
+  if(st.pen)gPencil.setAttribute('transform','translate('+f(st.pen[0])+' '+f(st.pen[1])+')');
+
+  // Schritte über der Bühne
+  var steps=$('steps'),wasHidden=steps.hidden;
+  steps.hidden=!hints;
+  if(hints){var si=stepItems(m);setSteps(si.items,si.cols);}
+  if(wasHidden!==steps.hidden)fit();
+
+  // Anzeige rechts
+  var vt=(draw||cfg.value)?ar+'°':'?';
+  if($('val').textContent!==vt)$('val').textContent=vt;
+  var kt=(draw||cfg.value)?kindOf(ar):'Größe verdeckt';
+  if($('kind').textContent!==kt)$('kind').textContent=kt;
+}
+
+var HELP={
+  messen:'Orangen Griff ziehen: Winkel ändern. Geodreieck in der Fläche schieben, an den runden Griffen drehen.',
+  ueberstumpf:'Orangen Griff ziehen: Winkel ändern. Blauer Griff: ganzen Winkel drehen. Geodreieck schieben und an den runden Griffen drehen.',
+  zeichnen:'„Nächster Schritt“ macht dort weiter, wo das Geodreieck gerade liegt. Du kannst es auch selbst schieben und drehen.'
+};
+function ui(){
+  var pg=st.page,draw=pg==='zeichnen',i,els=document.querySelectorAll('[data-pages]');
+  for(i=0;i<els.length;i++)els[i].hidden=els[i].getAttribute('data-pages').split(' ').indexOf(pg)<0;
+  els=document.querySelectorAll('.tab');
+  for(i=0;i<els.length;i++){
+    if(els[i].getAttribute('data-go')===pg)els[i].setAttribute('aria-current','page');else els[i].removeAttribute('aria-current');
+  }
+  $('app').className='app'+(pg==='messen'&&!st.full?' wide':'');
+  $('swGeo').checked=st.geo.on;$('swValue').checked=cfg.value;$('swLabels').checked=cfg.labels;$('swHints').checked=cfg.hints;$('swFull').checked=st.full;
+  $('playTxt').textContent=st.playing?'Anhalten':'Winkel wachsen lassen';
+  $('playIco').setAttribute('d',st.playing?'M4 3h4v14H4zM12 3h4v14h-4z':'M5 3l12 7-12 7z');
+  $('demoTxt').textContent=st.demo?'Vormachen stoppen':'Anlegen vormachen';
+  $('mRest').setAttribute('aria-pressed',st.method==='rest');$('mPlus').setAttribute('aria-pressed',st.method==='plus');
+  $('mMark').setAttribute('aria-pressed',st.method==='mark');$('mTurn').setAttribute('aria-pressed',st.method==='turn');
+  $('next').disabled=draw&&(st.line>=1||!!st.demo);
+  $('nextTxt').textContent=(draw&&st.line>=1)?'Fertig':'Nächster Schritt';
+  $('auto').disabled=draw&&st.line>=1&&!st.auto;
+  $('autoTxt').textContent=st.auto?'Anhalten':'Alle Schritte abspielen';
+  $('reset').textContent=draw?'Von vorn':'Zurücksetzen';
+  $('cap').textContent=draw?'Zeichne den Winkel':'Winkelgröße';
+  $('help').textContent=HELP[pg];
+}
+
+/* ---------- Bühne an den Platz anpassen ---------- */
+function box(){
+  if(st.page==='zeichnen')return {x:-455,y:-455,w:910,h:865};
+  if(st.full)return {x:-500,y:-500,w:1000,h:1000};
+  return {x:-490,y:-492,w:980,h:576};        // große Ansicht: nur der Halbkreis über dem ersten Schenkel
+}
+function fit(force){
+  var r=stage.getBoundingClientRect(),b=box();
+  if(r.width<10||r.height<10){
+    if(view.w===0||force===true){view=b;svg.setAttribute('viewBox',b.x+' '+b.y+' '+b.w+' '+b.h);render();}
+    return;
+  }
+  var sc=Math.min(r.width/b.w,r.height/b.h),W=r.width/sc,H=r.height/sc;
+  var v={x:b.x-(W-b.w)/2,y:b.y-(H-b.h)/2,w:W,h:H},o=view;
+  if(force!==true&&Math.abs(v.x-o.x)<0.5&&Math.abs(v.y-o.y)<0.5&&Math.abs(v.w-o.w)<0.5&&Math.abs(v.h-o.h)<0.5)return;
+  view=v;
+  svg.setAttribute('viewBox',f(v.x)+' '+f(v.y)+' '+f(v.w)+' '+f(v.h));
+  keepGeoInView();
+  render();
+}
+function keepGeoInView(){
+  var g=st.geo;
+  if(g.x===null)return;
+  g.x=clamp(g.x,view.x+30,view.x+view.w-30);g.y=clamp(g.y,view.y+30,view.y+view.h-30);
+}
+if(window.ResizeObserver)new ResizeObserver(function(){fit();}).observe(stage);
+window.addEventListener('resize',function(){fit();});
+
+/* ---------- Ziehen ---------- */
+function pt(e){
+  var p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;
+  var q=p.matrixTransform(svg.getScreenCTM().inverse());
+  return [q.x,q.y];
+}
+function ang(x,y){return deg(Math.atan2(-y,x));}
+var drag=null;
+function begin(e,type,el){
+  if(e.button)return;
+  e.preventDefault();
+  stopAuto();
+  var p=pt(e),g=st.geo;
+  drag={type:type,id:e.pointerId};
+  if(type==='leg2')drag.off=sdiff(ang(p[0],p[1]),st.base+st.alpha);
+  if(type==='leg1')drag.off=sdiff(ang(p[0],p[1]),st.base);
+  if(type==='geo'){drag.px=p[0];drag.py=p[1];drag.gx=g.x;drag.gy=g.y;}
+  if(type==='rot'){drag.a0=ang(p[0]-g.x,p[1]-g.y);drag.r0=g.rot;}
+  try{el.setPointerCapture(e.pointerId);}catch(err){}
+  svg.classList.add('dragging');
+  if(type==='leg2')svg.classList.add('touched');
+}
+function setAlphaFromPointer(pointerDeg){
+  var rel=n360(pointerDeg-st.base),cur=n360(st.alpha);
+  st.alpha=Math.round(clamp(st.alpha+sdiff(rel,cur),minA(),maxA()));
+}
+// Richtungen, an denen die lange Seite einrastet
+function snapLines(){
+  var b=st.base,a=st.alpha;
+  if(st.page!=='zeichnen')return [b,b+a];
+  return (st.method==='mark'&&hasPoint())?[b,b+a]:[b];
+}
+function snapPos(x,y){
+  if(Math.hypot(x,y)<22)return [0,0];                    // Nullpunkt rastet auf dem Scheitel ein
+  var g=st.geo,lines=snapLines(),i,rel,c=Math.cos(rad(g.rot)),s=Math.sin(rad(g.rot)),ly;
+  for(i=0;i<lines.length;i++){                            // lange Seite rastet auf der Linie durch den Scheitel ein
+    rel=n360(lines[i]-g.rot);
+    if(Math.abs(sdiff(rel,0))<0.6||Math.abs(sdiff(rel,180))<0.6){
+      ly=-x*s-y*c;
+      if(Math.abs(ly)<14)return [x+ly*s,y+ly*c];
+    }
+  }
+  return [x,y];
+}
+function snapRot(r){
+  var b=st.base,a=st.alpha,c,i;
+  if(st.page!=='zeichnen')c=[b,b+180,b+a,b+a+180];
+  else if(st.method==='mark')c=hasPoint()?[b,b+180,b+a,b+a+180]:[b,b+180];
+  else c=[b,b+180,b+a+180];
+  for(i=0;i<c.length;i++)if(Math.abs(sdiff(r,c[i]))<3)return n360(c[i]);
+  return n360(r);
+}
+function move(e){
+  if(!drag||e.pointerId!==drag.id)return;
+  var p=pt(e),g=st.geo;
+  if(drag.type==='leg2'){
+    if(Math.hypot(p[0],p[1])<30)return;
+    setAlphaFromPointer(ang(p[0],p[1])-drag.off);
+  }else if(drag.type==='leg1'){
+    if(Math.hypot(p[0],p[1])<30)return;
+    st.base=n360(Math.round(ang(p[0],p[1])-drag.off));
+  }else if(drag.type==='geo'){
+    var q=snapPos(drag.gx+p[0]-drag.px,drag.gy+p[1]-drag.py);
+    g.x=q[0];g.y=q[1];keepGeoInView();
+  }else if(drag.type==='rot'){
+    if(Math.hypot(p[0]-g.x,p[1]-g.y)<30)return;
+    g.rot=snapRot(drag.r0+ang(p[0]-g.x,p[1]-g.y)-drag.a0);
+  }
+  render();
+}
+function end(e){
+  if(!drag||e.pointerId!==drag.id)return;
+  drag=null;svg.classList.remove('dragging');
+}
+h2.addEventListener('pointerdown',function(e){begin(e,'leg2',h2);});
+h1.addEventListener('pointerdown',function(e){begin(e,'leg1',h1);});
+gGeo.addEventListener('pointerdown',function(e){
+  var isEar=e.target.closest&&e.target.closest('.ear');
+  begin(e,isEar?'rot':'geo',gGeo);
+});
+window.addEventListener('pointermove',move);
+window.addEventListener('pointerup',end);
+window.addEventListener('pointercancel',end);
+svg.addEventListener('contextmenu',function(e){e.preventDefault();});
+
+function nudge(d){
+  if(st.page==='zeichnen'){
+    var a=clamp(Math.round(st.alpha)+d,minA(),maxA());
+    if(a!==st.alpha){st.alpha=a;resetDraw();}
+    return;
+  }
+  stopAuto();st.alpha=clamp(Math.round(st.alpha)+d,minA(),maxA());render();
+}
+h2.addEventListener('keydown',function(e){
+  var s=e.shiftKey?10:1,k=e.key;
+  if(k==='ArrowUp'||k==='ArrowLeft'){nudge(s);e.preventDefault();}
+  else if(k==='ArrowDown'||k==='ArrowRight'){nudge(-s);e.preventDefault();}
+});
+h1.addEventListener('keydown',function(e){
+  var s=e.shiftKey?10:1,k=e.key;
+  if(k==='ArrowUp'||k==='ArrowLeft'){stopAuto();st.base=n360(st.base+s);render();e.preventDefault();}
+  else if(k==='ArrowDown'||k==='ArrowRight'){stopAuto();st.base=n360(st.base-s);render();e.preventDefault();}
+});
+
+/* ---------- Abläufe ---------- */
+var lastT=0;
+function tick(t){
+  if(!st.playing)return;
+  var dt=Math.min(0.05,(t-lastT)/1000);lastT=t;
+  st.alpha=Math.min(st.playEnd,st.alpha+18*dt);
+  if(st.alpha>=st.playEnd){st.alpha=st.playEnd;st.playing=false;ui();}
+  render();
+  if(st.playing)requestAnimationFrame(tick);
+}
+function startPlay(){
+  cancelDemo();
+  var m=info(),onFirst=st.page==='messen'&&m.zero&&m.base&&m.from===1&&!m.reflex&&m.read;
+  var endAt=(st.full&&!(onFirst&&st.alpha<180))?360:180;
+  if(st.alpha>=endAt-0.01){st.alpha=minA();endAt=(st.full&&!onFirst)?360:180;}
+  st.playEnd=endAt;st.playing=true;lastT=performance.now();
+  svg.classList.add('touched');
+  ui();requestAnimationFrame(tick);
+}
+function stopPlay(){
+  if(!st.playing)return;
+  st.playing=false;st.alpha=Math.round(st.alpha);ui();render();
+}
+function cancelDemo(){
+  if(!st.demo)return;
+  st.demo.cancelled=true;st.demo=null;st.auto=false;st.trace=1;st.calc=1;st.pen=null;
+  if(st.point&&st.pk<1){if(st.pk>0)st.pk=1;else st.point=false;}
+  if(st.line>0&&st.line<1)st.line=0;
+  ui();render();
+}
+function stopAuto(){stopPlay();cancelDemo();}
+function newToken(){
+  stopAuto();
+  var tk={cancelled:false,step:0};
+  st.demo=tk;
+  return tk;
+}
+function finish(tk){
+  if(st.demo!==tk)return;
+  st.demo=null;st.auto=false;st.trace=1;st.calc=1;st.pen=null;
+  ui();render();
+}
+function tween(ms,fn,tk){
+  return new Promise(function(res,rej){
+    var t0=performance.now();
+    (function step(){
+      requestAnimationFrame(function(t){
+        if(tk.cancelled)return rej(new Error('stop'));
+        var k=clamp((t-t0)/ms,0,1),e=k<0.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+        fn(e);render();
+        if(k<1)step();else res();
+      });
+    })();
+  });
+}
+function wait(ms,tk){
+  return new Promise(function(res,rej){setTimeout(function(){if(tk.cancelled)rej(new Error('stop'));else res();},ms);});
+}
+// Geodreieck bewegen: to = {x, y, rot}, jeweils wahlweise
+function tweenGeo(to,ms,tk){
+  var g=st.geo,x0=g.x,y0=g.y,r0=g.rot,hasR=to.rot!==undefined;
+  var x1=to.x!==undefined?to.x:x0,y1=to.y!==undefined?to.y:y0,d=hasR?sdiff(to.rot,r0):0;
+  return tween(ms,function(k){g.x=x0+(x1-x0)*k;g.y=y0+(y1-y0)*k;g.rot=r0+d*k;},tk)
+    .then(function(){g.x=x1;g.y=y1;if(hasR)g.rot=n360(to.rot);render();});
+}
+// Nullpunkt auf den Scheitel schieben und drehen (rotFirst: erst drehen, dann schieben)
+function placeAtVertex(rot,tk,onMoved,rotFirst){
+  var g=st.geo,needMove=Math.hypot(g.x,g.y)>=1.5,needRot=Math.abs(sdiff(g.rot,rot))>=0.6;
+  function doMove(){return needMove?tweenGeo({x:0,y:0},1400,tk):null;}
+  function doRot(){
+    if(!needRot){g.rot=n360(rot);return null;}
+    return tweenGeo({rot:rot},1400,tk);
+  }
+  if(rotFirst){
+    return Promise.resolve().then(doRot)
+      .then(function(){return (needMove&&needRot)?wait(500,tk):null;})
+      .then(doMove);
+  }
+  return Promise.resolve().then(doMove)
+    .then(function(){return needMove?wait(700,tk):null;})
+    .then(function(){if(onMoved)onMoved();return needRot?wait(300,tk):null;})
+    .then(doRot);
+}
+// Messen (Seite 1 und 2): Anlegen und Ablesen vormachen
+function runDemo(){
+  var tk=newToken(),g=st.geo,over=st.page==='ueberstumpf';
+  if(!g.on||g.x===null){var pk=park();g.on=true;g.x=pk.x;g.y=pk.y;g.rot=pk.rot;}
+  var target=n360(st.alpha<=180&&!over?st.base:st.base+180);
+  st.trace=0;st.calc=0;ui();render();
+  var chain=Promise.resolve();
+  var far=Math.hypot(g.x,g.y)>150,turned=Math.abs(sdiff(g.rot,target))>10;
+  if(!far||!turned){
+    chain=chain.then(function(){var p1=park();return tweenGeo({x:p1.x,y:p1.y,rot:target+22},650,tk);})
+      .then(function(){return wait(350,tk);});
+  }
+  chain.then(function(){tk.step=1;render();return wait(700,tk);})
+  .then(function(){return placeAtVertex(target,tk,function(){tk.step=2;render();});})
+  .then(function(){return wait(900,tk);})
+  .then(function(){tk.step=3;render();return wait(500,tk);})
+  .then(function(){return tween(1400,function(k){st.trace=k;},tk);})
+  .then(function(){
+    if(!over)return wait(600,tk);
+    tk.step=4;render();
+    return wait(1100,tk).then(function(){st.calc=1;render();return wait(400,tk);});
+  })
+  .catch(noop)
+  .then(function(){finish(tk);});
+}
+// Zeichnen (Seite 3)
+function markPoint(tk){
+  var P=pointPos();
+  st.point=true;st.pk=0;st.pen=[P[0]+40,P[1]-64];
+  return tween(500,function(k){st.pen=[P[0]+40*(1-k),P[1]-64*(1-k)];},tk)
+    .then(function(){return tween(250,function(k){st.pk=k;},tk);})
+    .then(function(){st.pk=1;return wait(350,tk);})
+    .then(function(){return tween(350,function(k){st.pen=[P[0]+30*k,P[1]-48*k];},tk);})
+    .then(function(){st.pen=null;render();});
+}
+function drawLeg(tk){
+  var m=info(),u=dirv(st.base+st.alpha),len=R-4;
+  if(st.method==='mark'){var sign=m.px>=m.sx?1:-1;len=Math.min(L,R-sign*m.sx-4);}
+  st.lineLen=len;st.line=0;st.pen=[0,0];render();
+  return wait(450,tk)
+    .then(function(){return tween(1600,function(k){st.line=k;st.pen=[u[0]*len*k,u[1]*len*k];},tk);})
+    .then(function(){st.line=1;return wait(350,tk);})
+    .then(function(){st.pen=null;render();});
+}
+function stepOnce(tk){
+  var b=st.base,a=st.alpha,m=info(),u=dirv(b+a);
+  if(st.line>=1)return Promise.resolve();
+  if(st.method==='mark'){
+    if(!hasPoint())return m.condA?markPoint(tk):placeAtVertex(b,tk);
+    if(!m.condB)return tweenGeo({x:u[0]*110,y:u[1]*110,rot:b+a},1600,tk);
+    return drawLeg(tk);
+  }
+  if(!m.zero)return placeAtVertex(b+180,tk,null,true);
+  if(!m.onTarget)return tweenGeo({rot:b+a+180},Math.max(1300,Math.abs(sdiff(b+a+180,st.geo.rot))*24),tk);
+  return drawLeg(tk);
+}
+function nextStep(){
+  if(st.demo||st.line>=1)return;
+  var tk=newToken();
+  ui();
+  stepOnce(tk).catch(noop).then(function(){finish(tk);});
+}
+function playAll(){
+  if(st.auto){cancelDemo();return;}
+  if(st.line>=1)return;
+  var tk=newToken();
+  st.auto=true;ui();
+  (function loop(){
+    if(st.line>=1)return Promise.resolve();
+    return stepOnce(tk).then(function(){return wait(900,tk);}).then(loop);
+  })().catch(noop).then(function(){finish(tk);});
+}
+function resetDraw(){
+  stopAuto();
+  st.point=false;st.pk=0;st.line=0;st.pen=null;st.geo.on=true;st.geo.x=null;
+  ui();render();
+}
+
+/* ---------- Bedienung ---------- */
+function hold(btn,fn){
+  var t=null,iv=null;
+  function stop(){clearTimeout(t);clearInterval(iv);t=iv=null;}
+  btn.addEventListener('pointerdown',function(e){
+    if(e.button)return;
+    fn();stop();t=setTimeout(function(){iv=setInterval(fn,70);},420);
+  });
+  ['pointerup','pointerleave','pointercancel','blur'].forEach(function(n){btn.addEventListener(n,stop);});
+  btn.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();fn();}});
+}
+hold($('minus'),function(){nudge(-1);});
+hold($('plus'),function(){nudge(1);});
+hold($('m1'),function(){nudge(-1);});
+hold($('p1'),function(){nudge(1);});
+$('m10').addEventListener('click',function(){nudge(-10);});
+$('p10').addEventListener('click',function(){nudge(10);});
+$('play').addEventListener('click',function(){if(st.playing)stopPlay();else startPlay();});
+$('demo').addEventListener('click',function(){if(st.demo)cancelDemo();else runDemo();});
+$('next').addEventListener('click',nextStep);
+$('auto').addEventListener('click',playAll);
+function setMethod(mth){
+  if(st.method===mth)return;
+  stopAuto();st.method=mth;
+  if(st.page==='zeichnen')resetDraw();else{ui();render();}
+}
+$('mRest').addEventListener('click',function(){setMethod('rest');});
+$('mPlus').addEventListener('click',function(){setMethod('plus');});
+$('mMark').addEventListener('click',function(){setMethod('mark');});
+$('mTurn').addEventListener('click',function(){setMethod('turn');});
+$('swGeo').addEventListener('change',function(e){
+  cancelDemo();
+  st.geo.on=e.target.checked;
+  if(st.geo.on)st.geo.x=null;
+  render();
+});
+$('swValue').addEventListener('change',function(e){cfg.value=e.target.checked;render();});
+$('swLabels').addEventListener('change',function(e){cfg.labels=e.target.checked;render();});
+$('swHints').addEventListener('change',function(e){cfg.hints=e.target.checked;render();});
+$('swFull').addEventListener('change',function(e){
+  stopAuto();
+  st.full=e.target.checked;
+  if(!st.full){st.base=0;st.alpha=Math.min(st.alpha,180);}
+  ui();fit(true);
+});
+$('reset').addEventListener('click',function(){
+  stopAuto();
+  var pg=st.page,keep=pg==='zeichnen'?{alpha:st.alpha,method:st.method}:null;
+  pages[pg]=fresh(pg);st=pages[pg];
+  if(keep){st.alpha=keep.alpha;st.method=keep.method;}
+  else{cfg.value=true;cfg.labels=true;cfg.hints=true;}
+  ui();fit(true);
+});
+var fsBtn=$('fs'),root=document.documentElement;
+if(!root.requestFullscreen||document.fullscreenEnabled===false)fsBtn.hidden=true;
+fsBtn.addEventListener('click',function(){
+  try{
+    var pr=document.fullscreenElement?document.exitFullscreen():root.requestFullscreen();
+    if(pr&&pr.catch)pr.catch(function(){fsBtn.hidden=true;});
+  }catch(err){fsBtn.hidden=true;}
+});
+document.addEventListener('fullscreenchange',function(){
+  fsBtn.textContent=document.fullscreenElement?'Vollbild beenden':'Vollbild';
+});
+
+/* ---------- Seiten ---------- */
+function pageFromHash(){
+  var h=(location.hash||'').replace('#','');
+  return pages[h]?h:'messen';
+}
+function setPage(name,fromHash){
+  if(!pages[name]||st.page===name)return;
+  stopAuto();
+  st=pages[name];
+  if(!fromHash){try{if(location.hash!=='#'+name)location.hash=name;}catch(err){}}
+  ui();fit(true);
+}
+(function(){
+  var tabs=document.querySelectorAll('.tab'),i;
+  for(i=0;i<tabs.length;i++)tabs[i].addEventListener('click',function(e){
+    e.preventDefault();setPage(this.getAttribute('data-go'));
+  });
+})();
+window.addEventListener('hashchange',function(){setPage(pageFromHash(),true);});
+
+st=pages[pageFromHash()];
+ui();fit(true);
+})();
+</script>
+<!--uebersicht--><a href="../../../../../index.html#mathematik" id="__uebs_link" aria-label="Zur Übersicht (verlässt die Lernumgebung)" style="position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);right:calc(env(safe-area-inset-right,0px) + 12px);z-index:2147483000;display:inline-flex;align-items:center;min-height:44px;padding:0 12px;border-radius:999px;background:#556079;color:#E6EAF2;border:1px solid rgba(255,255,255,.2);font:600 13px/1 Arial,Helvetica,sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-user-select:none;user-select:none">&larr;&nbsp;Übersicht</a>
+<div id="__uebs_box" role="dialog" aria-modal="true" aria-labelledby="__uebs_titel" style="display:none;position:fixed;left:0;top:0;right:0;bottom:0;z-index:2147483001;background:rgba(10,18,36,.62);align-items:center;justify-content:center;padding:16px;font:18px/1.45 Arial,Helvetica,sans-serif;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none"><div style="background:#fff;color:#111;max-width:440px;width:100%;border-radius:16px;padding:20px 22px;border:4px solid #D97706;box-shadow:0 8px 32px rgba(0,0,0,.45)"><p id="__uebs_titel" style="margin:0 0 8px;font-weight:700;font-size:21px">Achtung: Lernumgebung verlassen?</p><p style="margin:0 0 16px">Wenn du jetzt zur Übersicht gehst, verlässt du diese Lernumgebung. Dein aktueller Stand kann dabei verloren gehen.</p><div style="display:flex;flex-wrap:wrap;gap:10px"><button type="button" id="__uebs_bleiben" style="min-height:52px;padding:0 20px;font:700 18px Arial,Helvetica,sans-serif;border:3px solid #1B2A4A;border-radius:12px;background:#1B2A4A;color:#fff;touch-action:manipulation">Hier bleiben</button><button type="button" id="__uebs_gehen" style="min-height:52px;padding:0 20px;font:700 18px Arial,Helvetica,sans-serif;border:3px solid #1B2A4A;border-radius:12px;background:#fff;color:#1B2A4A;touch-action:manipulation">Trotzdem zur Übersicht</button></div></div></div>
+<script>(function(){var l=document.getElementById('__uebs_link'),b=document.getElementById('__uebs_box'),s=document.getElementById('__uebs_bleiben'),g=document.getElementById('__uebs_gehen');if(!l||!b)return;function zu(){b.style.display='none';l.focus();}l.addEventListener('click',function(e){e.preventDefault();b.style.display='flex';s.focus();});s.addEventListener('click',zu);g.addEventListener('click',function(){location.href=l.getAttribute('href');});b.addEventListener('pointerdown',function(e){if(e.target===b)zu();});document.addEventListener('keydown',function(e){if(e.key==='Escape'&&b.style.display!=='none')zu();});})();</script><!--/uebersicht-->
+</body>
+</html>

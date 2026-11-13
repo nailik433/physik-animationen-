@@ -3,7 +3,7 @@
    Die Übersichtsseite (index.html) baut sich komplett aus dieser Liste auf.
    Neue Unterkategorie = einfach einen neuen "thema"-Namen verwenden.
    Neue Animation     = einen Eintrag unten ergänzen (siehe README.md).
-   Informatik         = zusätzlich  fach: 'Informatik',  als erste Zeile im Eintrag (eigener Reiter in der Übersicht).
+   Informatik/Mathematik = zusätzlich  fach: 'Informatik',  bzw.  fach: 'Mathematik',  als erste Zeile im Eintrag (eigener Reiter).
    ========================================================== */
 window.PHYSIK = {
   klassen: [7, 8, 9, 10],
@@ -108,6 +108,16 @@ window.PHYSIK = {
       datei: 'animationen/informatik/klasse-7/daten-codierung/mission-bitti/index.html',
       icon: '💾',
       tags: ['Bit', 'Byte', 'Binärcode', 'Codierung', 'Buchstaben', 'Mission']
+    },
+    {
+      fach: 'Mathematik',
+      klasse: 7,
+      thema: 'Geometrie',
+      titel: 'Winkel messen und zeichnen',
+      beschreibung: 'Winkel mit dem Geodreieck ablesen und anlegen, spitze, rechte, stumpfe und überstumpfe Winkel unterscheiden, Winkel selbst zeichnen.',
+      datei: 'animationen/mathematik/klasse-7/geometrie/winkel-messen-zeichnen/index.html',
+      icon: '📐',
+      tags: ['Winkel', 'Geodreieck', 'messen', 'zeichnen', 'Geometrie']
     }
   ]
 };

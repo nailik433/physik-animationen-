@@ -142,10 +142,11 @@
     return e;
   }
   const anzahl = (n, e, m) => n + ' ' + (n === 1 ? e : m);
-  const FAECHER = ['Physik', 'Informatik'];
+  const FAECHER = ['Physik', 'Informatik', 'Mathematik'];
+  const fachAusHash = () => { const m = location.hash.match(/^#(informatik|mathematik)/); return m ? (m[1] === 'informatik' ? 'Informatik' : 'Mathematik') : null; };
   const fachVon = a => a.fach || 'Physik';
   const faecherNav = document.getElementById('faecher');
-  let fach = /^#informatik/.test(location.hash) ? 'Informatik' : 'Physik';
+  let fach = fachAusHash() || 'Physik';
 
   const eintraegeVon = f => D.animationen.filter(a => fachVon(a) === f);
   const zaehle = k => eintraegeVon(fach).filter(a => a.klasse === k).length;
@@ -159,7 +160,7 @@
     document.getElementById('untertitel').textContent =
       anzahl(n, 'Animation', 'Animationen') + ' · interaktive Simulationen für den Unterricht, sortiert nach Klasse und Thema.';
     document.title = fach + '-Animationen';
-    suche.placeholder = fach === 'Physik' ? 'Suchen, z. B. Ohm, Reihenschaltung …' : 'Suchen, z. B. Bit, Byte …';
+    suche.placeholder = { Physik: 'Suchen, z. B. Ohm, Reihenschaltung …', Informatik: 'Suchen, z. B. Bit, Byte …', Mathematik: 'Suchen, z. B. Winkel …' }[fach];
   }
 
   function faecherZeichnen() {
@@ -169,7 +170,7 @@
       b.type = 'button'; b.setAttribute('role', 'tab');
       b.setAttribute('aria-selected', f === fach ? 'true' : 'false');
       b.append(f, el('span', 'zaehler', eintraegeVon(f).length));
-      b.addEventListener('click', () => { fach = f; history.replaceState(null, '', f === 'Physik' ? location.pathname : '#informatik'); alles(); window.scrollTo(0, 0); });
+      b.addEventListener('click', () => { fach = f; history.replaceState(null, '', f === 'Physik' ? location.pathname : '#' + f.toLowerCase()); alles(); window.scrollTo(0, 0); });
       faecherNav.append(b);
     });
   }
@@ -255,7 +256,7 @@
     if (z) z.scrollIntoView();
   }
   window.addEventListener('hashchange', () => {
-    const neu = /^#informatik/.test(location.hash) ? 'Informatik' : (/^#klasse-/.test(location.hash) ? 'Physik' : fach);
+    const neu = fachAusHash() || (/^#klasse-/.test(location.hash) ? 'Physik' : fach);
     if (neu !== fach) { fach = neu; alles(); }
   });
 })();
