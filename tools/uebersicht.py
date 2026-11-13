@@ -14,7 +14,8 @@ import os, re, sys, pathlib
 WURZEL = pathlib.Path(__file__).resolve().parent.parent
 START, ENDE = '<!--uebersicht-->', '<!--/uebersicht-->'
 POSITION = {'animationen/klasse-8/kraefte/goldene-regel/goldene_regel.html': 'br',
-            'animationen/klasse-7/magnetismus/lernumgebung/index.html': 'br'}   # (tl, tr, bl, br); Standard: unten links
+            'animationen/klasse-7/magnetismus/lernumgebung/index.html': 'br',
+            'animationen/mathematik/klasse-7/geometrie/winkel-messen-zeichnen/index.html': 'br'}   # (tl, tr, bl, br); Standard: unten links
 
 RAND = {'bl': 'bottom:calc(env(safe-area-inset-bottom,0px) + 12px);left:calc(env(safe-area-inset-left,0px) + 12px)',
         'br': 'bottom:calc(env(safe-area-inset-bottom,0px) + 12px);right:calc(env(safe-area-inset-right,0px) + 12px)',
@@ -44,7 +45,7 @@ def einfuegen(datei, klasse, fach=''):
     roh = pfad.read_bytes()
     text = roh.decode('utf-8')
     text = entfernen(text)                                         # immer frisch setzen (idempotent)
-    ziel = '#informatik' if fach == 'Informatik' else f'#klasse-{klasse}'
+    ziel = f'#{fach.lower()}' if fach in ('Informatik', 'Mathematik') else f'#klasse-{klasse}'
     href = os.path.relpath(WURZEL / 'index.html', pfad.parent).replace(os.sep, '/') + ziel
     block = baustein(href, POSITION.get(datei, 'bl'))
     i = text.lower().rfind('</body>')

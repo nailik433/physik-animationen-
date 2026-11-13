@@ -29,6 +29,12 @@ Reines HTML/CSS/JavaScript – kein Build, keine Installation, keine Internetver
 |---|---|---|
 | 7 | Daten und Codierung | Mission Bitti: Bit, Byte und Buchstaben |
 
+**Mathematik** (eigener Reiter in der Übersicht):
+
+| Klasse | Thema | Animation |
+|---|---|---|
+| 7 | Geometrie | Winkel messen und zeichnen |
+
 Die Klassenzuordnung steht in `daten/animationen.js` und lässt sich dort jederzeit ändern (Eintrag `klasse`/`thema` anpassen, Ordner bei Bedarf verschieben).
 
 ## Neue Animation hinzufügen
@@ -53,7 +59,7 @@ Die Klassenzuordnung steht in `daten/animationen.js` und lässt sich dort jederz
 
 Die Übersicht sortiert Klassen aufsteigend und Themen alphabetisch – sie muss nicht angefasst werden.
 
-Für den Reiter **Informatik** im Eintrag als erste Zeile `fach: 'Informatik',` ergänzen und die Datei unter `animationen/informatik/klasse-<N>/<thema>/` ablegen. Ohne `fach` gehört ein Eintrag zu Physik.
+Für die Reiter **Informatik** und **Mathematik** im Eintrag als erste Zeile `fach: 'Informatik',` bzw. `fach: 'Mathematik',` ergänzen und die Datei unter `animationen/informatik/klasse-<N>/<thema>/` bzw. `animationen/mathematik/klasse-<N>/<thema>/` ablegen. Ohne `fach` gehört ein Eintrag zu Physik.
 
 ## Aufbau
 
