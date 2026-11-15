@@ -27,9 +27,13 @@
   --ok:#1E8E4A;
   --on-ok:#FFFFFF;
   --focus:#2F6FED;
-  --geo-fill:rgba(31,56,100,.09);
-  --geo-edge:#1F3864;
-  --geo-ink:#1F3864;
+  --geo-fill:rgba(96,120,132,.11);
+  --geo-edge:#27413D;
+  --geo-ink:#17322E;
+  --band:#F2DC3A;
+  --band-ink:#1D2B27;
+  --band-lit:#8F3700;
+  --band-lit-aux:#143F8F;
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){
@@ -38,7 +42,7 @@
     --angle:#FF9A3D; --angle-ink:#FFB066; --angle-soft:rgba(255,154,61,.24); --on-angle:#24140A;
     --aux:#7FB0FF; --aux-ink:#A9C8FF; --aux-soft:rgba(127,176,255,.26); --on-aux:#06162E;
     --ok:#4CCB7F; --on-ok:#06220F; --focus:#8AB4FF;
-    --geo-fill:rgba(160,190,255,.12); --geo-edge:#AFC4F2; --geo-ink:#D5E1FB;
+    --geo-fill:rgba(160,190,255,.12); --geo-edge:#AFC4F2; --geo-ink:#D5E1FB; --band:#E9D238;
     color-scheme:dark;
   }
 }
@@ -47,7 +51,7 @@
   --angle:#FF9A3D; --angle-ink:#FFB066; --angle-soft:rgba(255,154,61,.24); --on-angle:#24140A;
   --aux:#7FB0FF; --aux-ink:#A9C8FF; --aux-soft:rgba(127,176,255,.26); --on-aux:#06162E;
   --ok:#4CCB7F; --on-ok:#06220F; --focus:#8AB4FF;
-  --geo-fill:rgba(160,190,255,.12); --geo-edge:#AFC4F2; --geo-ink:#D5E1FB;
+  --geo-fill:rgba(160,190,255,.12); --geo-edge:#AFC4F2; --geo-ink:#D5E1FB; --band:#E9D238;
   color-scheme:dark;
 }
 
@@ -83,7 +87,14 @@ button{font:inherit;color:inherit}
 .steps li.now{box-shadow:0 0 0 4px var(--angle-soft);border-color:var(--angle);color:var(--ink)}
 
 .stage{position:relative;flex:1;min-height:0;background:var(--surface);border:1px solid var(--line);border-radius:1rem;overflow:hidden}
-.stage svg{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.stage>svg{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+
+/* Zoom-Knöpfe auf der Bühne */
+.zoom{position:absolute;top:.6rem;right:.6rem;display:flex;flex-direction:column;gap:.3rem}
+.zoom button{width:max(2.6rem,40px);height:max(2.6rem,40px);display:grid;place-items:center;padding:0;border:1px solid var(--line);border-radius:.6rem;background:var(--surface);color:var(--ink);cursor:pointer;touch-action:manipulation;box-shadow:0 1px 4px rgba(0,0,0,.14)}
+.zoom button svg{width:55%;height:55%;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.zoom button:disabled{opacity:.4;cursor:default}
+.zoom button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
 
 /* Bedienleiste */
 .panel{grid-area:panel;min-height:0;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:1rem;padding:.9rem 1rem;display:flex;flex-direction:column;gap:.65rem}
@@ -111,6 +122,7 @@ button{font:inherit;color:inherit}
 .switch input:checked{background:var(--ink)}
 .switch input:checked::before{transform:translateX(1.3rem)}
 .help{margin:0;color:var(--muted);font-size:.85rem}
+.hint{margin:0;padding:.45rem .6rem;border-left:4px solid var(--angle);background:var(--angle-soft);border-radius:.3rem;font-size:.9rem;font-weight:700;min-height:4.5em}
 
 /* Zeichnung */
 .leg{stroke:var(--ink);stroke-width:5;stroke-linecap:round}
@@ -137,18 +149,19 @@ button{font:inherit;color:inherit}
 
 /* Geodreieck */
 .geo-body{fill:var(--geo-fill);stroke:var(--geo-edge);stroke-width:2.5;stroke-linejoin:round;cursor:grab}
-.geo .tick{fill:none;stroke:var(--geo-ink);pointer-events:none}
-.geo .tick.t1{stroke-width:1}
-.geo .tick.t5{stroke-width:1.5}
-.geo .tick.t10{stroke-width:2.2}
+.geo .band{fill:var(--band);pointer-events:none}
+.geo .print path{fill:none;stroke:var(--geo-ink);pointer-events:none}
+.geo .print .p1{stroke-width:.9}
+.geo .print .p2{stroke-width:1.5}
+.geo .print .pd{stroke-width:1.1;stroke-dasharray:22 17}
 .geo text{font-family:var(--font);fill:var(--geo-ink);text-anchor:middle;pointer-events:none}
-.geo .rnum{font-size:12.5px;opacity:.8}
-.geo .num{font-size:14.5px;font-weight:700;paint-order:stroke;stroke:var(--surface);stroke-width:4px;stroke-linejoin:round}
-.geo .num.inner{opacity:.75}
-.geo .num.n90{font-size:16px}
-.geo.use-outer .num.inner,.geo.use-inner .num.outer{opacity:.3}
-.geo.use-inner .num.inner{opacity:1}
-.geo .num.lit{fill:var(--angle-ink);opacity:1}
+.geo .rnum{font-size:10.5px}
+.geo .plab{font-size:12.5px}
+.geo .num{font-size:13px;font-weight:700;paint-order:stroke;stroke:var(--surface);stroke-width:3.5px;stroke-linejoin:round}
+.geo .num.inner{font-size:12.5px;fill:var(--band-ink);stroke:var(--band);stroke-width:2px}
+.geo.use-outer .num.inner,.geo.use-inner .num.outer{opacity:.35}
+.geo .num.outer.lit{fill:var(--angle-ink)}
+.geo .num.inner.lit{fill:var(--band-lit)}
 .base-hi{stroke:var(--muted);stroke-width:6;stroke-linecap:round;opacity:.55;pointer-events:none}
 .base-hi.ok{stroke:var(--ok);opacity:.9}
 .edge-hi{stroke:var(--angle);stroke-width:7;stroke-linecap:round;pointer-events:none}
@@ -156,7 +169,10 @@ button{font:inherit;color:inherit}
 .zero-ring.ok{stroke:var(--ok)}
 .zero-dot{fill:var(--geo-ink);pointer-events:none}
 .trace{fill:none;stroke:var(--angle);stroke-width:9;stroke-linecap:round;stroke-linejoin:round;opacity:.8;pointer-events:none}
+.trace.ring{stroke-width:21;stroke-linecap:butt;opacity:.5}
 .cross{fill:var(--surface);stroke:var(--angle);stroke-width:4;pointer-events:none}
+.cross.tapme{transform-box:fill-box;transform-origin:center;animation:tapme 1.1s ease-in-out infinite}
+@keyframes tapme{0%,100%{transform:scale(1)}50%{transform:scale(1.7)}}
 .ear{cursor:grab}
 .ear .hit,.handle .hit{fill:transparent}
 .ear .stem{stroke:var(--geo-edge);stroke-width:2.5}
@@ -168,7 +184,8 @@ button{font:inherit;color:inherit}
 /* Auf der Seite für überstumpfe Winkel gehört der Messwert zum blauen Hilfswinkel */
 svg.aux .trace{stroke:var(--aux)}
 svg.aux .cross{stroke:var(--aux)}
-svg.aux .geo .num.lit{fill:var(--aux-ink)}
+svg.aux .geo .num.outer.lit{fill:var(--aux-ink)}
+svg.aux .geo .num.inner.lit{fill:var(--band-lit-aux)}
 svg.aux .tag rect{fill:var(--aux)}
 svg.aux .tag text{fill:var(--on-aux)}
 svg.aux .tag line{stroke:var(--aux)}
@@ -190,6 +207,7 @@ svg.aux .lab.start{fill:var(--aux-ink)}
 svg.dragging,svg.dragging *{cursor:grabbing !important}
 @media (prefers-reduced-motion: reduce){
   .pulse{animation:none;opacity:0}
+  .cross.tapme{animation:none}
   .switch input,.switch input::before{transition:none}
 }
 
@@ -217,6 +235,11 @@ svg.dragging,svg.dragging *{cursor:grabbing !important}
     <ol class="steps" id="steps" hidden aria-label="Schritte"></ol>
     <div class="stage" id="stage">
       <svg id="svg" viewBox="-490 -492 980 576" role="group" aria-label="Winkel mit Geodreieck"></svg>
+      <div class="zoom" role="group" aria-label="Zoom">
+        <button type="button" id="zIn" aria-label="Vergrößern" title="Vergrößern"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg></button>
+        <button type="button" id="zOut" aria-label="Verkleinern" title="Verkleinern"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12"/></svg></button>
+        <button type="button" id="zFit" aria-label="Ganze Zeichnung zeigen" title="Ganze Zeichnung zeigen"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7V3h4M13 3h4v4M17 13v4h-4M7 17H3v-4"/></svg></button>
+      </div>
     </div>
   </section>
 
@@ -258,6 +281,7 @@ svg.dragging,svg.dragging *{cursor:grabbing !important}
       </div>
       <button type="button" class="btn primary" id="next"><span id="nextTxt">Nächster Schritt</span></button>
       <button type="button" class="btn" id="auto"><span id="autoTxt">Alle Schritte abspielen</span></button>
+      <p class="hint" id="handHint" aria-live="polite"></p>
     </div>
 
     <div class="sec" data-pages="messen ueberstumpf">
@@ -313,7 +337,7 @@ var view={x:0,y:0,w:0,h:0};
 function fresh(page){
   var s={page:page,base:0,alpha:40,geo:{on:false,x:null,y:0,rot:12},full:false,method:'',
          trace:1,calc:1,playing:false,playEnd:180,demo:null,auto:false,
-         point:false,pk:0,line:0,lineLen:L,pen:null};
+         point:false,markDeg:null,pk:0,line:0,lineLen:L,pen:null};
   if(page==='ueberstumpf'){s.alpha=235;s.full=true;s.method='rest';s.geo.on=true;}
   if(page==='zeichnen'){s.alpha=50;s.full=true;s.method='mark';s.geo.on=true;}
   return s;
@@ -321,6 +345,7 @@ function fresh(page){
 var pages={messen:fresh('messen'),ueberstumpf:fresh('ueberstumpf'),zeichnen:fresh('zeichnen')};
 var st=pages.messen;
 function hasPoint(){return st.point&&st.pk>=1;}
+function pointOk(){return hasPoint()&&st.markDeg===st.alpha;}      // Punkt liegt an der richtigen Gradzahl
 function minA(){return st.page==='ueberstumpf'?180:(st.page==='zeichnen'?1:0);}
 function maxA(){return st.page==='zeichnen'?179:(st.full?360:180);}
 
@@ -336,7 +361,7 @@ var rdot=mk('circle',{'class':'rdot',r:5},gAngle);
 var ext=mk('line',{'class':'ext',x1:0,y1:0},gAngle);
 var leg1=mk('line',{'class':'leg',x1:0,y1:0},gAngle);
 var leg2=mk('line',{'class':'leg',x1:0,y1:0},gAngle);
-mk('circle',{'class':'vertex',r:7},gAngle);
+var vertexDot=mk('circle',{'class':'vertex',r:7},gAngle);
 
 var gLab=mk('g',{'class':'labels'},svg);
 var tS=txt(gLab,'lab','Scheitel S');
@@ -354,47 +379,79 @@ function edgePt(t,inset){
   return [r*c,-r*s];
 }
 
+var RING=4.72*CM;  // Gradteilung außen am gelben Band: hier wird die innere Skala abgelesen
 var gGeo=mk('g',{'class':'geo'},svg);
 mk('path',{'class':'geo-body',d:'M'+(-R)+' 0H'+R+'L0 '+(-R)+'Z'},gGeo);
+// Der Aufdruck ist so gezeichnet, wie man ihn liest: lange Seite oben, Spitze unten.
+// Im Koordinatensystem des Geodreiecks (Spitze oben) steht er deshalb um 180° gedreht.
+var gBand=mk('g',{transform:'rotate(180)'},gGeo);
+var trace=mk('path',{'class':'trace'},gGeo);
+var traceRing=mk('path',{'class':'trace ring'},gGeo);
+var gPrint=mk('g',{'class':'print',transform:'rotate(180)'},gGeo);
+var nums=[];   // {el, outer, inner}: Wert auf der äußeren Skala (kurze Seiten) bzw. der inneren (gelbes Band)
 (function(){
-  var i,x,len,seg,d1='',d5='',d10='';
-  // Zentimeterskala auf der langen Seite
-  for(i=-70;i<=70;i++){
-    x=f(i*CM/10);len=i%10===0?15:i%5===0?11:7;seg='M'+x+' 0V'+(-len);
-    if(i%10===0)d10+=seg;else if(i%5===0)d5+=seg;else d1+=seg;
+  var RI=4.0*CM,RO=4.45*CM,RN=(RI+RO)/2,TOP=0.45*CM;
+  var i,x,y,len,phi,t,ten,five,r0,r1,re,hw,q,d1='',d2='',dd='';
+  function P(r,ph){return [r*Math.cos(rad(ph)),r*Math.sin(rad(ph))];}
+  function seg(a,b){return 'M'+f(a[0])+' '+f(a[1])+'L'+f(b[0])+' '+f(b[1]);}
+  function edgeR(ph){return R/(Math.abs(Math.cos(rad(ph)))+Math.sin(rad(ph)));}
+  function numR(ph){return ph===90?7.3*CM:(R-0.36*CM*Math.SQRT2)/(Math.abs(Math.cos(rad(ph)))+Math.sin(rad(ph)));}
+  function label(cls,px,py,str,rot,anchor){
+    var e=mk('text',{'class':cls,dy:'.35em',transform:'translate('+f(px)+' '+f(py)+')'+(rot?' rotate('+f(rot)+')':'')},gPrint);
+    if(anchor)e.setAttribute('text-anchor',anchor);
+    e.textContent=str;return e;
   }
-  for(i=-7;i<=7;i++){var t=mk('text',{'class':'rnum',x:f(i*CM),y:-25,dy:'.35em'},gGeo);t.textContent=Math.abs(i);}
-  // Mittellinie zur 90
-  d5+='M0 -37V'+(-(R-64));
-  // Winkelskala
-  for(i=1;i<180;i++){
-    var p=edgePt(i),r=Math.hypot(p[0],p[1]);len=i%10===0?18:i%5===0?12:7;
-    seg='M'+f(p[0])+' '+f(p[1])+'L'+f(p[0]-p[0]/r*len)+' '+f(p[1]-p[1]/r*len);
-    if(i%10===0)d10+=seg;else if(i%5===0)d5+=seg;else d1+=seg;
+  // gelbes Halbkreisband
+  var xo=Math.sqrt(RO*RO-TOP*TOP),xi=Math.sqrt(RI*RI-TOP*TOP);
+  mk('path',{'class':'band',d:'M'+f(xo)+' '+f(TOP)+'A'+f(RO)+' '+f(RO)+' 0 0 1 '+f(-xo)+' '+f(TOP)+'L'+f(-xi)+' '+f(TOP)+'A'+f(RI)+' '+f(RI)+' 0 0 0 '+f(xi)+' '+f(TOP)+'Z'},gBand);
+  // Zentimeterskala an der langen Seite
+  for(i=-76;i<=76;i++){
+    x=i*CM/10;len=(i%10===0?0.36:(i%5===0?0.27:0.17))*CM;
+    q='M'+f(x)+' 0V'+f(len);
+    if(i%10===0)d2+=q;else d1+=q;
   }
-  mk('path',{'class':'tick t1',d:d1},gGeo);
-  mk('path',{'class':'tick t5',d:d5},gGeo);
-  mk('path',{'class':'tick t10',d:d10},gGeo);
+  for(i=-7;i<=7;i++)label('rnum',(i-0.15*(i>0?1:(i<0?-1:0)))*CM,0.57*CM,Math.abs(i));
+  // Mittellinie, Parallelen alle 5 mm mit Beschriftung, Millimeterleitern
+  d2+='M0 '+f(0.8*CM)+'V'+f(RI);
+  for(i=5;i<=35;i+=5){
+    y=i/10*CM;hw=Math.sqrt(RI*RI-y*y);
+    d1+='M'+f(-hw)+' '+f(y)+'H'+f(hw);
+    if(i%10===5)label('plab',-0.1*CM,y+0.27*CM,i,0,'end');else label('plab',0.1*CM,y+0.27*CM,i,0,'start');
+  }
+  for(i=6;i<=37;i++){
+    if(i%5===0)continue;
+    y=i/10*CM;
+    d1+='M'+f(-1.2*CM)+' '+f(y)+'H'+f(-0.78*CM)+'M'+f(0.78*CM)+' '+f(y)+'H'+f(1.2*CM);
+  }
+  // gestrichelte 45°-Linien
+  dd=seg(P(0.4*CM,45),P(RI,45))+seg(P(0.4*CM,135),P(RI,135));
+  // Gradteilung außen am Band, Strahlen alle 10°, Teilung an den kurzen Seiten
+  for(phi=1;phi<180;phi++){
+    ten=phi%10===0;five=phi%5===0;
+    r0=RO+0.05*CM;r1=r0+(ten?0.5:(five?0.36:0.22))*CM;
+    if(ten)r1=Math.max(r1,numR(phi)-0.27*CM);
+    re=edgeR(phi);len=(ten?0.24:(five?0.18:0.12))*CM;
+    q=((phi>=6&&phi<=174)?seg(P(r0,phi),P(r1,phi)):'')+seg(P(re,phi),P(re-len,phi));
+    if(ten)d2+=q;else d1+=q;
+  }
+  mk('path',{'class':'p1',d:d1},gPrint);
+  mk('path',{'class':'p2',d:d2},gPrint);
+  mk('path',{'class':'pd',d:dd},gPrint);
+  // Zahlen: Köpfe zeigen zum Nullpunkt
+  for(t=10;t<=170;t+=10){
+    q=P(RN,t);
+    nums.push({el:label('num inner',q[0],q[1],t,t-90),outer:null,inner:t});
+    phi=180-t;q=P(numR(phi),phi);
+    nums.push({el:label('num outer',q[0],q[1],t,phi-90),outer:t,inner:null});
+  }
 })();
-var nums=[];   // {el, outer, inner}: Wert auf der äußeren (gegen den Uhrzeigersinn) bzw. inneren Skala
-(function(){
-  for(var t=10;t<=170;t+=10){
-    if(t===90)continue;
-    var p=edgePt(t,30),q=edgePt(t,56);
-    var o=mk('text',{'class':'num outer',x:f(p[0]),y:f(p[1]),dy:'.35em'},gGeo);o.textContent=t;
-    nums.push({el:o,outer:t,inner:null});
-    var n=mk('text',{'class':'num inner',x:f(q[0]),y:f(q[1]),dy:'.35em'},gGeo);n.textContent=180-t;
-    nums.push({el:n,outer:null,inner:180-t});
-  }
-  var e=mk('text',{'class':'num n90',x:0,y:-(R-42),dy:'.35em'},gGeo);e.textContent='90';
-  nums.push({el:e,outer:90,inner:90});
-})();
+function ringPt(t){return [RING*Math.cos(rad(t)),-RING*Math.sin(rad(t))];}
+function ringPath(v){var e=ringPt(180-v);return 'M'+f(-RING)+' 0A'+f(RING)+' '+f(RING)+' 0 0 1 '+f(e[0])+' '+f(e[1]);}
 var baseHi=mk('line',{'class':'base-hi',x1:-R,y1:0,x2:R,y2:0},gGeo);
 var edgeHi=mk('line',{'class':'edge-hi',x1:0,y1:0,x2:-R,y2:0},gGeo);
-var trace=mk('path',{'class':'trace'},gGeo);
 var cross=mk('circle',{'class':'cross',r:9},gGeo);
 var zeroRing=mk('circle',{'class':'zero-ring',r:13},gGeo);
-mk('circle',{'class':'zero-dot',r:3.2},gGeo);
+var zeroDot=mk('circle',{'class':'zero-dot',r:3.2},gGeo);
 var ICO='M7.8 -4.5A9 9 0 1 0 7.8 4.5M7.8 4.5l-5.4 2.5M7.8 4.5l.5 6';
 function ear(sign){
   var g=mk('g',{'class':'ear',transform:'translate('+sign*(R+34)+' 0)'},gGeo);
@@ -405,7 +462,7 @@ function ear(sign){
   mk('title',null,g).textContent='Geodreieck drehen';
   return g;
 }
-ear(1);ear(-1);
+var ears=[ear(1),ear(-1)];
 
 var gMark=mk('g',{'class':'mark'},svg);
 mk('path',{'class':'halo',d:'M-11 -11L11 11M-11 11L11 -11'},gMark);
@@ -416,8 +473,9 @@ var tNull=txt(gOver,'lab small','Nullpunkt');
 var tStart=txt(gOver,'lab start','0°');
 var gTag=mk('g',{'class':'tag'},gOver);
 var tagLine=mk('line',null,gTag);
-var tagRect=mk('rect',{rx:9,ry:9,height:36},gTag);
-var tagTxt=mk('text',{dy:'.35em'},gTag);
+var tagBox=mk('g',null,gTag);
+var tagRect=mk('rect',{rx:9,ry:9,y:-18,height:36},tagBox);
+var tagTxt=mk('text',{dy:'.35em',x:0,y:0},tagBox);
 var gPencil=mk('g',{'class':'pencil'},gOver);
 (function(){
   var g=mk('g',{transform:'rotate(-58)'},gPencil);
@@ -475,7 +533,7 @@ function baseOn(dirs){
 }
 // Stelle, an der beim Zeichnen der Punkt markiert wird
 function pointPos(){
-  var a=st.alpha,u=dirv(st.base+a),r=Math.min(R/(Math.abs(Math.cos(rad(a)))+Math.sin(rad(a)))+6,R-2);
+  var a=st.markDeg===null?st.alpha:st.markDeg,u=dirv(st.base+a),r=Math.min(R/(Math.abs(Math.cos(rad(a)))+Math.sin(rad(a)))+6,R-2);
   return [u[0]*r,u[1]*r];
 }
 /* Was zeigt das Geodreieck gerade?
@@ -491,7 +549,7 @@ function info(){
       bo=baseOn([b]);
       m.base=!!bo;
       m.condA=m.zero&&!!bo&&bo.side===1;
-      if(hasPoint()){
+      if(pointOk()){
         var P=pointPos(),p=toLocal(P[0],P[1]),s=toLocal(0,0);
         m.sx=s[0];m.px=p[0];
         m.condB=Math.abs(p[1])<1.5&&Math.abs(s[1])<1.5&&Math.abs(p[0])<=R+1&&Math.abs(s[0])<=R+1;
@@ -518,6 +576,37 @@ function info(){
     }else m.uncovered=true;
   }
   return m;
+}
+// Der zweite Schenkel entlang der langen Seite: Richtung, Länge und Lage im Geodreieck
+function legGeom(m){
+  var g={u:dirv(st.base+st.alpha),sign:-1,sx:0,len:R-4};
+  if(st.method==='mark'){g.sx=m.sx;g.sign=m.px>=m.sx?1:-1;g.len=Math.min(L,R-g.sign*g.sx-4);}
+  if(st.line>0)g.len=st.lineLen;
+  return g;
+}
+function drawReady(m){
+  return st.page==='zeichnen'&&st.line<1&&(st.method==='mark'?(pointOk()&&m.condB):m.onTarget);
+}
+function canDrawAt(p){
+  var m=info();
+  if(!drawReady(m))return false;
+  var gm=legGeom(m),lp=toLocal(p[0],p[1]),t=(lp[0]-gm.sx)*gm.sign;
+  return Math.abs(lp[1])<=30&&t>=-30&&t<=gm.len+30;
+}
+function handHint(m){
+  var a=Math.round(st.alpha),place='Von Hand: Geodreieck drehen und schieben, bis die lange Seite durch S und den Punkt geht.';
+  var drawIt='Von Hand: mit dem Finger an der langen Seite von S aus entlangfahren.';
+  if(st.line>=1)return 'Fertig. „Von vorn“ beginnt neu.';
+  if(st.method==='mark'){
+    if(!pointOk()){
+      if(!m.condA)return 'Von Hand: Geodreieck schieben und an den runden Griffen drehen, bis es wie beim Messen liegt.';
+      return hasPoint()?('Von Hand: noch einmal an der Skala antippen. Von 0° aus bis '+a+'° zählen.'):('Von Hand: an der Skala bei '+a+'° antippen.');
+    }
+    return m.condB?drawIt:place;
+  }
+  if(!m.zero)return 'Von Hand: Geodreieck nach unten drehen und den Nullpunkt auf S schieben.';
+  if(!m.onTarget)return 'Von Hand: am runden Griff hochdrehen, bis am Schenkel '+a+'° steht.';
+  return drawIt;
 }
 function kindOf(a){
   if(a===0)return 'Nullwinkel';
@@ -606,10 +695,11 @@ function stepItems(m){
       {t:t4,c:c(done,4,'ready')}]};
   }
   if(st.method==='mark'){
+    var wrong=hasPoint()&&!pointOk();
     items=[
-      {t:'Anlegen wie beim Messen',ok:m.condA||st.point},
-      {t:'Bei '+ar+'° einen Punkt markieren',ok:hasPoint()},
-      {t:'Lange Seite an S und den Punkt legen',ok:hasPoint()&&(m.condB||st.line>0)},
+      {t:'Anlegen wie beim Messen',ok:m.condA||pointOk()},
+      {t:wrong?('Punkt liegt bei '+st.markDeg+'°, nicht bei '+ar+'°'):('Bei '+ar+'° einen Punkt markieren'),ok:pointOk()},
+      {t:'Lange Seite an S und den Punkt legen',ok:pointOk()&&(m.condB||st.line>0)},
       {t:'Verbinden: Schenkel zeichnen',ok:st.line>=1}];
   }else{
     items=[
@@ -630,13 +720,16 @@ function render(){
   var draw=pg==='zeichnen',over=pg==='ueberstumpf';
   if(g.on&&g.x===null){var pk=park();g.x=pk.x;g.y=pk.y;g.rot=pk.rot;}
   var u1=dirv(b),u2=dirv(b+a),len2=draw?st.lineLen*st.line:L;
+  var zk=1/zoom.z;                                // beim Zoomen bleiben Griffe, Marken und Linienstärken gleich groß
+  leg1.style.strokeWidth=leg2.style.strokeWidth=f(Math.max(1.4,5*zk));
+  vertexDot.setAttribute('r',f(Math.max(2,7*zk)));
   leg1.setAttribute('x2',f(u1[0]*L));leg1.setAttribute('y2',f(u1[1]*L));
   leg2.setAttribute('x2',f(u2[0]*len2));leg2.setAttribute('y2',f(u2[1]*len2));
   show(leg2,len2>0.5);
   show(h2,!draw);show(h1,!draw&&st.full);
   if(!draw){
-    h1.setAttribute('transform','translate('+f(u1[0]*L)+' '+f(u1[1]*L)+') rotate('+f(-b)+')');
-    h2.setAttribute('transform','translate('+f(u2[0]*L)+' '+f(u2[1]*L)+') rotate('+f(-(b+a))+')');
+    h1.setAttribute('transform','translate('+f(u1[0]*L)+' '+f(u1[1]*L)+') rotate('+f(-b)+') scale('+f(zk)+')');
+    h2.setAttribute('transform','translate('+f(u2[0]*L)+' '+f(u2[1]*L)+') rotate('+f(-(b+a))+') scale('+f(zk)+')');
     h1.setAttribute('aria-valuenow',Math.round(n360(b)));
     h2.setAttribute('aria-valuemin',minA());h2.setAttribute('aria-valuemax',maxA());
     h2.setAttribute('aria-valuenow',ar);
@@ -685,21 +778,33 @@ function render(){
 
   // Markierung beim Zeichnen
   show(gMark,draw&&st.point&&st.pk>0);
-  if(draw&&st.point){var mp=pointPos();gMark.setAttribute('transform','translate('+f(mp[0])+' '+f(mp[1])+') scale('+f(Math.max(st.pk,0.01))+')');}
+  if(draw&&st.point){var mp=pointPos();gMark.setAttribute('transform','translate('+f(mp[0])+' '+f(mp[1])+') scale('+f(Math.max(st.pk,0.01)*zk)+')');}
 
   // Geodreieck
   show(gGeo,g.on);
   var m=info(),hints=g.on&&cfg.hints,p=st.trace,i,n,val;
-  if(g.on)gGeo.setAttribute('transform','translate('+f(g.x)+' '+f(g.y)+') rotate('+f(-g.rot)+')');
-  var showZero=hints&&!(draw&&st.method==='mark'&&hasPoint());
-  var baseOk=draw?(st.method==='mark'?(hasPoint()?m.condB:m.condA):false):m.base;
+  if(g.on){
+    gGeo.setAttribute('transform','translate('+f(g.x)+' '+f(g.y)+') rotate('+f(-g.rot)+')');
+    ears[0].setAttribute('transform','translate('+f(R+34*zk)+' 0) scale('+f(zk)+')');
+    ears[1].setAttribute('transform','translate('+f(-R-34*zk)+' 0) scale('+f(zk)+')');
+    cross.setAttribute('r',f(9*zk));cross.style.strokeWidth=f(4*zk);
+    zeroRing.setAttribute('r',f(13*zk));zeroRing.style.strokeWidth=f(4*zk);zeroDot.setAttribute('r',f(3.2*zk));
+    baseHi.style.strokeWidth=f(6*zk);edgeHi.style.strokeWidth=f(7*zk);
+  }
+  var showZero=hints&&!(draw&&st.method==='mark'&&pointOk());
+  var baseOk=draw?(st.method==='mark'?(pointOk()?m.condB:m.condA):false):m.base;
   show(baseHi,hints&&!(draw&&(st.method==='turn'||st.line>0)));show(zeroRing,showZero);
   baseHi.setAttribute('class','base-hi'+(baseOk?' ok':''));
   zeroRing.setAttribute('class','zero-ring'+(m.zero?' ok':''));
-  show(edgeHi,hints&&draw&&st.method==='turn'&&m.onTarget&&st.line<1);
+  var ready=hints&&drawReady(m);                 // orange Kante: hier entlang zeichnen
+  show(edgeHi,ready);
+  if(ready){var gm=legGeom(m);edgeHi.setAttribute('x1',f(gm.sx+gm.sign*gm.len*st.line));edgeHi.setAttribute('x2',f(gm.sx+gm.sign*gm.len));}
   var vNow=m.v*p,showTrace=hints&&m.read;
-  show(trace,showTrace&&vNow>0.2);
-  if(showTrace&&vNow>0.2)trace.setAttribute('d',m.from>0?tracePath(0,vNow):tracePath(180,180-vNow));
+  show(trace,showTrace&&vNow>0.2&&m.from>0);
+  show(traceRing,showTrace&&vNow>0.2&&m.from<0);
+  if(showTrace&&vNow>0.2){
+    if(m.from>0)trace.setAttribute('d',tracePath(0,vNow));else traceRing.setAttribute('d',ringPath(vNow));
+  }
   gGeo.setAttribute('class','geo'+(showTrace?(m.from>0?' use-outer':' use-inner'):''));
   for(i=0;i<nums.length;i++){
     n=nums[i];val=m.from>0?n.outer:n.inner;
@@ -708,27 +813,31 @@ function render(){
   var showTag=m.read&&p>=1&&(draw?hints:cfg.value);
   var showCross=m.read&&p>=1&&(hints||showTag);
   show(cross,showCross);
-  if(showCross){var c=edgePt(m.theta);cross.setAttribute('cx',f(c[0]));cross.setAttribute('cy',f(c[1]));}
+  var readAt=m.from<0?ringPt(m.theta):edgePt(m.theta);      // äußere Skala an der Kante, innere am gelben Band
+  if(showCross){cross.setAttribute('cx',f(readAt[0]));cross.setAttribute('cy',f(readAt[1]));}
+  cross.setAttribute('class','cross'+((draw&&st.method==='mark'&&m.condA&&!pointOk()&&st.line<=0&&!st.demo)?' tapme':''));
 
   // Beschriftungen am Geodreieck
   var showNull=showZero&&!(draw&&m.zero);
   show(tNull,showNull);
-  if(showNull){var np=toWorld(0,50);along(tNull,np[0],np[1],g.rot);tNull.setAttribute('class','lab small'+(m.zero?' ok':''));}
+  if(showNull){var np=toWorld(0,14+36*zk);along(tNull,np[0],np[1],g.rot);tNull.setAttribute('transform',tNull.getAttribute('transform')+' scale('+f(zk)+')');tNull.setAttribute('class','lab small'+(m.zero?' ok':''));}
   show(tStart,showTrace);
-  if(showTrace){var sp=toWorld(m.from*(R-34),30);tStart.setAttribute('x',f(sp[0]));tStart.setAttribute('y',f(sp[1]));}
+  if(showTrace){var sp=toWorld(m.from>0?R-34:-RING,10+20*zk);tStart.setAttribute('transform','translate('+f(sp[0])+' '+f(sp[1])+') scale('+f(zk)+')');}
   show(gTag,showTag);
   if(showTag){
     var th=m.theta,phi=th<=80?45:(th>=100?135:45+90*(function(k){return k*k*(3-2*k);})((th-80)/20));
-    var dist=52-8*(1-Math.abs(phi-90)/45),cp=edgePt(th);
-    var w0=toWorld(cp[0],cp[1]),w1=toWorld(cp[0]+dist*Math.cos(rad(phi)),cp[1]-dist*Math.sin(rad(phi)));
+    var dist=(52-8*(1-Math.abs(phi-90)/45))*zk,cp=edgePt(th);
+    var w0=toWorld(readAt[0],readAt[1]),w1=toWorld(cp[0]+dist*Math.cos(rad(phi)),cp[1]-dist*Math.sin(rad(phi)));
     var label=Math.round(m.v)+'°',tw=label.length*13.5+19;
     if(over){label=(st.method==='rest'?'β':'γ')+' = '+label;tw=label.length*13.5+2;}
     tagLine.setAttribute('x1',f(w0[0]));tagLine.setAttribute('y1',f(w0[1]));tagLine.setAttribute('x2',f(w1[0]));tagLine.setAttribute('y2',f(w1[1]));
-    tagRect.setAttribute('x',f(w1[0]-tw/2));tagRect.setAttribute('y',f(w1[1]-18));tagRect.setAttribute('width',f(tw));
-    tagTxt.setAttribute('x',f(w1[0]));tagTxt.setAttribute('y',f(w1[1]));tagTxt.textContent=label;
+    tagLine.style.strokeWidth=f(3*zk);
+    tagBox.setAttribute('transform','translate('+f(w1[0])+' '+f(w1[1])+') scale('+f(zk)+')');
+    tagRect.setAttribute('x',f(-tw/2));tagRect.setAttribute('width',f(tw));
+    tagTxt.textContent=label;
   }
   show(gPencil,!!st.pen);
-  if(st.pen)gPencil.setAttribute('transform','translate('+f(st.pen[0])+' '+f(st.pen[1])+')');
+  if(st.pen)gPencil.setAttribute('transform','translate('+f(st.pen[0])+' '+f(st.pen[1])+') scale('+f(zk)+')');
 
   // Schritte über der Bühne
   var steps=$('steps'),wasHidden=steps.hidden;
@@ -737,6 +846,7 @@ function render(){
   if(wasHidden!==steps.hidden)fit();
 
   // Anzeige rechts
+  if(draw){var hh=handHint(m);if($('handHint').textContent!==hh)$('handHint').textContent=hh;}
   var vt=(draw||cfg.value)?ar+'°':'?';
   if($('val').textContent!==vt)$('val').textContent=vt;
   var kt=(draw||cfg.value)?kindOf(ar):'Größe verdeckt';
@@ -744,9 +854,9 @@ function render(){
 }
 
 var HELP={
-  messen:'Orangen Griff ziehen: Winkel ändern. Geodreieck in der Fläche schieben, an den runden Griffen drehen.',
-  ueberstumpf:'Orangen Griff ziehen: Winkel ändern. Blauer Griff: ganzen Winkel drehen. Geodreieck schieben und an den runden Griffen drehen.',
-  zeichnen:'„Nächster Schritt“ macht dort weiter, wo das Geodreieck gerade liegt. Du kannst es auch selbst schieben und drehen.'
+  messen:'Orangen Griff ziehen: Winkel ändern. Geodreieck in der Fläche schieben, an den runden Griffen drehen. Zoomen: Knöpfe oben rechts, zwei Finger oder Mausrad.',
+  ueberstumpf:'Orangen Griff ziehen: Winkel ändern. Blauer Griff: ganzen Winkel drehen. Zoomen: Knöpfe oben rechts, zwei Finger oder Mausrad.',
+  zeichnen:'„Nächster Schritt“ macht dort weiter, wo das Geodreieck gerade liegt. Zoomen: Knöpfe oben rechts, zwei Finger oder Mausrad.'
 };
 function ui(){
   var pg=st.page,draw=pg==='zeichnen',i,els=document.querySelectorAll('[data-pages]');
@@ -771,6 +881,53 @@ function ui(){
   $('help').textContent=HELP[pg];
 }
 
+/* ---------- Zoom ---------- */
+var zoom={z:1,cx:0,cy:0},ZMAX=5,zAnim=0;
+function applyView(){
+  var w=view.w/zoom.z,h=view.h/zoom.z;
+  zoom.cx=clamp(zoom.cx,view.x+w/2,view.x+view.w-w/2);
+  zoom.cy=clamp(zoom.cy,view.y+h/2,view.y+view.h-h/2);
+  svg.setAttribute('viewBox',f(zoom.cx-w/2)+' '+f(zoom.cy-h/2)+' '+f(w)+' '+f(h));
+  $('zOut').disabled=$('zFit').disabled=zoom.z<=1.001;
+  $('zIn').disabled=zoom.z>=ZMAX-0.001;
+}
+function setZoom(z,cx,cy){
+  zoom.z=clamp(z,1,ZMAX);zoom.cx=cx;zoom.cy=cy;
+  applyView();render();
+}
+// zoomen, wobei der Punkt W an seiner Stelle auf dem Bildschirm bleibt
+function zoomAt(W,z){
+  z=clamp(z,1,ZMAX);
+  var k=zoom.z/z;
+  setZoom(z,W[0]-(W[0]-zoom.cx)*k,W[1]-(W[1]-zoom.cy)*k);
+}
+function zoomSmooth(z,cx,cy){
+  var id=++zAnim,z0=zoom.z,x0=zoom.cx,y0=zoom.cy,t0=performance.now();
+  z=clamp(z,1,ZMAX);
+  (function step(){
+    requestAnimationFrame(function(t){
+      if(id!==zAnim)return;
+      var k=clamp((t-t0)/220,0,1),e=1-Math.pow(1-k,3);
+      setZoom(Math.exp(Math.log(z0)+(Math.log(z)-Math.log(z0))*e),x0+(cx-x0)*e,y0+(cy-y0)*e);
+      if(k<1)step();
+    });
+  })();
+}
+// wohin der erste Druck auf „Vergrößern“ zielt: auf die Ablesestelle, sonst aufs Geodreieck
+function focusPoint(){
+  var m=info(),q;
+  if(m.read){q=m.from<0?ringPt(m.theta):edgePt(m.theta);return toWorld(q[0],q[1]);}
+  if(st.geo.on&&st.geo.x!==null)return toWorld(0,-R*0.42);
+  return [zoom.cx,zoom.cy];
+}
+function resetZoom(){zAnim++;zoom.z=1;}
+$('zIn').addEventListener('click',function(){
+  if(zoom.z<=1.001){var W=focusPoint();zoomSmooth(2,W[0],W[1]);}
+  else zoomSmooth(zoom.z*1.5,zoom.cx,zoom.cy);
+});
+$('zOut').addEventListener('click',function(){zoomSmooth(zoom.z/1.5<1.15?1:zoom.z/1.5,zoom.cx,zoom.cy);});
+$('zFit').addEventListener('click',function(){zoomSmooth(1,zoom.cx,zoom.cy);});
+
 /* ---------- Bühne an den Platz anpassen ---------- */
 function box(){
   if(st.page==='zeichnen')return {x:-455,y:-455,w:910,h:865};
@@ -780,14 +937,14 @@ function box(){
 function fit(force){
   var r=stage.getBoundingClientRect(),b=box();
   if(r.width<10||r.height<10){
-    if(view.w===0||force===true){view=b;svg.setAttribute('viewBox',b.x+' '+b.y+' '+b.w+' '+b.h);render();}
+    if(view.w===0||force===true){view=b;applyView();render();}
     return;
   }
   var sc=Math.min(r.width/b.w,r.height/b.h),W=r.width/sc,H=r.height/sc;
   var v={x:b.x-(W-b.w)/2,y:b.y-(H-b.h)/2,w:W,h:H},o=view;
   if(force!==true&&Math.abs(v.x-o.x)<0.5&&Math.abs(v.y-o.y)<0.5&&Math.abs(v.w-o.w)<0.5&&Math.abs(v.h-o.h)<0.5)return;
   view=v;
-  svg.setAttribute('viewBox',f(v.x)+' '+f(v.y)+' '+f(v.w)+' '+f(v.h));
+  applyView();
   keepGeoInView();
   render();
 }
@@ -817,6 +974,7 @@ function begin(e,type,el){
   if(type==='leg1')drag.off=sdiff(ang(p[0],p[1]),st.base);
   if(type==='geo'){drag.px=p[0];drag.py=p[1];drag.gx=g.x;drag.gy=g.y;}
   if(type==='rot'){drag.a0=ang(p[0]-g.x,p[1]-g.y);drag.r0=g.rot;}
+  if(type==='draw'){var gm=legGeom(info());drag.u=gm.u;drag.len=gm.len;st.lineLen=gm.len;}
   try{el.setPointerCapture(e.pointerId);}catch(err){}
   svg.classList.add('dragging');
   if(type==='leg2')svg.classList.add('touched');
@@ -829,7 +987,7 @@ function setAlphaFromPointer(pointerDeg){
 function snapLines(){
   var b=st.base,a=st.alpha;
   if(st.page!=='zeichnen')return [b,b+a];
-  return (st.method==='mark'&&hasPoint())?[b,b+a]:[b];
+  return (st.method==='mark'&&pointOk())?[b,b+a]:[b];
 }
 function snapPos(x,y){
   if(Math.hypot(x,y)<22)return [0,0];                    // Nullpunkt rastet auf dem Scheitel ein
@@ -846,7 +1004,7 @@ function snapPos(x,y){
 function snapRot(r){
   var b=st.base,a=st.alpha,c,i;
   if(st.page!=='zeichnen')c=[b,b+180,b+a,b+a+180];
-  else if(st.method==='mark')c=hasPoint()?[b,b+180,b+a,b+a+180]:[b,b+180];
+  else if(st.method==='mark')c=pointOk()?[b,b+180,b+a,b+a+180]:[b,b+180];
   else c=[b,b+180,b+a+180];
   for(i=0;i<c.length;i++)if(Math.abs(sdiff(r,c[i]))<3)return n360(c[i]);
   return n360(r);
@@ -854,6 +1012,13 @@ function snapRot(r){
 function move(e){
   if(!drag||e.pointerId!==drag.id)return;
   var p=pt(e),g=st.geo;
+  if(drag.type==='pan'){
+    var sr=stage.getBoundingClientRect();
+    zoom.cx=drag.cx-(e.clientX-drag.x)/sr.width*view.w/zoom.z;
+    zoom.cy=drag.cy-(e.clientY-drag.y)/sr.height*view.h/zoom.z;
+    applyView();
+    return;
+  }
   if(drag.type==='leg2'){
     if(Math.hypot(p[0],p[1])<30)return;
     setAlphaFromPointer(ang(p[0],p[1])-drag.off);
@@ -866,22 +1031,120 @@ function move(e){
   }else if(drag.type==='rot'){
     if(Math.hypot(p[0]-g.x,p[1]-g.y)<30)return;
     g.rot=snapRot(drag.r0+ang(p[0]-g.x,p[1]-g.y)-drag.a0);
+  }else if(drag.type==='draw'){
+    var k=clamp((p[0]*drag.u[0]+p[1]*drag.u[1])/drag.len,0,1);
+    if(k>st.line)st.line=k;
+    st.pen=[drag.u[0]*drag.len*st.line,drag.u[1]*drag.len*st.line];
   }
   render();
 }
 function end(e){
   if(!drag||e.pointerId!==drag.id)return;
+  var wasDraw=drag.type==='draw';
   drag=null;svg.classList.remove('dragging');
+  if(wasDraw){
+    if(st.line>=0.9)st.line=1;
+    st.pen=null;ui();render();
+  }
 }
 h2.addEventListener('pointerdown',function(e){begin(e,'leg2',h2);});
 h1.addEventListener('pointerdown',function(e){begin(e,'leg1',h1);});
+// Vergrößertes Bild verschieben
+function startPan(e,el){
+  drag={type:'pan',id:e.pointerId,x:e.clientX,y:e.clientY,cx:zoom.cx,cy:zoom.cy};
+  zAnim++;
+  try{el.setPointerCapture(e.pointerId);}catch(err){}
+  svg.classList.add('dragging');
+}
 gGeo.addEventListener('pointerdown',function(e){
   var isEar=e.target.closest&&e.target.closest('.ear');
-  begin(e,isEar?'rot':'geo',gGeo);
+  if(e.button||pinch)return;
+  if(isEar){begin(e,'rot',gGeo);return;}
+  if(canDrawAt(pt(e))){begin(e,'draw',gGeo);return;}
+  // Vergrößert und richtig angelegt: Ziehen verschiebt das Bild, das Geodreieck bleibt liegen
+  var m=info();
+  if(zoom.z>1.001&&(m.read||drawReady(m))){startPan(e,gGeo);return;}
+  begin(e,'geo',gGeo);
 });
+// neben der Kante angesetzt: auch dann zeichnen
+svg.addEventListener('pointerdown',function(e){
+  if(drag||pinch||e.button)return;
+  if(canDrawAt(pt(e))){begin(e,'draw',svg);return;}
+  if(zoom.z>1.001)startPan(e,svg);                   // im freien Bereich ziehen: vergrößertes Bild verschieben
+});
+// Finger auf der Bühne mitzählen: zwei Finger zoomen und verschieben; ein kurzes Antippen
+// setzt den Punkt an der Skala oder lässt den Schenkel zeichnen
+var tap=null,touches={},pinch=null;
+function clientToWorld(x,y){
+  var p=svg.createSVGPoint();p.x=x;p.y=y;
+  var q=p.matrixTransform(svg.getScreenCTM().inverse());
+  return [q.x,q.y];
+}
+svg.addEventListener('pointerdown',function(e){
+  if(e.button)return;
+  if(e.isPrimary){touches={};pinch=null;}
+  touches[e.pointerId]=[e.clientX,e.clientY];
+  var ids=Object.keys(touches);
+  if(ids.length>=2){
+    if(drag){drag=null;svg.classList.remove('dragging');if(st.pen){st.pen=null;render();}}
+    tap=null;zAnim++;
+    var a=touches[ids[0]],b=touches[ids[1]];
+    pinch={d0:Math.max(20,Math.hypot(a[0]-b[0],a[1]-b[1])),z0:zoom.z,W:clientToWorld((a[0]+b[0])/2,(a[1]+b[1])/2)};
+    e.stopPropagation();e.preventDefault();
+    return;
+  }
+  tap={id:e.pointerId,x:e.clientX,y:e.clientY,t:performance.now()};
+},true);
+window.addEventListener('pointermove',function(e){
+  if(!touches[e.pointerId])return;
+  touches[e.pointerId]=[e.clientX,e.clientY];
+  var ids=Object.keys(touches);
+  if(!pinch||ids.length<2)return;
+  var a=touches[ids[0]],b=touches[ids[1]],r=stage.getBoundingClientRect();
+  var z=clamp(pinch.z0*Math.hypot(a[0]-b[0],a[1]-b[1])/pinch.d0,1,ZMAX);
+  var fx=((a[0]+b[0])/2-r.left)/r.width-0.5,fy=((a[1]+b[1])/2-r.top)/r.height-0.5;
+  setZoom(z,pinch.W[0]-fx*view.w/z,pinch.W[1]-fy*view.h/z);
+});
+function liftTouch(e){
+  delete touches[e.pointerId];
+  if(Object.keys(touches).length<2)pinch=null;
+}
+svg.addEventListener('wheel',function(e){
+  if(zoom.z<=1.001&&e.deltaY>0)return;               // ganz herausgezoomt: Seite normal scrollen lassen
+  e.preventDefault();
+  zAnim++;
+  zoomAt(pt(e),zoom.z*Math.exp(-e.deltaY*(e.ctrlKey?0.01:0.0015)));
+},{passive:false});
+function onTap(p){
+  if(st.page!=='zeichnen'||st.demo||st.line>=1)return;
+  var tk;
+  if(canDrawAt(p)){
+    tk=newToken();ui();
+    drawLeg(tk).catch(noop).then(function(){finish(tk);});
+    return;
+  }
+  var m=info();
+  if(st.method!=='mark'||!m.condA||pointOk()||st.line>0)return;
+  var lp=toLocal(p[0],p[1]),th=deg(Math.atan2(-lp[1],lp[0])),r=Math.hypot(lp[0],lp[1]);
+  if(th<0.5||th>179.5)return;
+  if(Math.abs(r-R/(Math.abs(Math.cos(rad(th)))+Math.sin(rad(th))))>70)return;      // nur in der Nähe der Skala
+  var d=clamp(Math.round(th),1,179);
+  if(Math.abs(d-st.alpha)<=2)d=st.alpha;                                            // ein Finger trifft nicht aufs Grad genau
+  st.markDeg=d;st.point=true;st.pk=0;
+  tk=newToken();
+  tween(220,function(k){st.pk=k;},tk).catch(noop).then(function(){st.pk=1;finish(tk);});
+}
 window.addEventListener('pointermove',move);
 window.addEventListener('pointerup',end);
 window.addEventListener('pointercancel',end);
+window.addEventListener('pointerup',function(e){
+  if(!tap||tap.id!==e.pointerId)return;
+  var still=Math.hypot(e.clientX-tap.x,e.clientY-tap.y)<=10&&performance.now()-tap.t<700;
+  tap=null;
+  if(still)onTap(pt(e));
+});
+window.addEventListener('pointerup',liftTouch);
+window.addEventListener('pointercancel',liftTouch);
 svg.addEventListener('contextmenu',function(e){e.preventDefault();});
 
 function nudge(d){
@@ -929,8 +1192,7 @@ function stopPlay(){
 function cancelDemo(){
   if(!st.demo)return;
   st.demo.cancelled=true;st.demo=null;st.auto=false;st.trace=1;st.calc=1;st.pen=null;
-  if(st.point&&st.pk<1){if(st.pk>0)st.pk=1;else st.point=false;}
-  if(st.line>0&&st.line<1)st.line=0;
+  if(st.point&&st.pk<1){if(st.pk>0)st.pk=1;else{st.point=false;st.markDeg=null;}}
   ui();render();
 }
 function stopAuto(){stopPlay();cancelDemo();}
@@ -1013,6 +1275,7 @@ function runDemo(){
 }
 // Zeichnen (Seite 3)
 function markPoint(tk){
+  st.markDeg=st.alpha;
   var P=pointPos();
   st.point=true;st.pk=0;st.pen=[P[0]+40,P[1]-64];
   return tween(500,function(k){st.pen=[P[0]+40*(1-k),P[1]-64*(1-k)];},tk)
@@ -1022,11 +1285,10 @@ function markPoint(tk){
     .then(function(){st.pen=null;render();});
 }
 function drawLeg(tk){
-  var m=info(),u=dirv(st.base+st.alpha),len=R-4;
-  if(st.method==='mark'){var sign=m.px>=m.sx?1:-1;len=Math.min(L,R-sign*m.sx-4);}
-  st.lineLen=len;st.line=0;st.pen=[0,0];render();
+  var gm=legGeom(info()),u=gm.u,len=gm.len,from=st.line;
+  st.lineLen=len;st.pen=[u[0]*len*from,u[1]*len*from];render();
   return wait(450,tk)
-    .then(function(){return tween(1600,function(k){st.line=k;st.pen=[u[0]*len*k,u[1]*len*k];},tk);})
+    .then(function(){return tween(Math.max(400,1600*(1-from)),function(k){st.line=from+(1-from)*k;st.pen=[u[0]*len*st.line,u[1]*len*st.line];},tk);})
     .then(function(){st.line=1;return wait(350,tk);})
     .then(function(){st.pen=null;render();});
 }
@@ -1034,7 +1296,7 @@ function stepOnce(tk){
   var b=st.base,a=st.alpha,m=info(),u=dirv(b+a);
   if(st.line>=1)return Promise.resolve();
   if(st.method==='mark'){
-    if(!hasPoint())return m.condA?markPoint(tk):placeAtVertex(b,tk);
+    if(!pointOk())return m.condA?markPoint(tk):placeAtVertex(b,tk);
     if(!m.condB)return tweenGeo({x:u[0]*110,y:u[1]*110,rot:b+a},1600,tk);
     return drawLeg(tk);
   }
@@ -1060,7 +1322,7 @@ function playAll(){
 }
 function resetDraw(){
   stopAuto();
-  st.point=false;st.pk=0;st.line=0;st.pen=null;st.geo.on=true;st.geo.x=null;
+  st.point=false;st.markDeg=null;st.pk=0;st.line=0;st.pen=null;st.geo.on=true;st.geo.x=null;
   ui();render();
 }
 
@@ -1105,14 +1367,14 @@ $('swLabels').addEventListener('change',function(e){cfg.labels=e.target.checked;
 $('swHints').addEventListener('change',function(e){cfg.hints=e.target.checked;render();});
 $('swFull').addEventListener('change',function(e){
   stopAuto();
-  st.full=e.target.checked;
+  st.full=e.target.checked;resetZoom();
   if(!st.full){st.base=0;st.alpha=Math.min(st.alpha,180);}
   ui();fit(true);
 });
 $('reset').addEventListener('click',function(){
   stopAuto();
   var pg=st.page,keep=pg==='zeichnen'?{alpha:st.alpha,method:st.method}:null;
-  pages[pg]=fresh(pg);st=pages[pg];
+  pages[pg]=fresh(pg);st=pages[pg];resetZoom();
   if(keep){st.alpha=keep.alpha;st.method=keep.method;}
   else{cfg.value=true;cfg.labels=true;cfg.hints=true;}
   ui();fit(true);
@@ -1137,7 +1399,7 @@ function pageFromHash(){
 function setPage(name,fromHash){
   if(!pages[name]||st.page===name)return;
   stopAuto();
-  st=pages[name];
+  st=pages[name];resetZoom();
   if(!fromHash){try{if(location.hash!=='#'+name)location.hash=name;}catch(err){}}
   ui();fit(true);
 }
