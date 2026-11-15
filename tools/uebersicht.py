@@ -15,7 +15,8 @@ WURZEL = pathlib.Path(__file__).resolve().parent.parent
 START, ENDE = '<!--uebersicht-->', '<!--/uebersicht-->'
 POSITION = {'animationen/klasse-8/kraefte/goldene-regel/goldene_regel.html': 'br',
             'animationen/klasse-7/magnetismus/lernumgebung/index.html': 'br',
-            'animationen/mathematik/klasse-7/geometrie/winkel-messen-zeichnen/index.html': 'br'}   # (tl, tr, bl, br); Standard: unten links
+            'animationen/mathematik/klasse-7/geometrie/winkel-messen-zeichnen/index.html': 'br',
+            'animationen/klasse-10/induktion-transformator/elektromagnetismus-teste-dich-selbst/index.html': 'br'}   # (tl, tr, bl, br); Standard: unten links
 
 RAND = {'bl': 'bottom:calc(env(safe-area-inset-bottom,0px) + 12px);left:calc(env(safe-area-inset-left,0px) + 12px)',
         'br': 'bottom:calc(env(safe-area-inset-bottom,0px) + 12px);right:calc(env(safe-area-inset-right,0px) + 12px)',

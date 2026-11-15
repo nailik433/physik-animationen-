@@ -92,6 +92,15 @@ window.PHYSIK = {
     },
     {
       klasse: 10,
+      thema: 'Induktion und Transformator',
+      titel: 'Elektromagnetismus: Teste dich selbst',
+      beschreibung: 'Selbsttest zur Klasse 10: Elektromagnet und Induktion, Gleich- und Wechselspannung, Transformator, Leistung und Energie, Fernleitung und Stromnetz. Mit Animationen, Rechenaufgaben und Rückmeldung.',
+      datei: 'animationen/klasse-10/induktion-transformator/elektromagnetismus-teste-dich-selbst/index.html',
+      icon: '🧲',
+      tags: ['Selbsttest', 'Induktion', 'Transformator', 'Wechselspannung', 'Leistung', 'Energieversorgung']
+    },
+    {
+      klasse: 10,
       thema: 'Elektrische Energieversorgung',
       titel: 'Vom Kraftwerk zur Steckdose',
       beschreibung: 'Lernumgebung (Stunde 5): Der Weg der Energie vom Generator über Hochspannungsleitungen und Umspannwerke bis zur Steckdose. Mit Animationen, Simulationen, Arbeitsblatt-Aufgaben und Abschlussquiz.',
