@@ -299,9 +299,9 @@ window.MODULE = [
       { t: 'beispiel', text: 'Legt man eine Batterie an die Primärspule eines Transformators, schlägt das Messgerät an der Sekundärspule nur beim Einschalten und beim Ausschalten kurz aus. Nur in diesem Moment ändert sich das Magnetfeld.' },
       { t: 'tipp', text: 'Am Multimeter misst du Wechselspannung mit V~ und die Stromstärke bei Wechselspannung mit A~.' }
     ],
-    anim: { titel: 'Elektronen im Stromkreis',
-      bedienung: 'Wähle oben „Batterie“ oder „Steckdose (Zeitlupe)“. Mit dem Schieber stellst du ein, wie schnell die Spannung wechselt. Unten siehst du die Spannung im Verlauf der Zeit.',
-      auftraege: ['Beobachte die Elektronen bei der Batterie und bei der Steckdose. Was ist anders?', 'Zähle in der Zeitlupe, wie oft sich die Richtung umkehrt. Wie oft passiert das an der echten Steckdose pro Sekunde?', 'Warum flackert die Lampe in der Zeitlupe, an der echten Steckdose aber nicht?'] }
+    anim: { titel: 'Elektronen im Stromkreis und Generator',
+      bedienung: 'Reiter „Batterie und Steckdose“: Wähle oben „Batterie“ oder „Steckdose (Zeitlupe)“. Mit dem Schieber stellst du ein, wie schnell die Spannung wechselt. Reiter „Generator“: Stelle mit dem Schieber ein, wie schnell sich der Magnet vor der Spule dreht. Unten siehst du jeweils die Spannung im Verlauf der Zeit.',
+      auftraege: ['Beobachte die Elektronen bei der Batterie und bei der Steckdose. Was ist anders?', 'Zähle in der Zeitlupe, wie oft sich die Richtung umkehrt. Wie oft passiert das an der echten Steckdose pro Sekunde?', 'Warum flackert die Lampe in der Zeitlupe, an der echten Steckdose aber nicht?', 'Generator: Lass den Magneten stillstehen, dann langsam und dann schnell drehen. Was zeigen Messgerät und Diagramm?', 'Generator: Wie oft ändert die Spannung bei einer Umdrehung ihre Richtung? Woher kommt also die Wechselspannung aus dem Kraftwerk?'] }
   },
   {
     id: 3, titel: 'Transformator: Spannung', kurz: 'Wie verändert ein Transformator die Spannung?',
@@ -773,6 +773,241 @@ window.FRAGEN = window.FRAGEN.concat([
   antworten: [ { t: 'Masse und Auslenkung', ok: true }, { t: 'Nur die Fadenlänge' }, { t: 'Nichts, man darf alles verändern' } ],
   warum: 'Du veränderst nur die Länge. Masse und Auslenkung bleiben gleich, damit der Vergleich aussagekräftig ist.' }
 ]);
+</script>
+
+<script>
+/* ==========================================================
+   EXTRA-ÜBUNGEN: 4 freiwillige Fragen pro Modul (zusatz: true)
+   Sie zählen nicht für den Fortschritt und kommen nach den Pflichtfragen.
+   Keine Zahlen/Kontexte aus der Klassenarbeit.
+   ========================================================== */
+(function () {
+var X = [
+
+/* ---------- Modul 1 ---------- */
+{ id: 'm1x1', modul: 1, typ: 'single', zusatz: true,
+  frage: 'Du schiebst einen Magneten zuerst langsam, dann schnell in eine Spule. Was zeigt das Messgerät beim schnellen Hineinschieben?',
+  antworten: [
+    { t: 'Eine größere Spannung.', ok: true },
+    { t: 'Dieselbe Spannung wie beim langsamen Hineinschieben.', h: 'Je schneller sich das Magnetfeld ändert, desto größer ist die induzierte Spannung.' },
+    { t: 'Keine Spannung, weil es zu schnell geht.', h: 'Gerade die schnelle Änderung erzeugt eine große Spannung.' }
+  ],
+  warum: 'Je schneller sich das Magnetfeld in der Spule ändert, desto größer ist die induzierte Spannung.' },
+{ id: 'm1x2', modul: 1, typ: 'single', zusatz: true,
+  frage: 'Beim Hineinschieben schlägt der Zeiger des Messgeräts nach rechts aus. Was passiert beim Herausziehen?',
+  antworten: [
+    { t: 'Der Zeiger schlägt nach links aus.', ok: true },
+    { t: 'Der Zeiger schlägt wieder nach rechts aus.', h: 'Beim Herausziehen ändert sich das Magnetfeld in die andere Richtung. Dann ist auch die Spannung umgekehrt.' },
+    { t: 'Der Zeiger bewegt sich nicht.', h: 'Auch beim Herausziehen ändert sich das Magnetfeld. Es wird eine Spannung induziert.' }
+  ],
+  warum: 'Hineinschieben und Herausziehen ändern das Magnetfeld in entgegengesetzte Richtungen. Deshalb kehrt sich die Richtung der Spannung um.' },
+{ id: 'm1x3', modul: 1, typ: 'zuordnen', zusatz: true,
+  frage: 'Elektromagnet oder Induktion? Ordne zu.',
+  felder: ['Elektromagnet', 'Induktion'],
+  karten: [
+    { t: 'Strom erzeugt ein Magnetfeld', ziel: 0, h: 'Strom durch eine Spule erzeugt ein Magnetfeld. Das ist ein Elektromagnet.' },
+    { t: 'Ein bewegter Magnet erzeugt eine Spannung', ziel: 1, h: 'Ein sich änderndes Magnetfeld erzeugt Spannung. Das ist Induktion.' },
+    { t: 'Lasthebemagnet am Schrottplatz', ziel: 0, h: 'Der Kran hebt Eisen mit einer stromdurchflossenen Spule an. Das ist ein Elektromagnet.' },
+    { t: 'Fahrraddynamo', ziel: 1, h: 'Im Dynamo dreht sich ein Magnet in einer Spule. Dabei wird Spannung induziert.' },
+    { t: 'Generator im Kraftwerk', ziel: 1, h: 'Im Generator dreht sich ein Magnet in Spulen. Dabei wird Spannung induziert.' },
+    { t: 'kann man ein- und ausschalten', ziel: 0, h: 'Ein Elektromagnet ist nur magnetisch, solange Strom fließt.' }
+  ],
+  warum: 'Elektromagnet: Strom → Magnetfeld. Induktion: Änderung des Magnetfelds → Spannung.' },
+{ id: 'm1x4', modul: 1, typ: 'multi', zusatz: true,
+  frage: 'Wie bekommst du eine größere induzierte Spannung? Kreuze alle richtigen an.',
+  antworten: [
+    { t: 'den Magneten schneller bewegen', ok: true, h: 'Eine schnellere Änderung des Magnetfelds ergibt eine größere Spannung.' },
+    { t: 'einen stärkeren Magneten nehmen', ok: true, h: 'Ein stärkerer Magnet ändert das Magnetfeld in der Spule stärker.' },
+    { t: 'eine Spule mit mehr Windungen nehmen', ok: true, h: 'In jeder Windung wird Spannung induziert. Mehr Windungen ergeben mehr Spannung.' },
+    { t: 'den Magneten ruhig in die Spule legen', h: 'Ein ruhender Magnet erzeugt keine Spannung.' },
+    { t: 'den Magneten langsamer bewegen', h: 'Langsamer bedeutet eine kleinere Änderung pro Sekunde und damit weniger Spannung.' }
+  ],
+  warum: 'Die induzierte Spannung wird größer, wenn sich das Magnetfeld schneller oder stärker ändert und wenn die Spule mehr Windungen hat.' },
+
+/* ---------- Modul 2 ---------- */
+{ id: 'm2x1', modul: 2, typ: 'single', zusatz: true,
+  frage: 'In einem U-t-Diagramm siehst du eine waagrechte Linie bei 4,5 V. Welche Spannung ist das?',
+  antworten: [
+    { t: 'Gleichspannung', ok: true },
+    { t: 'Wechselspannung', h: 'Bei Wechselspannung geht die Linie ständig nach oben und unten, auch unter die Zeitachse.' },
+    { t: 'Man kann es nicht sagen.', h: 'Eine waagrechte Linie bedeutet: Die Spannung bleibt immer gleich. Das ist Gleichspannung.' }
+  ],
+  warum: 'Gleichspannung bleibt gleich: waagrechte Linie. Wechselspannung wechselt ständig die Richtung: die Kurve geht über und unter die Zeitachse.' },
+{ id: 'm2x2', modul: 2, typ: 'zahl', zusatz: true,
+  frage: 'Die Spannung an der Steckdose kehrt 100-mal pro Sekunde ihre Richtung um. Wie oft kehrt sie sich in 5 Sekunden um?',
+  loesung: 500, einheit: 'mal', tol: 0,
+  fehler: [
+    { wert: 20, h: 'Du hast geteilt. In 5 Sekunden sind es mehr Umkehrungen als in einer Sekunde: mal 5.' },
+    { wert: 250, h: 'Du hast mit 50 gerechnet. Es sind 100 Richtungsumkehrungen pro Sekunde.' }
+  ],
+  warum: '100 Umkehrungen pro Sekunde · 5 Sekunden = 500 Umkehrungen.' },
+{ id: 'm2x3', modul: 2, typ: 'single', zusatz: true,
+  frage: 'Eine Glühlampe leuchtet an einer Batterie. Leuchtet sie auch an Wechselspannung mit gleich großer Spannung?',
+  antworten: [
+    { t: 'Ja. Die Elektronen bewegen sich hin und her, der Draht wird trotzdem heiß.', ok: true },
+    { t: 'Nein. Eine Lampe braucht immer Gleichspannung.', h: 'Für das Leuchten ist egal, in welche Richtung die Elektronen fließen. Der Glühdraht wird in beiden Richtungen heiß.' },
+    { t: 'Nur, wenn man die Lampe umdreht.', h: 'Eine Glühlampe hat keine Richtung. Sie leuchtet an Gleich- und Wechselspannung.' }
+  ],
+  warum: 'Der Glühdraht wird heiß, egal in welche Richtung die Elektronen fließen. Deshalb leuchten Lampen auch an der Steckdose.' },
+{ id: 'm2x4', modul: 2, typ: 'luecke', zusatz: true,
+  frage: 'Ergänze den Text. Tippe zuerst auf eine Lücke und dann auf ein Wort.',
+  text: 'Bei Gleichspannung fließen die Elektronen immer in ___ Richtung. Bei Wechselspannung pendeln sie ___. Ein Transformator funktioniert nur mit ___.',
+  woerter: ['dieselbe', 'hin und her', 'Wechselspannung', 'Gleichspannung', 'im Kreis'],
+  loesung: ['dieselbe', 'hin und her', 'Wechselspannung'],
+  warum: 'Gleichspannung: immer dieselbe Richtung. Wechselspannung: Die Elektronen pendeln hin und her. Nur Wechselspannung ändert das Magnetfeld ständig, deshalb braucht der Transformator sie.' },
+
+/* ---------- Modul 3 ---------- */
+{ id: 'm3x1', modul: 3, typ: 'zahl', zusatz: true, szene: 'trafo', bild: { n1: '300', n2: '1500', u1: '12 V', u2: '?' },
+  frage: 'Ein Transformator hat N₁ = 300 und N₂ = 1500 Windungen. An der Primärspule liegen U₁ = 12 V. Berechne U₂.',
+  loesung: 60, einheit: 'V',
+  fehler: [ { wert: 2.4, h: 'Du hast den Bruch verdreht. N₂ ist größer als N₁, also wird hochtransformiert: U₂ muss größer als 12 V sein.' } ],
+  warum: 'U₁ / U₂ = N₁ / N₂, umgestellt: U₂ = U₁ · N₂ : N₁ = 12 V · 1500 : 300 = 60 V.' },
+{ id: 'm3x2', modul: 3, typ: 'zahl', zusatz: true, szene: 'trafo', bild: { n1: '4600', n2: '240', u1: '230 V', u2: '?' },
+  frage: 'Ein Ladegerät enthält einen Transformator mit N₁ = 4600 und N₂ = 240 Windungen. Es hängt an U₁ = 230 V. Berechne U₂.',
+  loesung: 12, einheit: 'V',
+  fehler: [ { wert: 4408.33, h: 'Du hast den Bruch verdreht. Die Sekundärspule hat weniger Windungen, also wird heruntertransformiert.' } ],
+  warum: 'U₂ = U₁ · N₂ : N₁ = 230 V · 240 : 4600 = 12 V.' },
+{ id: 'm3x3', modul: 3, typ: 'zahl', zusatz: true, szene: 'trafo', bild: { n1: '?', n2: '200', u1: '230 V', u2: '46 V' },
+  frage: 'Ein Transformator macht aus U₁ = 230 V eine Spannung von U₂ = 46 V. Die Sekundärspule hat N₂ = 200 Windungen. Wie viele Windungen hat die Primärspule?',
+  loesung: 1000, einheit: 'Windungen',
+  fehler: [ { wert: 40, h: 'Du hast den Bruch verdreht. Die Spannung wird kleiner, also hat die Primärspule mehr Windungen als die Sekundärspule.' } ],
+  warum: 'Die Spannung wird 5-mal kleiner (230 V : 46 V = 5). Also hat die Primärspule 5-mal so viele Windungen: N₁ = 200 · 5 = 1000.' },
+{ id: 'm3x4', modul: 3, typ: 'multi', zusatz: true,
+  frage: 'Was braucht man für einen Transformator, der funktioniert? Kreuze alle richtigen an.',
+  antworten: [
+    { t: 'eine Primärspule', ok: true, h: 'An der Primärspule liegt die Eingangsspannung.' },
+    { t: 'eine Sekundärspule', ok: true, h: 'An der Sekundärspule wird die neue Spannung abgegriffen.' },
+    { t: 'einen geschlossenen Eisenkern', ok: true, h: 'Der Eisenkern leitet das Magnetfeld von der einen zur anderen Spule.' },
+    { t: 'Wechselspannung an der Primärspule', ok: true, h: 'Nur Wechselspannung ändert das Magnetfeld ständig.' },
+    { t: 'eine Batterie an der Primärspule', h: 'Eine Batterie liefert Gleichspannung. Dann ändert sich das Magnetfeld nicht, und es wird keine Spannung induziert.' },
+    { t: 'einen Dauermagneten im Kern', h: 'Ein Dauermagnet ändert sich nicht. Das sich ändernde Magnetfeld kommt von der Primärspule.' }
+  ],
+  warum: 'Transformator: Primärspule und Sekundärspule auf einem gemeinsamen Eisenkern, an der Primärspule Wechselspannung.' },
+
+/* ---------- Modul 4 ---------- */
+{ id: 'm4x1', modul: 4, typ: 'zahl', zusatz: true,
+  frage: 'Ein Wasserkocher ist an 230 V angeschlossen. Es fließt eine Stromstärke von 8 A. Berechne die Leistung.',
+  loesung: 1840, einheit: 'W',
+  fehler: [ { wert: 28.75, h: 'Du hast geteilt. Für die Leistung multiplizierst du: P = U · I.' } ],
+  warum: 'P = U · I = 230 V · 8 A = 1840 W.' },
+{ id: 'm4x2', modul: 4, typ: 'zahl', zusatz: true,
+  frage: 'Ein Laptop-Netzteil liefert 20 V und 3,25 A. Berechne die Leistung.',
+  loesung: 65, einheit: 'W',
+  fehler: [ { wert: 6.15, h: 'Du hast geteilt. Für die Leistung multiplizierst du: P = U · I.' } ],
+  warum: 'P = U · I = 20 V · 3,25 A = 65 W.' },
+{ id: 'm4x3', modul: 4, typ: 'zahl', zusatz: true,
+  frage: 'Ein Staubsauger hat 920 W und hängt an 230 V. Berechne die Stromstärke.',
+  loesung: 4, einheit: 'A',
+  fehler: [ { wert: 211600, h: 'Du hast multipliziert. Für die Stromstärke teilst du die Leistung durch die Spannung: I = P / U.' },
+            { wert: 0.25, h: 'Du hast den Bruch verdreht. Die Leistung steht oben: I = P / U.' } ],
+  warum: 'I = P / U = 920 W / 230 V = 4 A.' },
+{ id: 'm4x4', modul: 4, typ: 'single', zusatz: true,
+  frage: 'Ein Föhn A hat 1000 W, ein Föhn B hat 2000 W. Beide hängen an 230 V. Was gilt für die Stromstärke?',
+  antworten: [
+    { t: 'In B fließt doppelt so viel Strom wie in A.', ok: true },
+    { t: 'In beiden fließt gleich viel Strom, weil die Spannung gleich ist.', h: 'Bei gleicher Spannung braucht die doppelte Leistung die doppelte Stromstärke (P = U · I).' },
+    { t: 'In A fließt mehr Strom.', h: 'Mehr Leistung bei gleicher Spannung bedeutet mehr Stromstärke, nicht weniger.' }
+  ],
+  warum: 'P = U · I. Bleibt U gleich und verdoppelt sich P, dann verdoppelt sich auch I.' },
+
+/* ---------- Modul 5 ---------- */
+{ id: 'm5x1', modul: 5, typ: 'single', zusatz: true,
+  frage: 'Ein Transformator transformiert die Spannung herunter. Was passiert mit der Stromstärke auf der Sekundärseite?',
+  antworten: [
+    { t: 'Sie wird größer.', ok: true },
+    { t: 'Sie wird auch kleiner.', h: 'Der Trafo tauscht Spannung gegen Stromstärke. Wird die Spannung kleiner, wird die Stromstärke größer.' },
+    { t: 'Sie bleibt gleich.', h: 'Die Leistung bleibt (fast) gleich: U₁ · I₁ = U₂ · I₂. Wird U kleiner, muss I größer werden.' }
+  ],
+  warum: 'Ein Trafo tauscht Spannung gegen Stromstärke: U₁ · I₁ = U₂ · I₂. Weniger Spannung bedeutet mehr Stromstärke.' },
+{ id: 'm5x2', modul: 5, typ: 'zahl', zusatz: true, szene: 'trafo', bild: { n1: '200', n2: '1000', i1: '5 A', i2: '?' },
+  frage: 'Ein Transformator hat N₁ = 200 und N₂ = 1000 Windungen. In der Primärspule fließt I₁ = 5 A. Berechne I₂.',
+  loesung: 1, einheit: 'A',
+  fehler: [ { wert: 25, h: 'Bei der Stromstärke ist der Bruch umgedreht: I₁ / I₂ = N₂ / N₁. Hier wird hochtransformiert, also wird die Stromstärke kleiner.' } ],
+  warum: 'I₁ / I₂ = N₂ / N₁, umgestellt: I₂ = I₁ · N₁ : N₂ = 5 A · 200 : 1000 = 1 A.' },
+{ id: 'm5x3', modul: 5, typ: 'zahl', zusatz: true,
+  frage: 'Ein Trafo macht aus U₁ = 230 V eine Spannung von U₂ = 23 V. Auf der Sekundärseite fließen I₂ = 2 A. Wie groß ist I₁? Rechne ohne Verluste.',
+  loesung: 0.2, einheit: 'A',
+  fehler: [ { wert: 20, h: 'Du hast den Bruch verdreht. Die Primärseite hat die große Spannung, also fließt dort die kleine Stromstärke.' } ],
+  warum: 'U₁ · I₁ = U₂ · I₂ = 23 V · 2 A = 46 W. Also I₁ = 46 W : 230 V = 0,2 A.' },
+{ id: 'm5x4', modul: 5, typ: 'single', zusatz: true,
+  frage: 'Die Sekundärspule eines Schweißtrafos hat nur wenige Windungen aus sehr dickem Draht. Warum dick?',
+  antworten: [
+    { t: 'Dort fließt eine sehr große Stromstärke. Ein dünner Draht würde zu heiß.', ok: true },
+    { t: 'Dicker Draht erzeugt eine größere Spannung.', h: 'Die Spannung hängt von der Windungszahl ab, nicht von der Dicke des Drahts.' },
+    { t: 'Dicker Draht ist billiger.', h: 'Es geht um die Wärme: Große Stromstärke erwärmt dünne Drähte stark.' }
+  ],
+  warum: 'Wenige Windungen: kleine Spannung, sehr große Stromstärke. Ein dicker Draht erwärmt sich dabei weniger.' },
+
+/* ---------- Modul 6 ---------- */
+{ id: 'm6x1', modul: 6, typ: 'luecke', zusatz: true,
+  frage: 'Ergänze den Text. Tippe zuerst auf eine Lücke und dann auf ein Wort.',
+  text: 'Im Kraftwerk erzeugt ein ___ Wechselspannung. Im Umspannwerk wird die Spannung ___. Bei hoher Spannung ist die ___ klein, die Leitung erwärmt sich kaum. Vor dem Haus wird die Spannung ___.',
+  woerter: ['Generator', 'hochtransformiert', 'Stromstärke', 'heruntertransformiert', 'Batterie', 'Leistung'],
+  loesung: ['Generator', 'hochtransformiert', 'Stromstärke', 'heruntertransformiert'],
+  warum: 'Generator → hochtransformieren → Fernleitung mit kleiner Stromstärke → heruntertransformieren auf 230 V.' },
+{ id: 'm6x2', modul: 6, typ: 'zahl', zusatz: true,
+  frage: 'Ein Windpark liefert 10 MW = 10 000 000 W. Die Leitung hat 400 000 V. Berechne die Stromstärke in der Leitung.',
+  loesung: 25, einheit: 'A',
+  fehler: [ { wert: 0.04, h: 'Du hast den Bruch verdreht. Die Leistung steht oben: I = P / U.' } ],
+  warum: 'I = P / U = 10 000 000 W / 400 000 V = 25 A.' },
+{ id: 'm6x3', modul: 6, typ: 'single', zusatz: true,
+  frage: 'Man verdoppelt die Spannung in einer Fernleitung. Die übertragene Leistung bleibt gleich. Was passiert?',
+  antworten: [
+    { t: 'Die Stromstärke halbiert sich, die Leitung erwärmt sich weniger.', ok: true },
+    { t: 'Die Stromstärke verdoppelt sich, die Leitung wird heißer.', h: 'P = U · I bleibt gleich. Wird U doppelt so groß, muss I halb so groß werden.' },
+    { t: 'Es ändert sich nichts.', h: 'Die Stromstärke ändert sich: Bei gleicher Leistung halbiert sie sich.' }
+  ],
+  warum: 'P = U · I bleibt gleich. Doppelte Spannung bedeutet halbe Stromstärke, und weniger Stromstärke bedeutet weniger Wärmeverlust.' },
+{ id: 'm6x4', modul: 6, typ: 'multi', zusatz: true,
+  frage: 'Warum kommt nicht direkt Hochspannung aus der Steckdose? Kreuze alle richtigen an.',
+  antworten: [
+    { t: 'Hochspannung ist lebensgefährlich.', ok: true, h: 'Schon bei Abstand kann Hochspannung überschlagen.' },
+    { t: 'Die Geräte im Haus sind für 230 V gebaut.', ok: true, h: 'Ein Föhn oder Fernseher würde bei Hochspannung sofort kaputtgehen.' },
+    { t: 'Hochspannung enthält keine Energie.', h: 'Mit Hochspannung wird gerade die Energie übertragen.' },
+    { t: 'Wechselspannung darf nicht ins Haus.', h: 'Auch die 230 V an der Steckdose sind Wechselspannung.' }
+  ],
+  warum: 'Hochspannung ist für die Übertragung gut, im Haus aber lebensgefährlich, und die Geräte sind für 230 V gebaut. Deshalb wird vor dem Haus heruntertransformiert.' },
+
+/* ---------- Modul 7 ---------- */
+{ id: 'm7x1', modul: 7, typ: 'zuordnen', zusatz: true,
+  frage: 'Forschungsfrage, Hypothese oder Messergebnis? Ordne zu.',
+  felder: ['Forschungsfrage', 'Hypothese', 'Messergebnis'],
+  karten: [
+    { t: 'Hängt die Schwingungsdauer eines Pendels von der Fadenlänge ab?', ziel: 0, h: 'Eine Frage, die man mit einem Experiment beantworten kann: Forschungsfrage.' },
+    { t: 'Wenn der Faden länger ist, dann schwingt das Pendel langsamer.', ziel: 1, h: 'Ein „Wenn …, dann …“-Satz ist eine Hypothese.' },
+    { t: 'Das lange Pendel braucht für 10 Schwingungen 20 s.', ziel: 2, h: 'Eine gemessene Zahl mit Einheit ist ein Messergebnis.' },
+    { t: 'Kühlt heißer Tee im Becher mit Deckel langsamer ab?', ziel: 0, h: 'Das ist eine Frage, also eine Forschungsfrage.' },
+    { t: 'Wenn der Becher einen Deckel hat, dann bleibt der Tee länger warm.', ziel: 1, h: 'Ein „Wenn …, dann …“-Satz ist eine Hypothese.' },
+    { t: 'Nach 10 Minuten hat der Tee mit Deckel 62 °C.', ziel: 2, h: 'Eine gemessene Zahl mit Einheit ist ein Messergebnis.' }
+  ],
+  warum: 'Forschungsfrage: eine Frage. Hypothese: eine Vermutung als „Wenn …, dann …“. Messergebnis: gemessene Werte mit Einheit.' },
+{ id: 'm7x2', modul: 7, typ: 'single', zusatz: true,
+  frage: 'Warum misst man die Zeit für 10 Schwingungen und nicht nur für eine?',
+  antworten: [
+    { t: 'Die Messung wird genauer, weil der Fehler beim Drücken der Stoppuhr weniger ins Gewicht fällt.', ok: true },
+    { t: 'Weil das Pendel erst nach 10 Schwingungen richtig schwingt.', h: 'Das Pendel schwingt von Anfang an gleich. Es geht um die Genauigkeit beim Stoppen.' },
+    { t: 'Weil 10 eine runde Zahl ist.', h: 'Es geht um die Genauigkeit: Eine Schwingung dauert so kurz, dass die Reaktionszeit viel ausmacht.' }
+  ],
+  warum: 'Eine Schwingung ist sehr kurz. Die Reaktionszeit beim Stoppen macht dann einen großen Fehler. Bei 10 Schwingungen verteilt sich dieser Fehler.' },
+{ id: 'm7x3', modul: 7, typ: 'single', zusatz: true,
+  frage: 'Du willst prüfen, ob die Fadenlänge die Schwingungsdauer beeinflusst. Was musst du gleich lassen?',
+  antworten: [
+    { t: 'die Masse und die Auslenkung beim Start', ok: true },
+    { t: 'die Fadenlänge', h: 'Die Fadenlänge willst du gerade verändern. Alles andere bleibt gleich.' },
+    { t: 'nichts, man darf alles gleichzeitig verändern', h: 'Verändert man mehrere Dinge gleichzeitig, weiß man nicht, was den Unterschied macht.' }
+  ],
+  warum: 'Nur eine Größe verändern (hier die Fadenlänge). Alle anderen Größen bleiben gleich: Masse und Auslenkung.' },
+{ id: 'm7x4', modul: 7, typ: 'single', zusatz: true,
+  frage: 'Hypothese: „Wenn der Faden länger ist, dann schwingt das Pendel langsamer.“ Messung: Das 1-m-Pendel braucht 20 s für 10 Schwingungen, das 25-cm-Pendel 10 s. Was folgt daraus?',
+  antworten: [
+    { t: 'Die Messung bestätigt die Hypothese.', ok: true },
+    { t: 'Die Hypothese ist widerlegt.', h: 'Das lange Pendel braucht länger, schwingt also langsamer. Genau das sagt die Hypothese.' },
+    { t: 'Man kann nichts sagen, weil man nichts gemessen hat.', h: 'Es wurden Zeiten gemessen: 20 s und 10 s. Damit kann man die Hypothese prüfen.' }
+  ],
+  warum: 'Das längere Pendel braucht für 10 Schwingungen länger. Es schwingt langsamer. Die Hypothese wird bestätigt.' }
+];
+X.forEach(function (q) { window.FRAGEN.push(q); });
+})();
 </script>
 
 <script>
@@ -1948,7 +2183,7 @@ window.KEYS = window.FRAGEN.filter(function (q) { return q.abschluss; }).map(fun
   var G = window.G, H = window.H, el = G.el;
   window.ANIM = window.ANIM || {};
 
-  window.ANIM[2] = function (host) {
+  function elektronen(host, gruppe) {
     var W = 720, H0 = 420, X0 = 70, Y0 = 40, X1 = 440, Y1 = 210;
     var cv = G.canvas(host, W, H0, { label: 'Ein Stromkreis mit Quelle und Lampe, darunter ein Diagramm der Spannung über der Zeit.' });
     var modus = 0, f = 0.5, zeit = 0, phase = 0, wechsel = 0, letztesVorz = 1, verlauf = [], elek = [], k;
@@ -1988,7 +2223,7 @@ window.KEYS = window.FRAGEN.filter(function (q) { return q.abschluss; }).map(fun
       if (dt > 0) { verlauf.push(u); if (verlauf.length > 300) verlauf.shift(); }
       zaehler.textContent = modus === 1 ? 'Richtungsumkehrungen bisher: ' + wechsel : '';
       zeichne(u);
-    });
+    }, gruppe);
     host.appendChild(el('div', { 'class': 'knopfzeile' }, [G.pauseKnopf(hh)])); host.appendChild(zaehler); host.appendChild(status);
     function zeichne(u) {
       var ctx = cv.ctx; ctx.clearRect(0, 0, W, H0);
@@ -2033,6 +2268,90 @@ window.KEYS = window.FRAGEN.filter(function (q) { return q.abschluss; }).map(fun
       ctx.stroke();
     }
     window.__m2 = { modus: function (i) { seg.setze(i); modus = i; phase = 0; wechsel = 0; verlauf = []; text(); }, wechsel: function () { return wechsel; } };
+  }
+
+  /* Reiter 2: Generator – ein drehender Magnet erzeugt Wechselspannung */
+  function generator(host, gruppe) {
+    var W = 720, H0 = 430, MX = 190, MY = 135, GX0 = 60, GX1 = 690, GY = 330, GA = 62, FENSTER = 4;
+    var cv = G.canvas(host, W, H0, { label: 'Ein Stabmagnet dreht sich vor einer Spule. Ein Messgerät zeigt die induzierte Spannung, darunter ein Diagramm der Spannung über der Zeit.' });
+    var n = 0.5, winkel = 0, w0 = 0, zeit = 0, verlauf = [];
+    var NMAX = 3;
+    var status = el('p', { 'class': 'animstatus', 'aria-live': 'polite' });
+    var zaehler = el('p', { 'class': 'zaehler', 'aria-live': 'off' });
+    var r = H.regler('Drehzahl', 0, NMAX, 0.25, n, function (v) { return v === 0 ? 'steht still' : G.zahl(v, v % 1 ? 2 : null) + ' Umdrehungen pro Sekunde'; }, function (v) { n = v; w0 = winkel; text(); });
+    function spannung() { return (n / NMAX) * Math.sin(winkel); }
+    function text() {
+      if (n === 0) status.textContent = 'Der Magnet steht still. Das Magnetfeld in der Spule ändert sich nicht: keine Spannung.';
+      else status.textContent = 'Der Magnet dreht sich. Das Magnetfeld in der Spule ändert sich ständig, also wird eine Spannung induziert. Bei jeder Umdrehung ändert sie zweimal ihre Richtung: Wechselspannung. Je schneller der Magnet dreht, desto größer die Spannung und desto öfter wechselt die Richtung.';
+    }
+    text();
+    host.appendChild(r.el);
+    var hh = G.laufen(function (dt) {
+      winkel += dt * 2 * Math.PI * n; zeit += dt;
+      var u = spannung(), wechsel = Math.floor(winkel / Math.PI) - Math.floor(w0 / Math.PI), umdr = (winkel - w0) / (2 * Math.PI);
+      if (dt > 0) { verlauf.push([zeit, u]); while (verlauf.length && verlauf[0][0] < zeit - FENSTER) verlauf.shift(); }
+      zaehler.textContent = n === 0 ? 'Richtungswechsel: keine (Magnet steht).' : 'Umdrehungen: ' + Math.floor(umdr) + ' · Richtungswechsel der Spannung: ' + wechsel;
+      zeichne();
+    }, gruppe);
+    host.appendChild(el('div', { 'class': 'knopfzeile' }, [G.pauseKnopf(hh)]));
+    host.appendChild(status); host.appendChild(zaehler);
+    host.appendChild(el('p', { 'class': 'hilfetext', text: 'Im Kraftwerk dreht sich der Magnet 50-mal pro Sekunde. Dann ändert die Spannung 100-mal pro Sekunde ihre Richtung.' }));
+    function zeichne() {
+      var ctx = cv.ctx; ctx.clearRect(0, 0, W, H0);
+      // Achse und Halterung
+      ctx.fillStyle = '#555'; ctx.beginPath(); ctx.arc(MX, MY, 9, 0, 6.2832); ctx.fill();
+      // Spule rechts vom Magneten, Achse waagrecht
+      var SX = 300, SW = 110, SY = MY - 48, SH = 96;
+      ctx.fillStyle = 'rgba(243,227,195,.95)'; ctx.strokeStyle = '#111'; ctx.lineWidth = 2;
+      G.rundRechteck(ctx, SX, SY, SW, SH, 6); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = H.KUPFER; ctx.lineWidth = 2.6;
+      for (var k = 0; k < 9; k++) { var xx = SX + 8 + k * (SW - 16) / 8; ctx.beginPath(); ctx.moveTo(xx - 2, SY); ctx.lineTo(xx + 2, SY + SH); ctx.stroke(); }
+      G.text(ctx, 'Spule', SX + SW / 2, SY + SH + 18, { groesse: 15, fett: true });
+      // Leitungen zum Messgerät
+      ctx.strokeStyle = '#111'; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(SX + SW, MY - 25); ctx.lineTo(540, MY - 25);
+      ctx.moveTo(SX + SW, MY + 25); ctx.lineTo(540, MY + 25); ctx.stroke();
+      var u = spannung();
+      H.messgeraet(ctx, 602, 128, 48, u, 'Messgerät', '');
+      // Feldandeutung in der Spule: Stärke ~ cos(winkel)
+      var fluss = Math.cos(winkel);
+      if (Math.abs(fluss) > 0.08) {
+        var st = Math.abs(fluss), farbe = 'rgba(31,56,100,' + (0.25 + 0.6 * st) + ')';
+        if (fluss > 0) G.pfeil(ctx, SX + 14, MY, SX + SW - 14, MY, farbe, 2 + 3 * st, 10 + 4 * st);
+        else G.pfeil(ctx, SX + SW - 14, MY, SX + 14, MY, farbe, 2 + 3 * st, 10 + 4 * st);
+      }
+      // Stabmagnet, dreht sich um (MX, MY); Nordpol zeigt bei winkel = 0 zur Spule
+      ctx.save(); ctx.translate(MX, MY); ctx.rotate(-winkel);
+      var L = 150, B = 40;
+      ctx.lineWidth = 2.5; ctx.strokeStyle = '#111';
+      ctx.fillStyle = H.ROT; ctx.fillRect(0, -B / 2, L / 2, B); ctx.strokeRect(0, -B / 2, L / 2, B);
+      ctx.fillStyle = H.GRUEN; ctx.fillRect(-L / 2, -B / 2, L / 2, B); ctx.strokeRect(-L / 2, -B / 2, L / 2, B);
+      ctx.restore();
+      var nx = MX + Math.cos(-winkel) * 52, ny = MY + Math.sin(-winkel) * 52, sx = MX - Math.cos(-winkel) * 52, sy = MY - Math.sin(-winkel) * 52;
+      G.buchstabe(ctx, 'N', nx, ny, 22); G.buchstabe(ctx, 'S', sx, sy, 22);
+      ctx.fillStyle = '#333'; ctx.beginPath(); ctx.arc(MX, MY, 6, 0, 6.2832); ctx.fill();
+      G.text(ctx, 'drehbarer Magnet', MX, MY + 98, { groesse: 15, fett: true });
+      // U-t-Diagramm
+      ctx.strokeStyle = '#111'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(GX0, GY - GA - 14); ctx.lineTo(GX0, GY + GA + 14); ctx.moveTo(GX0, GY); ctx.lineTo(GX1, GY); ctx.stroke();
+      G.pfeil(ctx, GX1 - 10, GY, GX1 + 12, GY, '#111', 2, 9);
+      G.text(ctx, 'U', GX0 - 22, GY - GA, { groesse: 16, fett: true }); G.text(ctx, 't', GX1 + 4, GY + 18, { groesse: 16, fett: true });
+      G.text(ctx, '+', GX0 - 14, GY - GA / 2, { groesse: 16, fett: true }); G.text(ctx, '−', GX0 - 14, GY + GA / 2, { groesse: 16, fett: true });
+      if (verlauf.length > 1) {
+        ctx.strokeStyle = '#1F3864'; ctx.lineWidth = 3; ctx.beginPath();
+        verlauf.forEach(function (p, i) {
+          var x = GX0 + (p[0] - (zeit - FENSTER)) / FENSTER * (GX1 - GX0), y = GY - p[1] * GA;
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+      }
+      G.text(ctx, 'Spannung im Verlauf der Zeit (letzte 4 Sekunden)', (GX0 + GX1) / 2, GY + GA + 30, { groesse: 14 });
+    }
+    window.__m2g = { setze: function (v) { n = v; r.setze(v); w0 = winkel; text(); }, wechsel: function () { return Math.floor(winkel / Math.PI) - Math.floor(w0 / Math.PI); }, text: function () { return status.textContent; } };
+  }
+
+  window.ANIM[2] = function (host) {
+    G.reiter(host, [{ titel: 'Batterie und Steckdose', bau: elektronen }, { titel: 'Generator', bau: generator }]);
   };
 })();
 </script>
@@ -2642,6 +2961,9 @@ var PlatformState = {
     var s3 = el('section', { id: 's-fragen', 'class': 'abschnitt' }, [el('h2', { text: '3 Fragen', tabindex: '-1' })]);
     app.appendChild(s3);
     var qs = fragenVon(m.id), idx = 0;
+    var nPflicht = qs.filter(function (q) { return !q.zusatz; }).length;
+    function xnr(k) { return k - nPflicht + 1; }
+    function lab(q, k) { return q.zusatz ? 'E' + xnr(k) : String(k + 1); }
     for (var i = 0; i < qs.length; i++) { var sx = Z.q[qs[i].id]; if (!(sx && sx.fertig) && !qs[i].zusatz) { idx = i; break; } idx = i + 1; }
     function fragenAnsicht() {
       s3.innerHTML = ''; s3.appendChild(el('h2', { text: '3 Fragen', tabindex: '-1' }));
@@ -2651,21 +2973,21 @@ var PlatformState = {
       var punkte = el('div', { 'class': 'punkte', role: 'group', 'aria-label': 'Fragen auswählen' });
       qs.forEach(function (q, k) {
         var s = Z.q[q.id], sym = !s || !s.fertig ? '' : (s.ersterOk ? ' ✓' : ' ✗');
-        var b = G.knopf((q.zusatz ? 'Zusatz' : String(k + 1)) + sym, function () { idx = k; fragenAnsicht(); }, 'punkt' + (k === idx ? ' aktiv' : ''));
-        b.setAttribute('aria-label', (q.zusatz ? 'Zusatzfrage' : 'Frage ' + (k + 1)) + (!s || !s.fertig ? ', offen' : (s.ersterOk ? ', richtig beim ersten Versuch' : ', mit Lösung angesehen')));
+        var b = G.knopf(lab(q, k) + sym, function () { idx = k; fragenAnsicht(); }, 'punkt' + (k === idx ? ' aktiv' : ''));
+        b.setAttribute('aria-label', (q.zusatz ? 'Extra-Übung ' + xnr(k) : 'Frage ' + (k + 1)) + (!s || !s.fertig ? ', offen' : (s.ersterOk ? ', richtig beim ersten Versuch' : ', mit Lösung angesehen')));
         if (k === idx) b.setAttribute('aria-current', 'true');
         punkte.appendChild(b);
       });
       s3.appendChild(punkte);
       if (idx >= qs.length) { zusammenfassung(); return; }
       var q = qs[idx], s = st('q', q.id);
-      var kopf = el('h3', { 'class': 'fragenkopf', text: q.zusatz ? 'Zusatzfrage (zählt nicht für den Fortschritt)' : 'Frage ' + (idx + 1) + ' von ' + qs.length });
+      var kopf = el('h3', { 'class': 'fragenkopf', text: q.zusatz ? 'Extra-Übung ' + xnr(idx) + ' von ' + (qs.length - nPflicht) + ' (freiwillig, zählt nicht für den Fortschritt)' : 'Frage ' + (idx + 1) + ' von ' + nPflicht });
       s3.appendChild(kopf);
       if (s.vorab) s3.appendChild(el('p', { 'class': 'vorab', text: '✓ Schon gekonnt: Diese Frage hast du im Einstiegscheck richtig beantwortet.' }));
       var host = el('div', { 'class': 'fragenhost' }); s3.appendChild(host);
       var nav = el('div', { 'class': 'knopfzeile' });
       var zurueck = G.knopf('← Zurück', function () { idx = Math.max(0, idx - 1); fragenAnsicht(); }, 'zweit'); zurueck.disabled = idx === 0;
-      var weiter = G.knopf(idx === qs.length - 1 ? 'Fertig' : 'Weiter →', function () { idx++; fragenAnsicht(); scrollZuFragen(); }, 'haupt');
+      var weiter = G.knopf(idx === qs.length - 1 || idx === nPflicht - 1 ? 'Fertig' : 'Weiter →', function () { idx = idx === nPflicht - 1 ? qs.length : idx + 1; fragenAnsicht(); scrollZuFragen(); }, 'haupt');
       nav.appendChild(zurueck); nav.appendChild(weiter);
       F.zeigeFrage(host, q, s, { onFertig: function () { speichern(); aktualisierePunkte(); } });
       s3.appendChild(nav);
@@ -2674,18 +2996,19 @@ var PlatformState = {
         var bal = s3.querySelector('.balken'); if (bal) { bal.firstChild.style.width = Math.round(100 * p2.fertig / p2.n) + '%'; bal.setAttribute('aria-valuenow', String(p2.fertig)); }
         var ft = s3.querySelector('.fort-text'); if (ft) ft.textContent = p2.fertig + ' von ' + p2.n + ' Fragen bearbeitet, ' + p2.richtig + ' davon richtig beim ersten Versuch.';
         var bs = punkte.querySelectorAll('button');
-        qs.forEach(function (qq, k) { var sx = Z.q[qq.id]; if (sx && sx.fertig) bs[k].textContent = (qq.zusatz ? 'Zusatz' : String(k + 1)) + (sx.ersterOk ? ' ✓' : ' ✗'); });
+        qs.forEach(function (qq, k) { var sx = Z.q[qq.id]; if (sx && sx.fertig) bs[k].textContent = lab(qq, k) + (sx.ersterOk ? ' ✓' : ' ✗'); });
       }
     }
     function scrollZuFragen() { var e = document.getElementById('s-fragen'); if (e) e.scrollIntoView({ behavior: 'auto', block: 'start' }); }
     function zusammenfassung() {
       var p = fortschritt(m.id);
       var k = el('div', { 'class': 'kasten merke' }, [el('p', { 'class': 'kasten-titel', text: 'GESCHAFFT' }),
-        el('p', { text: 'Du hast in diesem Modul ' + p.richtig + ' von ' + p.n + ' Fragen beim ersten Versuch richtig beantwortet.' + (p.fertig < p.n ? ' Es sind noch ' + (p.n - p.fertig) + ' Fragen offen. Tippe oben auf eine Nummer.' : '') })]);
+        el('p', { text: 'Du hast in diesem Modul ' + p.richtig + ' von ' + p.n + ' Fragen beim ersten Versuch richtig beantwortet.' + (p.fertig < p.n ? ' Es sind noch ' + (p.n - p.fertig) + ' Fragen offen. Tippe oben auf eine Nummer.' : '') + (qs.length > nPflicht ? ' Noch Zeit? Hier gibt es ' + (qs.length - nPflicht) + ' freiwillige Extra-Übungen.' : '') })]);
       s3.appendChild(k);
       var z = el('div', { 'class': 'knopfzeile' });
       z.appendChild(el('a', { 'class': 'btn haupt', href: '#/', text: 'Zur Startseite' }));
       if (m.id < MO.length) z.appendChild(el('a', { 'class': 'btn zweit', href: '#/modul/' + (m.id + 1), text: 'Nächstes Modul' }));
+      if (qs.length > nPflicht) z.appendChild(G.knopf('Extra-Übungen', function () { idx = nPflicht; fragenAnsicht(); scrollZuFragen(); }, 'haupt'));
       z.appendChild(G.knopf('Fragen nochmal ansehen', function () { idx = 0; fragenAnsicht(); }, 'zweit'));
       s3.appendChild(z);
     }
