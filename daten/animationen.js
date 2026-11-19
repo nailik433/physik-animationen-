@@ -76,7 +76,7 @@ window.PHYSIK = {
       klasse: 9,
       thema: 'Elektrizität',
       titel: 'Rollenspiel: Wir sind der Stromkreis',
-      beschreibung: 'Zwölf Elektronen laufen im Kreis, die Zählstellen A, B und C zählen mit: Überall kommen gleich viele vorbei – die Stromstärke ist überall gleich.',
+      beschreibung: 'Zwölf Elektronen laufen im Kreis, die Zählstellen A, B und C zählen mit: Überall kommen gleich viele vorbei – die Stromstärke ist überall gleich. Umschaltbar auf zwei Lämpchen: 4 Energiekärtchen, Lämpchen 1 bekommt 3, Lämpchen 2 nur 1.',
       datei: 'animationen/klasse-9/elektrizitaet/rollenspiel-stromkreis/index.html',
       icon: '🚶',
       tags: ['Stromstärke', 'Stromkreis', 'Elektronen', 'Rollenspiel', 'Energie']
