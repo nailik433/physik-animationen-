@@ -20,6 +20,7 @@ Reines HTML/CSS/JavaScript – kein Build, keine Installation, keine Internetver
 | 9 | Elektrizität | Der Weg durch das Lämpchen |
 | 9 | Elektrizität | Stromstärke im Modell |
 | 9 | Elektrizität | Rollenspiel: Wir sind der Stromkreis |
+| 9 | Elektrizität | E-Lehre: Teste dich selbst |
 | 10 | Induktion und Transformator | Transformator-Labor |
 | 10 | Induktion und Transformator | Elektromagnetismus: Teste dich selbst |
 | 10 | Elektrische Energieversorgung | Vom Kraftwerk zur Steckdose |
