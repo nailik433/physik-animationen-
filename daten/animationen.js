@@ -82,6 +82,15 @@ window.PHYSIK = {
       tags: ['Stromstärke', 'Stromkreis', 'Elektronen', 'Rollenspiel', 'Energie']
     },
     {
+      klasse: 9,
+      thema: 'Elektrizität',
+      titel: 'E-Lehre: Teste dich selbst',
+      beschreibung: 'Selbsttest und Wiederholung zur E-Lehre in sechs Modulen: Forscher-Weg, einfacher Stromkreis, Schaltzeichen und Schaltpläne, Leiter und Nichtleiter, Stromstärke, Messen und Reihenschaltung. Mit Animationen und Rückmeldung.',
+      datei: 'animationen/klasse-9/elektrizitaet/e-lehre-teste-dich-selbst/index.html',
+      icon: '🔋',
+      tags: ['Selbsttest', 'Stromkreis', 'Schaltplan', 'Leiter', 'Stromstärke', 'Reihenschaltung', 'Amperemeter']
+    },
+    {
       klasse: 10,
       thema: 'Induktion und Transformator',
       titel: 'Transformator-Labor',
